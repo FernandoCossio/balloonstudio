@@ -1,5 +1,11 @@
 package com.decoraciones.features.authtoken;
 
+import com.decoraciones.common.errors.AuthTokenInvalidoException;
+import com.decoraciones.common.errors.AuthTokenNoEncontradoException;
+import com.decoraciones.common.errors.CuentaYaActivaException;
+import com.decoraciones.common.errors.EmailObligatorioException;
+import com.decoraciones.common.errors.PasswordNoCoincideException;
+import com.decoraciones.common.errors.UsuarioNoEncontradoException;
 import com.decoraciones.domain.dtos.auth.ActivarCuentaDto;
 import com.decoraciones.domain.enums.auth.TipoToken;
 import com.decoraciones.domain.models.AuthToken;
@@ -107,23 +113,28 @@ public class AuthTokenService {
         emailService.sendEmail(usuario.getEmail(), "Activación de cuenta - Decoraciones", mensaje);
     }
 
-    public boolean verificarToken(String token) {
-        return authTokenRepository.findByTokenAndTipo(token, TipoToken.ACTIVACION_CUENTA)
+    @Transactional(readOnly = true)
+    public void verificarToken(String token) {
+        boolean isValid = authTokenRepository.findByTokenAndTipo(token, TipoToken.ACTIVACION_CUENTA)
                 .map(AuthToken::isValid)
                 .orElse(false);
+
+        if (!isValid) {
+            throw new AuthTokenInvalidoException();
+        }
     }
 
     @Transactional
     public void activarCuenta(ActivarCuentaDto dto) {
         AuthToken authToken = authTokenRepository.findByTokenAndTipo(dto.token(), TipoToken.ACTIVACION_CUENTA)
-                .orElseThrow(() -> new RuntimeException("Token no encontrado"));
+                .orElseThrow(AuthTokenNoEncontradoException::new);
 
         if (!authToken.isValid()) {
-            throw new RuntimeException("El token es inválido o ha expirado");
+            throw new AuthTokenInvalidoException();
         }
 
         if (!dto.password().equals(dto.confirmPassword())) {
-            throw new RuntimeException("Las contraseñas no coinciden");
+            throw new PasswordNoCoincideException();
         }
 
         Usuario usuario = authToken.getUsuario();
@@ -137,11 +148,15 @@ public class AuthTokenService {
 
     @Transactional
     public void reenviarEmailActivacion(String email) {
+        if (email == null || email.isBlank()) {
+            throw new EmailObligatorioException();
+        }
+
         Usuario usuario = usuarioRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(UsuarioNoEncontradoException::new);
 
         if (usuario.getActivo()) {
-            throw new RuntimeException("La cuenta ya está activa");
+            throw new CuentaYaActivaException();
         }
 
         generarYEnviarTokenActivacion(usuario);

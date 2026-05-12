@@ -1,5 +1,7 @@
 package com.decoraciones.features.categoria;
 
+import com.decoraciones.common.errors.CategoriaDuplicadaException;
+import com.decoraciones.common.errors.CategoriaNoEncontradaException;
 import com.decoraciones.domain.models.Categoria;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,12 +26,12 @@ public class CategoriaService {
     @Transactional(readOnly = true)
     public Categoria findById(Long id) {
         return categoriaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Categoría no encontrada con id: " + id));
+                .orElseThrow(CategoriaNoEncontradaException::new);
     }
 
     public Categoria create(Categoria categoria) {
         if (categoriaRepository.existsByNombreIgnoreCase(categoria.getNombre())) {
-            throw new RuntimeException("Ya existe una categoría con el nombre: " + categoria.getNombre());
+            throw new CategoriaDuplicadaException();
         }
         return categoriaRepository.save(categoria);
     }
@@ -38,7 +40,7 @@ public class CategoriaService {
         Categoria existente = findById(id);
         if (!existente.getNombre().equalsIgnoreCase(datos.getNombre())
                 && categoriaRepository.existsByNombreIgnoreCase(datos.getNombre())) {
-            throw new RuntimeException("Ya existe una categoría con el nombre: " + datos.getNombre());
+            throw new CategoriaDuplicadaException();
         }
         existente.setNombre(datos.getNombre());
         existente.setDescripcion(datos.getDescripcion());

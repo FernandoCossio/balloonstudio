@@ -1,5 +1,6 @@
 package com.decoraciones.features.inventario;
 
+import com.decoraciones.common.response.ApiResponse;
 import com.decoraciones.domain.dtos.articuloinventario.ArticuloInventarioRequest;
 import com.decoraciones.domain.dtos.articuloinventario.ArticuloInventarioResponse;
 import com.decoraciones.domain.dtos.categoria.CategoriaResponse;
@@ -23,41 +24,42 @@ public class ArticuloInventarioController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ArticuloInventarioResponse>> findAll() {
-        return ResponseEntity.ok(articuloService.findAll().stream().map(this::toResponse).toList());
+    public ResponseEntity<ApiResponse<List<ArticuloInventarioResponse>>> findAll() {
+        List<ArticuloInventarioResponse> response = articuloService.findAll().stream().map(this::toResponse).toList();
+        return ResponseEntity.ok(ApiResponse.success(response, "Artículos de inventario obtenidos correctamente"));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ArticuloInventarioResponse> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(toResponse(articuloService.findById(id)));
+    public ResponseEntity<ApiResponse<ArticuloInventarioResponse>> findById(@PathVariable Long id) {
+        ArticuloInventarioResponse response = toResponse(articuloService.findById(id));
+        return ResponseEntity.ok(ApiResponse.success(response, "Artículo de inventario obtenido correctamente"));
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody ArticuloInventarioRequest request) {
-        try {
-            ArticuloInventario articulo = toEntity(request);
-            Set<Long> ids = request.categoriaIds() != null ? new HashSet<>(request.categoriaIds()) : null;
-            return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(articuloService.create(articulo, ids)));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<ArticuloInventarioResponse>> create(@RequestBody ArticuloInventarioRequest request) {
+        ArticuloInventario articulo = toEntity(request);
+        Set<Long> ids = request.categoriaIds() != null ? new HashSet<>(request.categoriaIds()) : null;
+
+        ArticuloInventario created = articuloService.create(articulo, ids);
+        ArticuloInventarioResponse response = toResponse(created);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(response, "Artículo de inventario creado correctamente"));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody ArticuloInventarioRequest request) {
-        try {
-            ArticuloInventario articulo = toEntity(request);
-            Set<Long> ids = request.categoriaIds() != null ? new HashSet<>(request.categoriaIds()) : null;
-            return ResponseEntity.ok(toResponse(articuloService.update(id, articulo, ids)));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<ArticuloInventarioResponse>> update(@PathVariable Long id, @RequestBody ArticuloInventarioRequest request) {
+        ArticuloInventario articulo = toEntity(request);
+        Set<Long> ids = request.categoriaIds() != null ? new HashSet<>(request.categoriaIds()) : null;
+
+        ArticuloInventario updated = articuloService.update(id, articulo, ids);
+        ArticuloInventarioResponse response = toResponse(updated);
+        return ResponseEntity.ok(ApiResponse.success(response, "Artículo de inventario actualizado correctamente"));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         articuloService.delete(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.success(null, "Artículo de inventario eliminado correctamente"));
     }
 
     // ─── Mappers ─────────────────────────────────────────────────────────────

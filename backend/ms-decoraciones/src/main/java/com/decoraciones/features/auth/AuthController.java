@@ -66,7 +66,8 @@ public class AuthController {
 
 	@PostMapping("/auth/register")
 	public ResponseEntity<ApiResponse<ResponseUsuarioDto>> register(@Valid @RequestBody RegistrarClienteDto request) {
-		ResponseUsuarioDto response = authService.register(request);
-		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
+		ResponseUsuarioDto created = authService.register(request);
+		return ResponseEntity.status(HttpStatus.CREATED)
+			.body(ApiResponse.success(created, "Cliente registrado correctamente. Revisa tu email para activar tu cuenta"));
 	}
 }
