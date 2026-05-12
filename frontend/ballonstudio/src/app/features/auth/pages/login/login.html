@@ -1,0 +1,85 @@
+<p-toast></p-toast>
+<div class="bs-login">
+    <section class="bs-brand">
+        <div class="bs-brand__inner">
+            <div class="bs-logo">
+                <img src="images/logo-2.jpeg" alt="Balloon Studio Oficial" />
+            </div>
+
+            <div class="bs-brand__card">
+                <h1 class="bs-title">Balloon Studio Oficial</h1>
+                <p class="bs-tagline">Elevando tus momentos especiales con arte que flota. La elegancia y creatividad se unen en cada celebración.</p>
+
+                <div class="bs-brand__pills">
+                    <div class="bs-pill">Bodas</div>
+                    <div class="bs-pill">Corporativo</div>
+                    <div class="bs-pill">Eventos</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bs-form">
+        <div class="bs-form__outer">
+            <div class="bs-form__container">
+                <div class="bs-form__header">
+                    <div class="bs-form__title">Bienvenido de nuevo</div>
+                    <div class="bs-subtitle">Ingresa tus credenciales para acceder al Management Hub</div>
+                </div>
+
+                <div class="bs-form__fields">
+                    <div class="bs-form__field">
+                        <p-inputgroup>
+                            <p-inputgroup-addon>
+                                <i class="pi pi-user"></i>
+                            </p-inputgroup-addon>
+                            <input pInputText id="username" name="username" type="text" placeholder="Usuario" [(ngModel)]="username" />
+                        </p-inputgroup>
+                    </div>
+
+                    <div class="bs-form__field">
+                        <p-inputgroup>
+                            <p-inputgroup-addon>
+                                <i class="pi pi-lock"></i>
+                            </p-inputgroup-addon>
+                            <input pInputText id="password" name="password" [type]="passwordVisible ? 'text' : 'password'" placeholder="Contraseña" [(ngModel)]="password" />
+                            <p-inputgroup-addon>
+                                <p-button type="button" [text]="true" [rounded]="true" severity="secondary" [icon]="passwordVisible ? 'pi pi-eye-slash' : 'pi pi-eye'" (onClick)="togglePasswordVisible()" />
+                            </p-inputgroup-addon>
+                        </p-inputgroup>
+                    </div>
+
+                    <div class="bs-form__options">
+                        <div class="flex align-items-center gap-2">
+                            <p-checkbox 
+                                [(ngModel)]="rememberMe" 
+                                name="rememberMe" 
+                                inputId="rememberme" 
+                                [binary]="true" />
+                            <label for="rememberme" class="bs-label-sm">Recordarme</label>
+                        </div>
+                        <span class="bs-link">¿Olvidaste tu contraseña?</span>
+                    </div>
+
+                    <p-button label="Iniciar Sesión" styleClass="w-full" (onClick)="onLogin()" [loading]="isLoading" />
+
+                    <div class="bs-separator">
+                        <div class="bs-separator-line"></div>
+                        <div class="bs-separator-text">O CONTINUAR CON</div>
+                        <div class="bs-separator-line"></div>
+                    </div>
+
+                    <div class="bs-form__providers">
+                        <p-button [outlined]="true" label="Google" icon="pi pi-google" />
+                        <p-button [outlined]="true" label="Apple" icon="pi pi-apple" />
+                    </div>
+
+                    <div class="bs-form__footer">
+                        <span class="bs-form__footer-muted">¿No tienes una cuenta? </span>
+                        <span class="bs-link" routerLink="/auth/register">Crea una cuenta aqui</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

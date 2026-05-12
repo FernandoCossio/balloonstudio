@@ -1,0 +1,243 @@
+.activation-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fcf8f9;
+    position: relative;
+    overflow: hidden;
+    padding: 2rem;
+}
+
+.bg-decoration {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+
+    .circle-1 {
+        position: absolute;
+        top: -10%;
+        left: -5%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(194, 24, 91, 0.05) 0%, rgba(255, 255, 255, 0) 70%);
+        border-radius: 50%;
+    }
+
+    .image-right {
+        position: absolute;
+        right: -5%;
+        top: 20%;
+        width: 450px;
+        height: 600px;
+        background-image: url('/activation-bg.png'); // I'll tell user to rename generated image or I'll handle it
+        background-size: cover;
+        background-position: center;
+        border-radius: 4rem;
+        transform: rotate(5deg);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+        opacity: 0.9;
+        display: none;
+
+        @media (min-width: 1200px) {
+            display: block;
+        }
+    }
+}
+
+.activation-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 500px;
+    background: #ffffff;
+    border-radius: 2.5rem;
+    padding: 3rem;
+    box-shadow: 0 10px 40px rgba(194, 24, 91, 0.05);
+    text-align: center;
+
+    .logo-section {
+        margin-bottom: 2.5rem;
+        
+        i {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin: 0;
+        }
+
+        p {
+            color: #666;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+        }
+    }
+}
+
+.form-group {
+    text-align: left;
+    margin-bottom: 1.5rem;
+
+    label {
+        display: block;
+        font-weight: 600;
+        color: #4a4a4a;
+        margin-bottom: 0.75rem;
+        font-size: 0.95rem;
+    }
+
+    .input-wrapper {
+        position: relative;
+        
+        i {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            z-index: 10;
+        }
+    }
+}
+
+.security-requirements {
+    background: #f8f8f8;
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: left;
+
+    h3 {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 1rem;
+    }
+
+    .requirement-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.6rem;
+        font-size: 0.9rem;
+        color: #666;
+
+        i {
+            font-size: 0.9rem;
+            
+            &.pi-check-circle { color: #4caf50; }
+            &.pi-circle { color: #ddd; }
+        }
+
+        &.met {
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+    }
+}
+
+.submit-button {
+    width: 100% !important;
+    height: 3.5rem;
+    border-radius: 2rem !important;
+    font-weight: 600;
+    font-size: 1.1rem;
+    background: var(--primary-color) !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #00897b;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: transform 0.2s;
+
+    &:hover {
+        transform: translateX(-4px);
+    }
+}
+
+.footer-text {
+    position: absolute;
+    bottom: 2rem;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #bbb;
+}
+
+:host ::ng-deep {
+    .p-password {
+        width: 100%;
+    }
+
+    .p-inputtext {
+        width: 100% !important;
+        padding-left: 3.5rem !important;
+        height: 3.5rem;
+        background-color: #f3f3f3 !important;
+        border: none !important;
+        border-radius: 1rem !important;
+        font-size: 1rem;
+
+        &:focus {
+            background-color: #ffffff !important;
+            box-shadow: 0 0 0 2px var(--primary-100) !important;
+        }
+    }
+}
+
+.status-view {
+    padding: 2rem 0;
+    
+    .status-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2rem;
+        
+        &.success {
+            background: #e8f5e9;
+            color: #4caf50;
+        }
+        
+        &.error {
+            background: #ffebee;
+            color: #f44336;
+        }
+    }
+
+    h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    p {
+        color: #666;
+        margin-bottom: 2rem;
+    }
+}

@@ -1,0 +1,126 @@
+<div class="activation-page">
+    <div class="bg-decoration">
+        <div class="circle-1"></div>
+        <div class="image-right"></div>
+    </div>
+
+    <div class="activation-card">
+        <div class="logo-section">
+            <i class="pi pi-sparkles"></i>
+            <h1>Balloon Studio</h1>
+            <p>Crea tu nueva contraseña para continuar</p>
+        </div>
+
+        <!-- Estado: Cargando -->
+        <div *ngIf="loading" class="status-view">
+            <div class="flex flex-col items-center">
+                <i class="pi pi-spin pi-spinner text-4xl text-primary mb-4"></i>
+                <p>Verificando tu cuenta...</p>
+            </div>
+        </div>
+
+        <!-- Estado: Éxito -->
+        <div *ngIf="!loading && successMessage" class="status-view">
+            <div class="status-icon success">
+                <i class="pi pi-check"></i>
+            </div>
+            <h2>¡Cuenta Activada!</h2>
+            <p>{{ successMessage }}</p>
+            <p class="text-sm italic">Redirigiendo al login en unos segundos...</p>
+            <p-button label="Ir al Login Ahora" routerLink="/auth/login" styleClass="submit-button"></p-button>
+        </div>
+
+        <!-- Estado: Error -->
+        <div *ngIf="!loading && error && !successMessage" class="status-view">
+            <div class="status-icon error">
+                <i class="pi pi-exclamation-triangle"></i>
+            </div>
+            <h2>Algo salió mal</h2>
+            <p>{{ error }}</p>
+            
+            <div class="flex flex-col gap-3">
+                <p-button [label]="resending ? 'Enviando...' : 'Reenviar Correo'" (click)="onResendEmail()" [disabled]="resending" styleClass="w-full p-button-outlined"></p-button>
+                <a routerLink="/auth/login" class="back-link justify-center mt-4">
+                    <i class="pi pi-arrow-left"></i>
+                    Volver al login
+                </a>
+            </div>
+        </div>
+
+        <!-- Estado: Formulario -->
+        <div *ngIf="!loading && isTokenValid && !successMessage && !error">
+            <form [formGroup]="activationForm" (ngSubmit)="onSubmit()">
+                <div class="form-group">
+                    <label for="password">
+                        Nueva Contraseña
+                    </label>
+                    <div class="input-wrapper">
+                        <i class="pi pi-lock"></i>
+                        <p-password 
+                            id="password" 
+                            formControlName="password" 
+                            [toggleMask]="true" 
+                            [feedback]="false"
+                            placeholder="••••••••"
+                        ></p-password>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">
+                        Confirmar Contraseña
+                    </label>
+                    <div class="input-wrapper">
+                        <i class="pi pi-shield"></i>
+                        <p-password 
+                            id="confirmPassword" 
+                            formControlName="confirmPassword" 
+                            [toggleMask]="true" 
+                            [feedback]="false"
+                            placeholder="••••••••"
+                        ></p-password>
+                    </div>
+                </div>
+
+                <div class="security-requirements">
+                    <h3>Requisitos de seguridad</h3>
+                    
+                    <div class="requirement-item" [class.met]="hasMinLength">
+                        <i [class]="hasMinLength ? 'pi pi-check-circle' : 'pi pi-circle'"></i>
+                        <span>Al menos 8 caracteres</span>
+                    </div>
+                    
+                    <div class="requirement-item" [class.met]="hasUppercase">
+                        <i [class]="hasUppercase ? 'pi pi-check-circle' : 'pi pi-circle'"></i>
+                        <span>Una letra mayúscula</span>
+                    </div>
+                    
+                    <div class="requirement-item" [class.met]="hasNumber">
+                        <i [class]="hasNumber ? 'pi pi-check-circle' : 'pi pi-circle'"></i>
+                        <span>Al menos un número</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-4">
+                    <p-button 
+                        label="Actualizar Contraseña" 
+                        type="submit" 
+                        styleClass="submit-button" 
+                        [disabled]="activationForm.invalid"
+                        icon="pi pi-arrow-right"
+                        iconPos="right"
+                    ></p-button>
+
+                    <a routerLink="/auth/login" class="back-link justify-center">
+                        <i class="pi pi-arrow-left"></i>
+                        Volver al inicio de sesión
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="footer-text">
+        © {{ currentYear }} Balloon Studio. Tu seguridad es nuestra prioridad.
+    </div>
+</div>

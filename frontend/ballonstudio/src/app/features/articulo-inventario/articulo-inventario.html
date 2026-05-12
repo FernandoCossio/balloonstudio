@@ -1,0 +1,228 @@
+<p-toast />
+<p-confirmDialog />
+
+<!-- ─── Page Header ─────────────────────────────────────────────────────── -->
+<div class="inv-page">
+
+    <!-- Header -->
+    <div class="inv-header">
+        <div class="inv-header__text">
+            <h1 class="inv-header__title">Gestión de Inventario</h1>
+            <p class="inv-header__sub">Administra tus artículos, stock y costos con control en tiempo real.</p>
+        </div>
+        <div class="inv-header__actions">
+            <button pButton class="p-button-outlined inv-btn-filter" icon="pi pi-filter" label="Filtros Avanzados"></button>
+            <button pButton class="inv-btn-primary" icon="pi pi-plus" label="Nuevo Artículo" (click)="openNew()"></button>
+        </div>
+    </div>
+
+    <!-- ─── Alert Cards ──────────────────────────────────────────────────── -->
+    <div class="inv-alerts">
+
+        <!-- Stock Bajo -->
+        <div class="inv-alert-card inv-alert-card--danger" [class.inv-alert-card--active]="stockBajoCount() > 0">
+            <div class="inv-alert-card__icon">
+                <i class="pi pi-exclamation-triangle"></i>
+                @if (stockBajoCount() > 0) {
+                    <span class="inv-alert-card__badge">CRÍTICO</span>
+                }
+            </div>
+            <div class="inv-alert-card__body">
+                <h3>Stock Bajo</h3>
+                <p>{{ stockBajoCount() }} artículo(s) requieren atención inmediata</p>
+                <button class="inv-alert-card__link" (click)="setFilter('TODOS')">VER ARTÍCULOS &rsaquo;</button>
+            </div>
+        </div>
+
+        <!-- En Mantenimiento -->
+        <div class="inv-alert-card inv-alert-card--info">
+            <div class="inv-alert-card__icon inv-alert-card__icon--blue">
+                <i class="pi pi-wrench"></i>
+            </div>
+            <div class="inv-alert-card__body">
+                <h3>En Mantenimiento</h3>
+                <p>{{ mantenimientoCount() }} artículo(s) en proceso de mantenimiento</p>
+                <button class="inv-alert-card__link inv-alert-card__link--blue">REVISAR ESTADO &rsaquo;</button>
+            </div>
+        </div>
+
+        <!-- Valor Stock -->
+        <div class="inv-alert-card inv-alert-card--neutral">
+            <div class="inv-alert-card__icon inv-alert-card__icon--gold">
+                <i class="pi pi-dollar"></i>
+            </div>
+            <div class="inv-alert-card__body">
+                <h3>Valor en Stock</h3>
+                <p>Valor total estimado del catálogo</p>
+                <span class="inv-alert-card__value">{{ valorTotalStock() | currency:'BOB':'symbol':'1.0-0' }}</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ─── Table Section ────────────────────────────────────────────────── -->
+    <div class="inv-table-section">
+
+        <!-- Filter Tabs + Counter -->
+        <div class="inv-filters">
+            <div class="inv-tabs">
+                <button class="inv-tab" [class.inv-tab--active]="activeFilter() === 'TODOS'"
+                        (click)="setFilter('TODOS')">Todos</button>
+                <button class="inv-tab" [class.inv-tab--active]="activeFilter() === 'CONSUMIBLE'"
+                        (click)="setFilter('CONSUMIBLE')">Consumibles</button>
+                <button class="inv-tab" [class.inv-tab--active]="activeFilter() === 'REUTILIZABLE'"
+                        (click)="setFilter('REUTILIZABLE')">Reutilizables</button>
+            </div>
+            <span class="inv-count">Mostrando {{ articulosFiltrados().length }} de {{ totalArticulos() }} artículos</span>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="inv-search">
+            <i class="pi pi-search inv-search__icon"></i>
+            <input
+                type="text"
+                class="inv-search__input"
+                placeholder="Buscar en el catálogo..."
+                [ngModel]="searchQuery()"
+                (ngModelChange)="searchQuery.set($event)"
+            />
+        </div>
+
+        <!-- Table -->
+        @if (loading()) {
+            <div class="inv-skeleton-list">
+                @for (i of [1,2,3,4,5]; track i) {
+                    <div class="inv-skeleton-row">
+                        <p-skeleton width="40px" height="40px" borderRadius="50%" />
+                        <p-skeleton width="40%" height="16px" />
+                        <p-skeleton width="80px" height="24px" borderRadius="12px" />
+                        <p-skeleton width="60px" height="16px" />
+                        <p-skeleton width="80px" height="16px" />
+                        <p-skeleton width="90px" height="24px" borderRadius="12px" />
+                    </div>
+                }
+            </div>
+        } @else if (articulosFiltrados().length === 0) {
+            <div class="inv-empty">
+                <i class="pi pi-inbox inv-empty__icon"></i>
+                <p>No se encontraron artículos</p>
+                <button pButton class="inv-btn-primary" label="Agregar el primero" icon="pi pi-plus" (click)="openNew()"></button>
+            </div>
+        } @else {
+            <div class="inv-table-wrapper">
+                <table class="inv-table">
+                    <thead>
+                        <tr>
+                            <th>NOMBRE DEL ARTÍCULO</th>
+                            <th>TIPO</th>
+                            <th>COMPLEJIDAD</th>
+                            <th>STOCK</th>
+                            <th>ESTADO</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (art of articulosFiltrados(); track art.id) {
+                            <tr class="inv-table__row">
+                                <!-- Avatar + Nombre -->
+                                <td class="inv-table__cell-name">
+                                    <div class="inv-avatar" [style.background]="getAvatarColor(art.nombre)">
+                                        {{ getAvatarLetter(art.nombre) }}
+                                    </div>
+                                    <div class="inv-name-group">
+                                        <span class="inv-name-primary">{{ art.nombre }}</span>
+                                        @if (art.categorias.length) {
+                                            <span class="inv-name-secondary">
+                                                {{ art.categorias[0].nombre }}
+                                                @if (art.categorias.length > 1) { · #{{ art.id }} }
+                                            </span>
+                                        } @else {
+                                            <span class="inv-name-secondary">#{{ art.id }}</span>
+                                        }
+                                    </div>
+                                </td>
+
+                                <!-- Tipo badge -->
+                                <td>
+                                    <span class="inv-badge" [class]="tipoClass(art.tipoArticulo)">
+                                        {{ tipoLabel(art.tipoArticulo) }}
+                                    </span>
+                                </td>
+
+                                <!-- Complejidad dots -->
+                                <td>
+                                    <div class="inv-dots">
+                                        @for (dot of complejidadDots(art.nivelComplejidad); track $index) {
+                                            <span class="inv-dot" [class.inv-dot--filled]="dot === 1"></span>
+                                        }
+                                    </div>
+                                </td>
+
+                                <!-- Stock -->
+                                <td class="inv-table__stock">
+                                    <span class="inv-stock-num">{{ art.stockTotal ?? 0 }}</span>
+                                    <span class="inv-stock-label">uds</span>
+                                </td>
+
+                                <!-- Estado -->
+                                <td>
+                                    <p-tag
+                                        [value]="estadoLabel(art.estado)"
+                                        [severity]="estadoSeverity(art.estado)"
+                                    />
+                                </td>
+
+                                <!-- Actions -->
+                                <td class="inv-table__actions">
+                                    <button class="inv-icon-btn" pTooltip="Editar" tooltipPosition="top"
+                                            (click)="editArticulo(art)">
+                                        <i class="pi pi-pencil"></i>
+                                    </button>
+                                    <button class="inv-icon-btn inv-icon-btn--danger" pTooltip="Eliminar" tooltipPosition="top"
+                                            (click)="confirmDelete(art)">
+                                        <i class="pi pi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <!-- ─── Stats Footer ─────────────────────────────────────────────── -->
+        <div class="inv-stats-bar">
+            <div class="inv-stat">
+                <i class="pi pi-box inv-stat__icon inv-stat__icon--pink"></i>
+                <div>
+                    <span class="inv-stat__label">TOTAL ARTÍCULOS</span>
+                    <span class="inv-stat__value">{{ totalArticulos() | number }}</span>
+                </div>
+            </div>
+            <div class="inv-stat">
+                <i class="pi pi-tag inv-stat__icon inv-stat__icon--blue"></i>
+                <div>
+                    <span class="inv-stat__label">STOCK BAJO</span>
+                    <span class="inv-stat__value" [class.inv-stat__value--danger]="stockBajoCount() > 0">
+                        {{ stockBajoCount() }}
+                    </span>
+                </div>
+            </div>
+            <div class="inv-stat">
+                <i class="pi pi-wrench inv-stat__icon inv-stat__icon--amber"></i>
+                <div>
+                    <span class="inv-stat__label">EN MANTENIMIENTO</span>
+                    <span class="inv-stat__value">{{ mantenimientoCount() }}</span>
+                </div>
+            </div>
+            <div class="inv-stat">
+                <i class="pi pi-dollar inv-stat__icon inv-stat__icon--green"></i>
+                <div>
+                    <span class="inv-stat__label">VALOR STOCK</span>
+                    <span class="inv-stat__value">{{ valorTotalStock() | currency:'Bs':'symbol':'1.0-0' }}</span>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /inv-table-section -->
+</div><!-- /inv-page -->

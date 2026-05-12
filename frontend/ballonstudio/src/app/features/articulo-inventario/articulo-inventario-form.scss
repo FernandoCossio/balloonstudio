@@ -1,0 +1,641 @@
+// ─── Page ────────────────────────────────────────────────────────────────────
+.form-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    min-height: 100vh;
+}
+
+// ─── Breadcrumb ──────────────────────────────────────────────────────────────
+.form-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-color-secondary);
+
+    &__link {
+        color: #c2185b;
+        cursor: pointer;
+        font-weight: 500;
+        &:hover { text-decoration: underline; }
+    }
+
+    &__sep { font-size: 0.65rem; }
+}
+
+// ─── Title ───────────────────────────────────────────────────────────────────
+.form-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
+}
+
+// ─── Stepper ─────────────────────────────────────────────────────────────────
+.form-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+}
+
+.form-stepper__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+
+    &.done .form-stepper__circle {
+        background: #c2185b;
+        color: #fff;
+        border-color: #c2185b;
+    }
+
+    &.active .form-stepper__circle {
+        background: #c2185b;
+        color: #fff;
+        border-color: #c2185b;
+        box-shadow: 0 0 0 4px rgba(194,24,91,0.15);
+    }
+
+    &.active .form-stepper__label { color: #c2185b; font-weight: 700; }
+}
+
+.form-stepper__circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--surface-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-color-secondary);
+    background: var(--surface-card);
+    transition: all 0.3s;
+}
+
+.form-stepper__label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.form-stepper__line {
+    flex: 1;
+    height: 2px;
+    background: var(--surface-border);
+    margin: 0 0.5rem;
+    margin-bottom: 1.2rem; // align with circle center
+    transition: background 0.3s;
+
+    &.done { background: #c2185b; }
+}
+
+// ─── Form Card ───────────────────────────────────────────────────────────────
+.form-card {
+    background: var(--surface-card);
+    border-radius: 16px;
+    border: 1px solid var(--surface-border);
+    padding: 2rem;
+    flex: 1;
+
+    &__section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin: 0 0 0.25rem;
+    }
+
+    &__section-sub {
+        font-size: 0.875rem;
+        color: var(--text-color-secondary);
+        margin: 0 0 1.5rem;
+    }
+}
+
+// ─── Form Fields ─────────────────────────────────────────────────────────────
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+
+    @media (max-width: 600px) { grid-template-columns: 1fr; }
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.6rem 0.85rem;
+    border-radius: 8px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface-ground);
+    color: var(--text-color);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+
+    &:focus { border-color: #c2185b; }
+    &::placeholder { color: var(--text-color-secondary); }
+}
+
+.form-select { width: 100%; border-radius: 8px !important; }
+
+.form-textarea {
+    width: 100%;
+    padding: 0.6rem 0.85rem;
+    border-radius: 8px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface-ground);
+    color: var(--text-color);
+    font-size: 0.9rem;
+    resize: vertical;
+    min-height: 100px;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.2s;
+
+    &:focus { border-color: #c2185b; }
+    &::placeholder { color: var(--text-color-secondary); }
+}
+
+.form-hint {
+    font-size: 0.72rem;
+    color: var(--text-color-secondary);
+}
+
+.form-error {
+    font-size: 0.72rem;
+    color: #e53935;
+}
+
+:host ::ng-deep .form-inputnumber .p-inputnumber-input,
+:host ::ng-deep .form-inputnumber-sm .p-inputnumber-input {
+    border-radius: 8px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface-ground);
+    width: 100%;
+    &:focus { border-color: #c2185b; box-shadow: none; }
+}
+
+:host ::ng-deep .form-inputnumber { width: 100%; }
+:host ::ng-deep .form-inputnumber-sm { width: 90px; }
+
+// ─── Tipo Cards ──────────────────────────────────────────────────────────────
+.tipo-cards {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.tipo-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.25rem 2rem;
+    border-radius: 12px;
+    border: 2px solid var(--surface-border);
+    background: var(--surface-card);
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 130px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+
+    &:hover { border-color: #c2185b; color: #c2185b; }
+
+    &--active {
+        border-color: #c2185b;
+        background: #fce4ec;
+        color: #c2185b;
+        font-weight: 700;
+    }
+
+    &__icon { font-size: 1.5rem; }
+}
+
+// ─── Complejidad Options ─────────────────────────────────────────────────────
+.complejidad-options {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.complejidad-opt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.85rem 1.5rem;
+    border-radius: 10px;
+    border: 2px solid var(--surface-border);
+    background: var(--surface-card);
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+    font-weight: 500;
+    transition: all 0.2s;
+    min-width: 90px;
+
+    &:hover { border-color: #c2185b; }
+
+    &--active {
+        border-color: #c2185b;
+        background: #fce4ec;
+        color: #c2185b;
+        font-weight: 700;
+    }
+
+    &__icon { font-size: 1.2rem; }
+}
+
+// ─── Step 2 Layout ───────────────────────────────────────────────────────────
+.form-step2-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 1.5rem;
+
+    @media (max-width: 768px) { grid-template-columns: 1fr; }
+}
+
+.form-step2-main { display: flex; flex-direction: column; gap: 1rem; }
+
+.form-section-card {
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+
+    &__header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--text-color);
+
+        i { color: #c2185b; }
+    }
+}
+
+// ─── Input with suffix ───────────────────────────────────────────────────────
+.input-with-suffix {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &--sm { justify-content: flex-end; }
+}
+
+// ─── Icon Field Support (PrimeNG Native) ─────────────────────────────────────
+:host ::ng-deep {
+    p-iconfield {
+        width: 100%;
+        display: block;
+    }
+
+    p-inputicon {
+        color: var(--text-color-secondary);
+        font-size: 0.9rem;
+    }
+
+    // Adjust p-inputnumber inside p-iconfield
+    p-iconfield p-inputnumber .p-inputnumber-input {
+        padding-left: 2.5rem !important;
+    }
+}
+
+.input-suffix {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+// ─── Tiempo Row ──────────────────────────────────────────────────────────────
+.tiempo-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--surface-border);
+    gap: 1rem;
+
+    &:last-child { border-bottom: none; }
+
+    &__info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: #c2185b;
+
+        > div { display: flex; flex-direction: column; }
+    }
+
+    &__label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    &__sub {
+        font-size: 0.72rem;
+        color: var(--text-color-secondary);
+    }
+}
+
+// ─── Pro Tip ─────────────────────────────────────────────────────────────────
+.pro-tip {
+    background: #e3f2fd;
+    border: 1px solid #bbdefb;
+    border-radius: 12px;
+    padding: 1.25rem;
+
+    &__icon { font-size: 1.5rem; color: #1565c0; display: block; margin-bottom: 0.5rem; }
+
+    h4 { font-size: 0.95rem; font-weight: 700; color: #1565c0; margin: 0 0 0.5rem; }
+    p  { font-size: 0.8rem; color: #1976d2; margin: 0 0 0.75rem; line-height: 1.5; }
+
+    &__tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    &__tag {
+        font-size: 0.62rem;
+        font-weight: 700;
+        background: #1565c0;
+        color: #fff;
+        padding: 2px 8px;
+        border-radius: 4px;
+        letter-spacing: 0.5px;
+    }
+}
+
+// ─── Reuse Toggle ────────────────────────────────────────────────────────────
+.reuse-toggle-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.5rem;
+
+    &__left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+
+        > i { font-size: 1.25rem; color: #c2185b; }
+
+        > div { display: flex; flex-direction: column; }
+    }
+
+    &__title {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--text-color);
+    }
+
+    &__sub {
+        font-size: 0.75rem;
+        color: var(--text-color-secondary);
+    }
+}
+
+// ─── Finance Summary ─────────────────────────────────────────────────────────
+.finance-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1.5rem;
+
+    @media (max-width: 500px) { grid-template-columns: 1fr; }
+
+    &__card {
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+
+        &--blue { background: #e3f2fd; border: 1px solid #bbdefb; }
+        &--pink { background: #fce4ec; border: 1px solid #f48fb1; }
+    }
+
+    &__label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        color: var(--text-color-secondary);
+    }
+
+    &__value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text-color);
+    }
+}
+
+.mt-1 { margin-top: 0.5rem !important; }
+
+// ─── Review ──────────────────────────────────────────────────────────────────
+.review-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 1.5rem;
+
+    @media (max-width: 768px) { grid-template-columns: 1fr; }
+}
+
+.review-main { display: flex; flex-direction: column; gap: 1rem; }
+
+.review-section {
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+
+        > div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-color);
+
+            i { color: #c2185b; }
+        }
+    }
+}
+
+.review-edit-btn {
+    background: none;
+    border: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #c2185b;
+    cursor: pointer;
+    padding: 0;
+    transition: opacity 0.15s;
+    &:hover { opacity: 0.7; }
+}
+
+.review-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+
+    @media (max-width: 500px) { grid-template-columns: 1fr; }
+}
+
+.review-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+
+    &__label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        color: var(--text-color-secondary);
+    }
+
+    &__value {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-color);
+
+        &--highlight { color: #1e88e5; }
+        &--price     { color: #c2185b; font-weight: 800; font-size: 1rem; }
+        &--desc      { font-weight: 400; font-size: 0.875rem; }
+    }
+
+    &.mt-1 { grid-column: 1 / -1; margin-top: 0.5rem; }
+}
+
+// ─── Review Sidebar ───────────────────────────────────────────────────────────
+.review-summary-card {
+    background: var(--surface-ground);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    position: sticky;
+    top: 1rem;
+
+    h4 { font-size: 0.95rem; font-weight: 700; color: var(--text-color); margin: 0 0 0.25rem; }
+    p  { font-size: 0.8rem; color: var(--text-color-secondary); margin: 0 0 1rem; line-height: 1.5; }
+}
+
+.review-checklist { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.25rem; }
+
+.review-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+
+    i { color: var(--surface-border); }
+
+    &--ok {
+        color: var(--text-color);
+        i { color: #10b981; }
+    }
+}
+
+// ─── Form Buttons ─────────────────────────────────────────────────────────────
+.form-btn-publish {
+    width: 100%;
+    background: #c2185b !important;
+    border-color: #c2185b !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    border-radius: 8px !important;
+    margin-bottom: 0.5rem;
+    justify-content: center;
+    &:hover { background: #ad1457 !important; border-color: #ad1457 !important; }
+}
+
+.form-btn-back-outline {
+    width: 100%;
+    background: transparent !important;
+    border: 1px solid var(--surface-border) !important;
+    color: var(--text-color) !important;
+    border-radius: 8px !important;
+    justify-content: center;
+}
+
+// ─── Footer ──────────────────────────────────────────────────────────────────
+.form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+
+    &__right {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+    }
+}
+
+.form-btn-cancel {
+    background: transparent !important;
+    border: 1px solid var(--surface-border) !important;
+    color: var(--text-color-secondary) !important;
+    border-radius: 8px !important;
+}
+
+.form-btn-back {
+    background: transparent !important;
+    border: 1px solid var(--surface-border) !important;
+    color: var(--text-color) !important;
+    border-radius: 8px !important;
+}
+
+.form-btn-draft {
+    background: transparent !important;
+    border: 1px solid #c2185b !important;
+    color: #c2185b !important;
+    border-radius: 8px !important;
+    &:hover { background: #fce4ec !important; }
+}
+
+.form-btn-next {
+    background: #c2185b !important;
+    border-color: #c2185b !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    border-radius: 8px !important;
+    &:hover { background: #ad1457 !important; border-color: #ad1457 !important; }
+}

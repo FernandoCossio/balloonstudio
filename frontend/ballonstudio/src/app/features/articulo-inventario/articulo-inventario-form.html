@@ -1,0 +1,456 @@
+<p-toast />
+
+<div class="form-page">
+
+    <!-- ─── Breadcrumb ──────────────────────────────────────────────────────── -->
+    <div class="form-breadcrumb">
+        <span class="form-breadcrumb__link" (click)="cancel()">Inventario</span>
+        <i class="pi pi-chevron-right form-breadcrumb__sep"></i>
+        <span>{{ isEdit() ? 'Editar Artículo' : 'Nuevo Artículo' }}</span>
+    </div>
+
+    <!-- ─── Page Title ──────────────────────────────────────────────────────── -->
+    <h1 class="form-title">{{ isEdit() ? 'Editar Artículo' : 'Nuevo Artículo (' + step() + '/4) — ' + steps[step()-1].label }}</h1>
+
+    <!-- ─── Stepper ─────────────────────────────────────────────────────────── -->
+    <div class="form-stepper">
+        @for (s of steps; track s.num) {
+            <div class="form-stepper__item" [class.done]="step() > s.num" [class.active]="step() === s.num"
+                 (click)="goToStep(s.num)">
+                <div class="form-stepper__circle">
+                    @if (step() > s.num) {
+                        <i class="pi pi-check"></i>
+                    } @else {
+                        {{ s.num }}
+                    }
+                </div>
+                <span class="form-stepper__label">{{ s.label }}</span>
+            </div>
+            @if (s.num < 4) {
+                <div class="form-stepper__line" [class.done]="step() > s.num"></div>
+            }
+        }
+    </div>
+
+    <!-- ─── Form Card ───────────────────────────────────────────────────────── -->
+    <div class="form-card" [formGroup]="form">
+
+        <!-- ══════════════════════════════════════════════════════════════════ -->
+        <!-- STEP 1 — Información General                                       -->
+        <!-- ══════════════════════════════════════════════════════════════════ -->
+        @if (step() === 1) {
+            <div formGroupName="step1">
+                <h2 class="form-card__section-title">Información General</h2>
+                <p class="form-card__section-sub">Define los aspectos básicos del artículo en tu catálogo.</p>
+
+                <div class="form-grid-2">
+                    <!-- Nombre -->
+                    <div class="form-field">
+                        <label class="form-label" for="nombre">Nombre del Artículo *</label>
+                        <input id="nombre" pInputText formControlName="nombre" class="form-input"
+                               placeholder="Ej. Arco de Globos Orgánico Pastel" />
+                        @if (fieldInvalid('step1', 'nombre')) {
+                            <span class="form-error">El nombre es obligatorio (mín. 3 caracteres)</span>
+                        }
+                    </div>
+
+                    <!-- Estado -->
+                    <div class="form-field">
+                        <label class="form-label" for="estado">Estado</label>
+                        <p-select id="estado" formControlName="estado" [options]="estadoOptions"
+                                  optionLabel="label" optionValue="value"
+                                  styleClass="form-select" />
+                    </div>
+                </div>
+
+                <!-- Descripción -->
+                <div class="form-field">
+                    <label class="form-label" for="descripcion">Descripción</label>
+                    <textarea pTextarea id="descripcion" formControlName="descripcion"
+                              class="form-textarea" rows="4"
+                              placeholder="Describe los materiales, el estilo y el propósito del artículo..."></textarea>
+                </div>
+
+                <!-- Tipo de Artículo -->
+                <div class="form-field">
+                    <label class="form-label">Tipo de Artículo</label>
+                    <div class="tipo-cards">
+                        <div class="tipo-card" [class.tipo-card--active]="tipoSeleccionado() === 'CONSUMIBLE'"
+                             (click)="selectTipo('CONSUMIBLE')">
+                            <i class="pi pi-box tipo-card__icon"></i>
+                            <span>Consumible</span>
+                        </div>
+                        <div class="tipo-card" [class.tipo-card--active]="tipoSeleccionado() === 'REUTILIZABLE'"
+                             (click)="selectTipo('REUTILIZABLE')">
+                            <i class="pi pi-refresh tipo-card__icon"></i>
+                            <span>Reutilizable</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nivel de Complejidad -->
+                <div class="form-field">
+                    <label class="form-label">Nivel de Complejidad</label>
+                    <div class="complejidad-options">
+                        @for (opt of complejidadOptions; track opt.value) {
+                            <div class="complejidad-opt"
+                                 [class.complejidad-opt--active]="complejidadSeleccionada() === opt.value"
+                                 (click)="selectComplejidad(opt.value)">
+                                <i [class]="opt.icon + ' complejidad-opt__icon'"></i>
+                                <span>{{ opt.label }}</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- ══════════════════════════════════════════════════════════════════ -->
+        <!-- STEP 2 — Datos Logísticos                                          -->
+        <!-- ══════════════════════════════════════════════════════════════════ -->
+        @if (step() === 2) {
+            <div formGroupName="step2">
+                <div class="form-step2-layout">
+                    <div class="form-step2-main">
+
+                        <!-- Dimensiones y Stock -->
+                        <div class="form-section-card">
+                            <div class="form-section-card__header">
+                                <i class="pi pi-box"></i>
+                                <h3>Dimensiones y Stock</h3>
+                            </div>
+                            <div class="form-grid-2">
+                                <div class="form-field">
+                                    <label class="form-label">Peso Bruto (kg)</label>
+                                    <div class="input-with-suffix">
+                                        <p-inputnumber formControlName="pesoKg" [minFractionDigits]="2"
+                                                       [min]="0" styleClass="form-inputnumber"
+                                                       placeholder="0.00" />
+                                        <span class="input-suffix">kg</span>
+                                    </div>
+                                </div>
+                                <div class="form-field">
+                                    <label class="form-label">Volumen (m³)</label>
+                                    <div class="input-with-suffix">
+                                        <p-inputnumber formControlName="volumenM3" [minFractionDigits]="3"
+                                                       [min]="0" styleClass="form-inputnumber"
+                                                       placeholder="0.000" />
+                                        <span class="input-suffix">m³</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label">Stock Total Inicial</label>
+                                <p-iconfield>
+                                    <p-inputicon class="pi pi-hashtag" />
+                                    <p-inputnumber formControlName="stockTotal" [min]="0"
+                                                   placeholder="Ej. 10" styleClass="form-inputnumber" />
+                                </p-iconfield>
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label">Costo de Mantenimiento Promedio ({{ currencySymbol }})</label>
+                                <p-iconfield>
+                                    <p-inputicon class="pi pi-wallet" />
+                                    <p-inputnumber formControlName="mantenimientoPromedioBs" [minFractionDigits]="2"
+                                                   [min]="0" styleClass="form-inputnumber"
+                                                   placeholder="0.00" />
+                                </p-iconfield>
+                            </div>
+                        </div>
+
+                        <!-- Tiempos de Operación -->
+                        <div class="form-section-card">
+                            <div class="form-section-card__header">
+                                <i class="pi pi-clock"></i>
+                                <h3>Tiempos de Operación</h3>
+                            </div>
+                            <div class="tiempo-row">
+                                <div class="tiempo-row__info">
+                                    <i class="pi pi-sparkles"></i>
+                                    <div>
+                                        <span class="tiempo-row__label">Tiempo de Armado</span>
+                                        <span class="tiempo-row__sub">Tiempo de instalación en evento</span>
+                                    </div>
+                                </div>
+                                <div class="input-with-suffix input-with-suffix--sm">
+                                    <p-inputnumber formControlName="tiempoArmadoMin" [min]="0"
+                                                   placeholder="0" styleClass="form-inputnumber-sm" />
+                                    <span class="input-suffix">min</span>
+                                </div>
+                            </div>
+                            <div class="tiempo-row">
+                                <div class="tiempo-row__info">
+                                    <i class="pi pi-star"></i>
+                                    <div>
+                                        <span class="tiempo-row__label">Tiempo de Limpieza</span>
+                                        <span class="tiempo-row__sub">Mantenimiento post-evento</span>
+                                    </div>
+                                </div>
+                                <div class="input-with-suffix input-with-suffix--sm">
+                                    <p-inputnumber formControlName="diasLimpiezaPosteriores" [min]="0"
+                                                   placeholder="0" styleClass="form-inputnumber-sm" />
+                                    <span class="input-suffix">días</span>
+                                </div>
+                            </div>
+                            <div class="tiempo-row">
+                                <div class="tiempo-row__info">
+                                    <i class="pi pi-box"></i>
+                                    <div>
+                                        <span class="tiempo-row__label">Preparación / Empaque</span>
+                                        <span class="tiempo-row__sub">Tiempo de alistamiento</span>
+                                    </div>
+                                </div>
+                                <div class="input-with-suffix input-with-suffix--sm">
+                                    <p-inputnumber formControlName="diasPreparacionPrevios" [min]="0"
+                                                   placeholder="0" styleClass="form-inputnumber-sm" />
+                                    <span class="input-suffix">días</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Pro Tip Sidebar -->
+                    <div class="form-step2-sidebar">
+                        <div class="pro-tip">
+                            <i class="pi pi-lightbulb pro-tip__icon"></i>
+                            <h4>Consejo Pro</h4>
+                            <p>Calcula el volumen considerando el empaque final de transporte, no solo el
+                            producto inflado. Esto optimizará las rutas de entrega.</p>
+                            <div class="pro-tip__tags">
+                                <span class="pro-tip__tag">OPTIMIZACIÓN</span>
+                                <span class="pro-tip__tag">EFICIENCIA</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- ══════════════════════════════════════════════════════════════════ -->
+        <!-- STEP 3 — Finanzas                                                  -->
+        <!-- ══════════════════════════════════════════════════════════════════ -->
+        @if (step() === 3) {
+            <div formGroupName="step3">
+                <h2 class="form-card__section-title">Datos Financieros</h2>
+                <p class="form-card__section-sub">Define la estructura de costos y retorno de inversión para este artículo.</p>
+
+                <div class="form-grid-2">
+                    <div class="form-field">
+                        <label class="form-label">Costo de Adquisición ({{ currencySymbol }})</label>
+                        <p-inputnumber formControlName="costoAdquisicion" [minFractionDigits]="2"
+                                       [min]="0" styleClass="form-inputnumber"
+                                       [prefix]="currencySymbol + ' '" placeholder="0.00" />
+                        <span class="form-hint">Precio de compra unitario.</span>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">Margen de Beneficio (%)</label>
+                        <div class="input-with-suffix">
+                            <p-inputnumber formControlName="porcentajeGanancia" [min]="0" [max]="100"
+                                           styleClass="form-inputnumber" placeholder="Ej. 30" />
+                            <span class="input-suffix">%</span>
+                        </div>
+                        <span class="form-hint">Porcentaje sugerido para la venta/renta.</span>
+                    </div>
+                </div>
+
+                <!-- Toggle Reutilizable -->
+                <div class="reuse-toggle-card">
+                    <div class="reuse-toggle-card__left">
+                        <i class="pi pi-refresh"></i>
+                        <div>
+                            <span class="reuse-toggle-card__title">¿Es un artículo reutilizable?</span>
+                            <span class="reuse-toggle-card__sub">Habilita esta opción para estructuras, tanques o decoraciones permanentes.</span>
+                        </div>
+                    </div>
+                    <p-toggleswitch [(ngModel)]="esReutilizable" [ngModelOptions]="{standalone: true}"
+                                    (onChange)="esReutilizable.set($event.checked)" />
+                </div>
+
+                @if (esReutilizable()) {
+                    <div class="form-grid-2 mt-1">
+                        <div class="form-field">
+                            <label class="form-label">Vida Útil (Usos)</label>
+                            <p-inputnumber formControlName="vidaUtilUsos" [min]="0"
+                                           styleClass="form-inputnumber" placeholder="Ej. 50" />
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Valor Residual ({{ currencySymbol }})</label>
+                            <p-inputnumber formControlName="valorResidual" [minFractionDigits]="2"
+                                           [min]="0" styleClass="form-inputnumber"
+                                           [prefix]="currencySymbol + ' '" placeholder="0.00" />
+                            <span class="form-hint">Valor tras completar su vida útil.</span>
+                        </div>
+                    </div>
+                }
+
+                <!-- Summary Cards -->
+                <!-- <div class="finance-summary">
+                    <div class="finance-summary__card finance-summary__card--blue">
+                        <span class="finance-summary__label">PRECIO SUGERIDO</span>
+                        <span class="finance-summary__value">{{ precioSugerido() | currency:currencyCode:'symbol':'1.2-2' }}</span>
+                    </div>
+                    <div class="finance-summary__card finance-summary__card--pink">
+                        <span class="finance-summary__label">ROI ESTIMADO</span>
+                        <span class="finance-summary__value">{{ roiUsos() }}</span>
+                    </div>
+                </div> -->
+            </div>
+        }
+
+        <!-- ══════════════════════════════════════════════════════════════════ -->
+        <!-- STEP 4 — Revisión                                                  -->
+        <!-- ══════════════════════════════════════════════════════════════════ -->
+        @if (step() === 4) {
+            <div class="review-layout">
+                <div class="review-main">
+
+                    <!-- Info General -->
+                    <div class="review-section">
+                        <div class="review-section__header">
+                            <div>
+                                <i class="pi pi-info-circle"></i>
+                                <h3>Información General</h3>
+                            </div>
+                            <button class="review-edit-btn" (click)="goToStep(1)">Editar</button>
+                        </div>
+                        <div class="review-grid">
+                            <div class="review-field">
+                                <span class="review-field__label">NOMBRE</span>
+                                <span class="review-field__value">{{ s1.nombre || '—' }}</span>
+                            </div>
+                            <div class="review-field">
+                                <span class="review-field__label">TIPO</span>
+                                <span class="review-field__value">{{ tipoSeleccionado() === 'CONSUMIBLE' ? 'Consumible' : 'Reutilizable' }}</span>
+                            </div>
+                            <div class="review-field">
+                                <span class="review-field__label">COMPLEJIDAD</span>
+                                <span class="review-field__value">{{ complejidadSeleccionada() }}</span>
+                            </div>
+                            <div class="review-field">
+                                <span class="review-field__label">ESTADO</span>
+                                <span class="review-field__value">{{ s1.estado }}</span>
+                            </div>
+                        </div>
+                        @if (s1.descripcion) {
+                            <div class="review-field mt-1">
+                                <span class="review-field__label">DESCRIPCIÓN</span>
+                                <span class="review-field__value review-field__value--desc">{{ s1.descripcion }}</span>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Logística y Stock -->
+                    <div class="review-section">
+                        <div class="review-section__header">
+                            <div>
+                                <i class="pi pi-box"></i>
+                                <h3>Logística y Stock</h3>
+                            </div>
+                            <button class="review-edit-btn" (click)="goToStep(2)">Editar</button>
+                        </div>
+                        <div class="review-grid">
+                            <div class="review-field">
+                                <span class="review-field__label">DIMENSIONES</span>
+                                <span class="review-field__value">{{ s2.pesoKg }} kg · {{ s2.volumenM3 }} m³</span>
+                            </div>
+                            <div class="review-field">
+                                <span class="review-field__label">STOCK INICIAL</span>
+                                <span class="review-field__value review-field__value--highlight">{{ s2.stockTotal }} Unidades</span>
+                            </div>
+                            <div class="review-field">
+                                <span class="review-field__label">TIEMPO ARMADO</span>
+                                <span class="review-field__value">{{ s2.tiempoArmadoMin }} min</span>
+                            </div>
+                            <div class="review-field">
+                                <span class="review-field__label">LIMPIEZA</span>
+                                <span class="review-field__value">{{ s2.diasLimpiezaPosteriores }} días</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Finanzas -->
+                    <div class="review-section">
+                        <div class="review-section__header">
+                            <div>
+                                <i class="pi pi-dollar"></i>
+                                <h3>Finanzas</h3>
+                            </div>
+                            <button class="review-edit-btn" (click)="goToStep(3)">Editar</button>
+                        </div>
+                        <div class="review-grid">
+                            <div class="review-field">
+                                <span id="step3.costoAdquisicion" class="review-field__label">COSTO</span>
+                                <span class="review-field__value">{{ s3.costoAdquisicion | currency:currencyCode:'symbol':'1.2-2' }}</span>
+                            </div>
+                            <div class="review-field">
+                                <span id="step3.porcentajeGanancia" class="review-field__label">MARGEN</span>
+                                <span class="review-field__value review-field__value--highlight">{{ s3.porcentajeGanancia }}%</span>
+                            </div>
+                            <!-- <div class="review-field">
+                                <span class="review-field__label">PRECIO SUGERIDO</span>
+                                <span class="review-field__value review-field__value--price">{{ precioSugerido() | currency:currencyCode:'symbol':'1.2-2' }}</span>
+                            </div> -->
+                            @if (esReutilizable()) {
+                                <div class="review-field">
+                                    <span class="review-field__label">VALOR RESIDUAL</span>
+                                    <span class="review-field__value">{{ s3.valorResidual | currency:currencyCode:'symbol':'1.2-2' }}</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Resumen sidebar -->
+                <div class="review-sidebar">
+                    <div class="review-summary-card">
+                        <h4>Resumen Final</h4>
+                        <p>Verifica que toda la información sea correcta antes de publicar en el catálogo.</p>
+                        <div class="review-checklist">
+                            <div class="review-check" [class.review-check--ok]="s1.nombre?.length >= 3">
+                                <i class="pi" [class.pi-check-circle]="s1.nombre?.length >= 3" [class.pi-circle]="!s1.nombre?.length"></i>
+                                Información general completa
+                            </div>
+                            <div class="review-check" [class.review-check--ok]="s2.stockTotal >= 0">
+                                <i class="pi pi-check-circle"></i>
+                                Logística configurada
+                            </div>
+                            <div class="review-check" [class.review-check--ok]="s3.costoAdquisicion >= 0">
+                                <i class="pi pi-check-circle"></i>
+                                Finanzas definidas
+                            </div>
+                        </div>
+                        <button pButton class="form-btn-publish" [loading]="saving()" (click)="saveArticulo()">
+                            <i class="pi pi-send"></i>
+                            {{ isEdit() ? 'Guardar Cambios' : 'Finalizar y Publicar' }}
+                        </button>
+                        <button pButton class="form-btn-back-outline" (click)="prev()">Anterior</button>
+                    </div>
+                </div>
+
+            </div>
+        }
+
+    </div><!-- /form-card -->
+
+    <!-- ─── Footer Buttons ──────────────────────────────────────────────────── -->
+    @if (step() < 4) {
+        <div class="form-footer">
+            @if (step() > 1) {
+                <button pButton class="form-btn-back" icon="pi pi-arrow-left" label="Anterior" (click)="prev()"></button>
+            } @else {
+                <button pButton class="form-btn-cancel" label="Cancelar" (click)="cancel()"></button>
+            }
+            <div class="form-footer__right">
+                @if (step() < 3) {
+                    <button pButton class="form-btn-draft" label="Guardar Borrador" icon="pi pi-save" (click)="saveArticulo()"></button>
+                }
+                <button pButton class="form-btn-next" icon="pi pi-arrow-right" iconPos="right"
+                        [label]="step() === 3 ? 'Ver Revisión' : 'Continuar'"
+                        (click)="next()"></button>
+            </div>
+        </div>
+    }
+
+</div><!-- /form-page -->

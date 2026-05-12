@@ -1,0 +1,233 @@
+:host {
+    display: block;
+}
+
+.bs-login {
+    background: var(--surface-ground);
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    overflow: hidden;
+}
+
+.bs-brand {
+    position: relative;
+    overflow: hidden;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('/images/login-bg.png');
+    background-size: cover;
+    background-position: center;
+    color: rgba(255, 255, 255, 0.96);
+    display: none;
+}
+
+.bs-brand > div {
+    position: relative;
+    z-index: 1;
+}
+
+.bs-brand__inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 0 2rem;
+    text-align: center;
+}
+
+.bs-brand__avatar {
+    width: 8rem;
+    height: 8rem;
+    border-radius: 999px;
+    border: 2px solid rgba(255, 255, 255, 0.55);
+    background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.bs-brand__avatar :where(i) {
+    font-size: 3rem;
+}
+
+.bs-title {
+    color: rgba(255, 255, 255, 0.98);
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 1rem;
+    max-width: 30rem;
+}
+
+.bs-tagline {
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.6;
+    margin: 0;
+    max-width: 34rem;
+    font-size: 1.05rem;
+}
+
+.bs-subtitle {
+    color: var(--text-color-secondary);
+    font-size: 0.95rem;
+}
+
+.bs-form {
+    display: flex;
+    width: 100%;
+    background: var(--surface-0);
+}
+
+.bs-form__outer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 0 1rem;
+}
+
+.bs-form__container {
+    width: 100%;
+    max-width: 460px;
+}
+
+.bs-form__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.bs-form__brand-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    background: var(--primary-color);
+    color: rgba(255, 255, 255, 0.98);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bs-form__brand-text {
+    font-weight: 800;
+    color: var(--text-color);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+}
+
+.bs-form__header {
+    margin-bottom: 1.75rem;
+}
+
+.bs-form__title {
+    color: var(--text-color);
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.bs-form__fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.bs-label {
+    display: block;
+    color: var(--text-color);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.bs-form__field :where(p-inputgroup) {
+    width: 100%;
+}
+
+.bs-form__field input[pInputText] {
+    width: 100%;
+}
+
+.bs-form__terms {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.bs-terms {
+    color: var(--text-color-secondary);
+    line-height: 1.45;
+    cursor: pointer;
+    user-select: none;
+}
+
+.bs-link {
+    color: var(--primary-color);
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+}
+
+.bs-separator {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.25rem 0;
+}
+
+.bs-separator-line {
+    height: 1px;
+    flex: 1;
+    background: var(--surface-border);
+}
+
+.bs-separator-text {
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+    letter-spacing: 0.1em;
+    font-weight: 700;
+}
+
+.bs-form__providers {
+    display: flex;
+    gap: 1rem;
+    justify-content: center; 
+}
+
+.bs-form__providers :where(p-button) {
+    flex: 0 1 auto; 
+}
+
+.bs-form__providers :where(p-button) :where(.p-button) {
+    width: 100%;
+}
+
+.bs-form__footer {
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+.bs-form__footer-muted {
+    color: var(--text-color-secondary);
+}
+
+@media (min-width: 576px) {
+    .bs-form__outer {
+        padding: 0 1.5rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .bs-brand {
+        display: flex;
+        width: 50%;
+        flex: 0 0 50%;
+    }
+
+    .bs-form {
+        width: 50%;
+        flex: 0 0 50%;
+    }
+}

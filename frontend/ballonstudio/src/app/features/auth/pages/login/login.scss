@@ -1,0 +1,230 @@
+:host {
+    display: block;
+}
+
+.bs-login {
+    background: var(--surface-ground);
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    overflow: hidden;
+}
+
+.bs-brand {
+    position: relative;
+    overflow: hidden;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('/images/login-bg.png');
+    background-size: cover;
+    background-position: center;
+    color: rgba(255, 255, 255, 0.96);
+    display: none;
+}
+
+.bs-brand > div {
+    position: relative;
+    z-index: 1;
+}
+
+.bs-brand__inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 0 1.5rem;
+}
+
+.bs-brand__card {
+    /* Fondo más claro y translúcido como en el prototipo */
+    background: rgba(255, 255, 255, 0.12); 
+    backdrop-filter: blur(25px); /* Desenfoque más intenso */
+    -webkit-backdrop-filter: blur(25px);
+    
+    /* Borde más sutil */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 2rem; /* Bordes más redondeados */
+    
+    padding: 3rem 2rem; /* Más aire arriba y abajo */
+    max-width: 26rem; /* Un poco más ancha para el texto largo */
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.bs-logo {
+    width: 4.25rem;
+    height: 4.25rem;
+    border-radius: 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: -1rem;
+    z-index: 2;
+    overflow: hidden;
+}
+
+.bs-logo :where(i) {
+    font-size: 1.75rem;
+}
+
+.bs-title {
+    color: #ffffff; /* Blanco puro */
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.bs-tagline {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+    max-width: 100%; /* Deja que fluya según la card */
+}
+
+.bs-brand__pills {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.bs-pill {
+    padding: 0.6rem 1.2rem;
+    border-radius: 1rem; /* Menos circulares, más rectangulares redondeados */
+    border: none;
+    background: rgba(255, 255, 255, 0.4); /* Gris claro semi-transparente */
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 0.85rem;
+    backdrop-filter: blur(5px);
+}
+
+.bs-subtitle {
+    color: var(--text-color-secondary);
+    font-size: 0.9rem;
+}
+
+.bs-form {
+    display: flex;
+    width: 100%;
+    background: var(--surface-0);
+}
+
+.bs-form__outer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 0 1rem;
+}
+
+.bs-form__container {
+    width: 100%;
+    max-width: 420px;
+}
+
+.bs-form__header {
+    margin-bottom: 2rem;
+}
+
+.bs-form__title {
+    color: var(--text-color);
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.bs-form__fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.bs-form__field :where(p-inputgroup) {
+    width: 100%;
+}
+
+.bs-form__field input[pInputText] {
+    width: 100%;
+}
+
+.bs-form__options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.bs-link {
+    color: var(--primary-color);
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+}
+
+.bs-separator {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.25rem 0;
+}
+
+.bs-separator-line {
+    height: 1px;
+    flex: 1;
+    background: var(--surface-border);
+}
+
+.bs-separator-text {
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+    letter-spacing: 0.1em;
+    font-weight: 700;
+}
+
+.bs-form__providers {
+    display: flex;
+    gap: 1rem;
+    justify-content: center; /* Alinea los botones al centro */
+}
+
+.bs-form__providers :where(p-button) {
+    flex: 0 1 auto; 
+}
+
+.bs-form__providers :where(p-button) :where(.p-button) {
+    width: 100%;
+}
+
+.bs-form__footer {
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+.bs-form__footer-muted {
+    color: var(--text-color-secondary);
+}
+
+@media (min-width: 576px) {
+    .bs-form__outer {
+        padding: 0 1.5rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .bs-brand {
+        display: flex;
+        width: 50%;
+        flex: 0 0 50%;
+    }
+
+    .bs-form {
+        width: 50%;
+        flex: 0 0 50%;
+    }
+}

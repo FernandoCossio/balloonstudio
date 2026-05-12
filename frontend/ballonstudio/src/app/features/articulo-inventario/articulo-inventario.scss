@@ -1,0 +1,445 @@
+// ─── Page Layout ────────────────────────────────────────────────────────────
+.inv-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    min-height: 100vh;
+    background: var(--surface-ground);
+}
+
+// ─── Header ─────────────────────────────────────────────────────────────────
+.inv-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    &__title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin: 0 0 0.25rem;
+    }
+
+    &__sub {
+        font-size: 0.875rem;
+        color: var(--text-color-secondary);
+        margin: 0;
+        max-width: 480px;
+    }
+
+    &__actions {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+}
+
+// ─── Header Buttons ──────────────────────────────────────────────────────────
+.inv-btn-primary {
+    background: #c2185b !important;
+    border-color: #c2185b !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    &:hover { background: #ad1457 !important; border-color: #ad1457 !important; }
+}
+
+.inv-btn-filter {
+    border-radius: 8px !important;
+    border-color: var(--surface-border) !important;
+    color: var(--text-color-secondary) !important;
+}
+
+// ─── Alert Cards ────────────────────────────────────────────────────────────
+.inv-alerts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.inv-alert-card {
+    background: var(--surface-card);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    border: 1px solid var(--surface-border);
+    transition: box-shadow 0.2s, transform 0.2s;
+
+    &:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
+
+    &--danger .inv-alert-card__icon { color: #e53935; }
+    &--info .inv-alert-card__icon { color: #1e88e5; }
+    &--neutral .inv-alert-card__icon { color: #f59e0b; }
+
+    &--active { border-color: #ffcdd2; background: #fff5f5; }
+
+    &__icon {
+        font-size: 1.5rem;
+        position: relative;
+        min-width: 2rem;
+        padding-top: 2px;
+
+        &--blue { color: #1565c0 !important; }
+        &--gold { color: #d97706 !important; }
+    }
+
+    &__badge {
+        position: absolute;
+        top: -8px;
+        right: -28px;
+        background: #e53935;
+        color: #fff;
+        font-size: 0.6rem;
+        font-weight: 700;
+        padding: 1px 5px;
+        border-radius: 4px;
+        letter-spacing: 0.5px;
+    }
+
+    &__body {
+        h3 { font-size: 1rem; font-weight: 700; color: var(--text-color); margin: 0 0 0.25rem; }
+        p  { font-size: 0.8rem; color: var(--text-color-secondary); margin: 0 0 0.5rem; }
+    }
+
+    &__link {
+        background: none;
+        border: none;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #e53935;
+        cursor: pointer;
+        padding: 0;
+        letter-spacing: 0.5px;
+        transition: opacity 0.15s;
+        &:hover { opacity: 0.7; }
+        &--blue { color: #1e88e5; }
+    }
+
+    &__value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-color);
+    }
+}
+
+// ─── Table Section ───────────────────────────────────────────────────────────
+.inv-table-section {
+    background: var(--surface-card);
+    border-radius: 14px;
+    border: 1px solid var(--surface-border);
+    overflow: hidden;
+}
+
+// ─── Filters Bar ─────────────────────────────────────────────────────────────
+.inv-filters {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem 0;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.inv-tabs {
+    display: flex;
+    gap: 0.25rem;
+    background: var(--surface-ground);
+    border-radius: 8px;
+    padding: 3px;
+}
+
+.inv-tab {
+    background: none;
+    border: none;
+    padding: 0.35rem 0.9rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &--active {
+        background: var(--surface-card);
+        color: #c2185b;
+        font-weight: 700;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+}
+
+.inv-count {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+}
+
+// ─── Search ──────────────────────────────────────────────────────────────────
+.inv-search {
+    position: relative;
+    padding: 0.75rem 1.5rem;
+
+    &__icon {
+        position: absolute;
+        left: 2.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-color-secondary);
+        font-size: 0.875rem;
+        pointer-events: none;
+    }
+
+    &__input {
+        width: 100%;
+        max-width: 360px;
+        padding: 0.5rem 1rem 0.5rem 2.25rem;
+        border-radius: 8px;
+        border: 1px solid var(--surface-border);
+        background: var(--surface-ground);
+        color: var(--text-color);
+        font-size: 0.875rem;
+        outline: none;
+        transition: border-color 0.2s;
+
+        &::placeholder { color: var(--text-color-secondary); }
+        &:focus { border-color: #c2185b; }
+    }
+}
+
+// ─── Skeleton ────────────────────────────────────────────────────────────────
+.inv-skeleton-list {
+    padding: 0.5rem 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.inv-skeleton-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--surface-border);
+}
+
+// ─── Empty State ─────────────────────────────────────────────────────────────
+.inv-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 3rem 1.5rem;
+    color: var(--text-color-secondary);
+
+    &__icon {
+        font-size: 3rem;
+        opacity: 0.4;
+    }
+
+    p { margin: 0; font-size: 0.9rem; }
+}
+
+// ─── Table ───────────────────────────────────────────────────────────────────
+.inv-table-wrapper {
+    overflow-x: auto;
+}
+
+.inv-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    thead tr {
+        border-bottom: 1px solid var(--surface-border);
+        th {
+            padding: 0.75rem 1.5rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-color-secondary);
+            letter-spacing: 0.5px;
+            text-align: left;
+            white-space: nowrap;
+        }
+    }
+
+    &__row {
+        border-bottom: 1px solid var(--surface-border);
+        transition: background 0.15s;
+
+        &:hover { background: var(--surface-hover); }
+        &:last-child { border-bottom: none; }
+
+        td { padding: 0.85rem 1.5rem; vertical-align: middle; }
+    }
+
+    &__cell-name {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    &__stock {
+        white-space: nowrap;
+    }
+
+    &__actions {
+        display: flex;
+        gap: 0.25rem;
+        justify-content: flex-end;
+    }
+}
+
+// ─── Avatar ──────────────────────────────────────────────────────────────────
+.inv-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.inv-name-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.inv-name-primary {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--text-color);
+}
+
+.inv-name-secondary {
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+}
+
+// ─── Badges ──────────────────────────────────────────────────────────────────
+.inv-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+
+    &.badge-consumible {
+        background: #fce4ec;
+        color: #c2185b;
+        border: 1px solid #f48fb1;
+    }
+
+    &.badge-reutilizable {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid #a5d6a7;
+    }
+}
+
+// ─── Complexity Dots ─────────────────────────────────────────────────────────
+.inv-dots {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.inv-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--surface-border);
+    transition: background 0.15s;
+
+    &--filled { background: #c2185b; }
+}
+
+// ─── Stock ───────────────────────────────────────────────────────────────────
+.inv-stock-num {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.inv-stock-label {
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+    margin-left: 3px;
+}
+
+// ─── Icon Buttons ────────────────────────────────────────────────────────────
+.inv-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: var(--surface-ground);
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    transition: all 0.15s;
+
+    &:hover { background: var(--surface-border); color: var(--text-color); }
+
+    &--danger:hover { background: #ffebee; color: #e53935; }
+}
+
+// ─── Stats Bar ───────────────────────────────────────────────────────────────
+.inv-stats-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border-top: 1px solid var(--surface-border);
+}
+
+.inv-stat {
+    flex: 1;
+    min-width: 140px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-right: 1px solid var(--surface-border);
+
+    &:last-child { border-right: none; }
+
+    > div {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__icon {
+        font-size: 1.25rem;
+        flex-shrink: 0;
+        &--pink  { color: #c2185b; }
+        &--blue  { color: #1e88e5; }
+        &--amber { color: #f59e0b; }
+        &--green { color: #10b981; }
+    }
+
+    &__label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: var(--text-color-secondary);
+        letter-spacing: 0.4px;
+    }
+
+    &__value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-color);
+
+        &--danger { color: #e53935; }
+    }
+}
