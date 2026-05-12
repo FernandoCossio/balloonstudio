@@ -3,8 +3,7 @@ package com.decoraciones.features.auth;
 import com.decoraciones.auth.jwt.JwtService;
 import com.decoraciones.auth.userdetails.UsuarioPrincipal;
 import com.decoraciones.common.response.ApiResponse;
-import com.decoraciones.common.errors.ErrorCode;
-import com.decoraciones.common.errors.RefreshTokenException;
+import com.decoraciones.common.errors.RefreshTokenInvalidoException;
 import com.decoraciones.domain.dtos.auth.LoginRequest;
 import com.decoraciones.domain.dtos.auth.TokenResponse;
 import com.decoraciones.domain.dtos.usuario.RegistrarClienteDto;
@@ -82,7 +81,7 @@ public class AuthController {
 		HttpServletResponse response
 	) {
 		if (rawToken == null || rawToken.isBlank()) {
-			throw new RefreshTokenException(ErrorCode.REFRESH_TOKEN_INVALIDO);
+			throw new RefreshTokenInvalidoException();
 		}
 
 		RefreshTokenService.RotationResult rotation = refreshTokenService.findAndRotate(rawToken);
