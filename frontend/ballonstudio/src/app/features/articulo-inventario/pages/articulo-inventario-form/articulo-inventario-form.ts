@@ -13,7 +13,7 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { MessageService } from 'primeng/api';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { ArticuloInventarioService, ArticuloInventarioRequest, ArticuloInventarioResponse } from './articulo-inventario.service';
+import { ArticuloInventarioRequest, ArticuloInventarioResponse, ArticuloInventarioService } from '../../service/articulo-inventario.service';
 
 // ─── Moneda configurable ─────────────────────────────────────────────────────
 /** Cambia aquí el símbolo que se muestra en inputs y etiquetas de moneda */

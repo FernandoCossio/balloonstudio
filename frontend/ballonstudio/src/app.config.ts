@@ -6,7 +6,7 @@ import { definePreset, updateSurfacePalette } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 import { providePrimeNG } from 'primeng/config';
 import { appRoutes } from './app.routes';
-import { authInterceptor } from './app/features/auth/service/auth.interceptor';
+import { authInterceptor } from './app/features/core/interceptors/auth.interceptor';
 
 type Rgb = { r: number; g: number; b: number };
 

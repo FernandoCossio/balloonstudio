@@ -12,7 +12,7 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
 import { SkeletonModule } from 'primeng/skeleton';
-import { ArticuloInventarioService, ArticuloInventarioResponse } from './articulo-inventario.service';
+import { ArticuloInventarioResponse, ArticuloInventarioService } from '../../service/articulo-inventario.service';
 
 type FilterTab = 'TODOS' | 'CONSUMIBLE' | 'REUTILIZABLE';
 type ComplejidadLevel = 'FACIL' | 'MEDIO' | 'PROFESIONAL';
