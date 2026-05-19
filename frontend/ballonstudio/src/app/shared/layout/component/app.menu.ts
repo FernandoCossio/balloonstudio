@@ -4,8 +4,8 @@ import { NavigationEnd, RouterModule, Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { AppMenuitem } from './app.menuitem';
 import { filter } from 'rxjs/operators';
-import { AuthService } from '../../../features/auth/service/auth.service';
-import { ROLES } from '../../../features/core/constants/role.constant';
+import { AuthService } from '@/app/features/auth/service/auth.service';
+import { ROLES } from '@/app/features/core/constants/role.constant';
 
 @Component({
     selector: 'app-menu',
@@ -36,7 +36,6 @@ export class AppMenu {
     }
 
     private updateMenu() {
-        console.log(this.auth.getRoles())
         if (this.auth.hasRole(ROLES.ADMINISTRADOR)) {
             this.model = this.buildAdminMenu();
             return;

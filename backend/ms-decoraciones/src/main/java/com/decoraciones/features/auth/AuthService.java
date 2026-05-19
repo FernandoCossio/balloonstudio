@@ -28,6 +28,7 @@ import java.util.Arrays;
 public class AuthService {
 
 	private static final long REFRESH_MAX_AGE_SECONDS = Duration.ofDays(7).getSeconds();
+	private static final long ACCESS_MAX_AGE_SECONDS = Duration.ofMinutes(15).getSeconds();
 
 	private final AuthenticationManager authenticationManager;
 	private final JwtService jwtService;
@@ -35,6 +36,7 @@ public class AuthService {
 	private final RefreshTokenService refreshTokenService;
 	private final boolean refreshCookieSecure;
 	private final String refreshCookiePath;
+	private final String refreshCookieSameSite;
 
 	public AuthService(
 		AuthenticationManager authenticationManager,
@@ -51,6 +53,7 @@ public class AuthService {
 
 		boolean isDev = Arrays.asList(environment.getActiveProfiles()).contains("dev");
 		this.refreshCookieSecure = !isDev;
+		this.refreshCookieSameSite = isDev ? "Lax" : "Strict";
 
 		String normalizedContextPath = contextPath == null ? "" : contextPath.trim();
 		if (!normalizedContextPath.isEmpty() && !normalizedContextPath.startsWith("/")) {
@@ -68,8 +71,9 @@ public class AuthService {
 		String accessToken = jwtService.generateAccessToken(authentication);
 		String rawToken = refreshTokenService.create(principal.getId());
 
-		ResponseCookie cookie = buildRefreshCookie(rawToken, REFRESH_MAX_AGE_SECONDS);
-		return new TokenWithCookie(cookie, new TokenResponse(accessToken));
+		ResponseCookie refreshCookie = buildRefreshCookie(rawToken, REFRESH_MAX_AGE_SECONDS);
+		ResponseCookie accessCookie = buildAccessCookie(accessToken, ACCESS_MAX_AGE_SECONDS);
+		return new TokenWithCookie(refreshCookie, accessCookie, new TokenResponse(accessToken));
 	}
 
 	public TokenWithCookie refresh(String rawToken) {
@@ -78,8 +82,6 @@ public class AuthService {
 		}
 
 		RefreshTokenService.RotationResult rotation = refreshTokenService.findAndRotate(rawToken);
-		ResponseCookie cookie = buildRefreshCookie(rotation.rawToken(), REFRESH_MAX_AGE_SECONDS);
-
 		Usuario usuario = rotation.usuario();
 		UsuarioPrincipal principal = UsuarioPrincipal.from(usuario);
 		Authentication authentication = new UsernamePasswordAuthenticationToken(
@@ -89,15 +91,17 @@ public class AuthService {
 		);
 
 		String accessToken = jwtService.generateAccessToken(authentication);
-		return new TokenWithCookie(cookie, new TokenResponse(accessToken));
+		ResponseCookie refreshCookie = buildRefreshCookie(rotation.rawToken(), REFRESH_MAX_AGE_SECONDS);
+		ResponseCookie accessCookie = buildAccessCookie(accessToken, ACCESS_MAX_AGE_SECONDS);
+		return new TokenWithCookie(refreshCookie, accessCookie, new TokenResponse(accessToken));
 	}
 
-	public ResponseCookie logout(String rawToken) {
+	public ResponseCookie[] logout(String rawToken) {
 		if (rawToken != null && !rawToken.isBlank()) {
 			refreshTokenService.revokeByRawToken(rawToken);
 		}
 
-		return buildClearRefreshCookie();
+		return new ResponseCookie[]{buildClearRefreshCookie(), buildClearAccessCookie()};
 	}
 
 	public ResponseUsuarioDto register(RegistrarClienteDto request) {
@@ -108,7 +112,7 @@ public class AuthService {
 		return ResponseCookie.from("refresh_token", rawToken)
 			.httpOnly(true)
 			.secure(refreshCookieSecure)
-			.sameSite("Strict")
+			.sameSite(refreshCookieSameSite)
 			.path(refreshCookiePath)
 			.maxAge(maxAgeSeconds)
 			.build();
@@ -118,6 +122,20 @@ public class AuthService {
 		return buildRefreshCookie("", 0);
 	}
 
-	public record TokenWithCookie(ResponseCookie refreshCookie, TokenResponse tokenResponse) {
+	private ResponseCookie buildAccessCookie(String accessToken, long maxAgeSeconds) {
+		return ResponseCookie.from("access_token", accessToken)
+			.httpOnly(true)
+			.secure(refreshCookieSecure)
+			.sameSite(refreshCookieSameSite)
+			.path("/")
+			.maxAge(maxAgeSeconds)
+			.build();
+	}
+
+	private ResponseCookie buildClearAccessCookie() {
+		return buildAccessCookie("", 0);
+	}
+
+	public record TokenWithCookie(ResponseCookie refreshCookie, ResponseCookie accessCookie, TokenResponse tokenResponse) {
 	}
 }

@@ -1,6 +1,6 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, finalize, map, tap } from 'rxjs';
+import { Observable, catchError, finalize, map, of, tap } from 'rxjs';
 import type { ApiResponse } from '@/app/shared/interfaces/core/api-response.interface';
 import type { Role } from '@/app/features/core/constants/role.constant';
 import type { ActivarCuentaDto } from '../interface/activar-cuenta-dto.interface';
@@ -33,6 +33,8 @@ export class AuthService {
     private http = inject(HttpClient);
     private readonly API_URL = 'http://localhost:8080/api'; // Base URL para todos los endpoints
 
+    private _payload = signal<JwtPayload | null>(null);
+
     login(credentials: LoginRequest): Observable<TokenResponse> {
         return this.http
             .post<ApiResponse<TokenResponse>>(`${this.API_URL}/auth/login`, credentials, { withCredentials: true })
@@ -40,7 +42,7 @@ export class AuthService {
                 map(res => res.data),
                 tap(token => {
                     if (token?.accessToken) {
-                        localStorage.setItem('access_token', token.accessToken);
+                        this._payload.set(decodeJwtPayload(token.accessToken));
                     }
                 })
             );
@@ -53,7 +55,7 @@ export class AuthService {
                 map(res => res.data),
                 tap(token => {
                     if (token?.accessToken) {
-                        localStorage.setItem('access_token', token.accessToken);
+                        this._payload.set(decodeJwtPayload(token.accessToken));
                     }
                 })
         );
@@ -76,7 +78,7 @@ export class AuthService {
     }
 
     logout(): void {
-        localStorage.removeItem('access_token');
+        this._payload.set(null);
     }
 
     logoutServer(): Observable<void> {
@@ -91,17 +93,11 @@ export class AuthService {
     }
 
     isLoggedIn(): boolean {
-        return !!this.getToken() && !this.isAccessTokenExpired();
-    }
-
-    getToken(): string | null {
-        return localStorage.getItem('access_token');
+        return this._payload() !== null && !this.isAccessTokenExpired();
     }
 
     getAccessTokenPayload(): JwtPayload | null {
-        const token = this.getToken();
-        if (!token) return null;
-        return decodeJwtPayload(token);
+        return this._payload();
     }
 
     getRoles(): AppRole[] {
@@ -123,10 +119,30 @@ export class AuthService {
     }
 
     isAccessTokenExpired(): boolean {
-        const payload = this.getAccessTokenPayload();
-        const exp = payload?.exp;
-        if (!exp) return false;
+        const exp = this._payload()?.exp;
+        if (!exp) return true;
         return Date.now() >= exp * 1000;
+    }
+
+    initFromRefresh(): Observable<TokenResponse> {
+        return this.refresh();
+    }
+
+    initFromSession(): Observable<void> {
+        return this.http
+            .get<ApiResponse<string>>(`${this.API_URL}/auth/me/token`, { withCredentials: true })
+            .pipe(
+                tap(res => {
+                    if (res?.data) {
+                        this._payload.set(decodeJwtPayload(res.data));
+                    }
+                }),
+                map(() => void 0),
+                catchError(() => {
+                    this._payload.set(null);
+                    return of(void 0);
+                })
+            );
     }
 }
 

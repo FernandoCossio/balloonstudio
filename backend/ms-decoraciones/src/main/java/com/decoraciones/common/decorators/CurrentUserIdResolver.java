@@ -35,7 +35,17 @@ public class CurrentUserIdResolver implements HandlerMethodArgumentResolver {
 
 		Object principal = authentication.getPrincipal();
 		if (principal instanceof Jwt jwt) {
-			Long uid = jwt.getClaimAsLong("uid");
+			Object uidClaim = jwt.getClaim("uid");
+			Long uid = null;
+			if (uidClaim instanceof Number n) {
+				uid = n.longValue();
+			} else if (uidClaim instanceof String s) {
+				try {
+					uid = Long.valueOf(s);
+				} catch (NumberFormatException ignored) {
+					uid = null;
+				}
+			}
 			if (uid == null) {
 				log.warn("JWT sin claim 'uid' en @CurrentUserId");
 			}

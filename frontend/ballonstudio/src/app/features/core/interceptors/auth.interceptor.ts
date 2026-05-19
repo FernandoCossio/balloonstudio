@@ -1,40 +1,43 @@
 import {
     HttpInterceptorFn,
-    HttpRequest,
-    HttpHandlerFn,
-    HttpErrorResponse
+    HttpErrorResponse,
+    HttpContext,
+    HttpContextToken
 } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, switchMap, throwError } from 'rxjs';
+import { catchError, finalize, shareReplay, switchMap, throwError } from 'rxjs';
 import { AuthService } from '../../auth/service/auth.service';
 
-let isRefreshing = false;
+const IS_RETRY = new HttpContextToken<boolean>(() => false);
+
+let refreshInFlight: ReturnType<AuthService['refresh']> | null = null;
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
     const authService = inject(AuthService);
     const router = inject(Router);
 
-    const token = authService.getToken();
+    const isAuthRoute =
+        req.url.includes('/auth/refresh') ||
+        req.url.includes('/auth/login') ||
+        req.url.includes('/auth/logout');
 
-    const authReq = token ? addToken(req, token) : req;
+    const credReq = req.clone({ withCredentials: true });
 
-    return next(authReq).pipe(
+    return next(credReq).pipe(
         catchError((error: HttpErrorResponse) => {
-            const isAuthRoute = req.url.includes('/auth/refresh') || req.url.includes('/auth/login');
-
-            if (error.status === 401 && !isAuthRoute && !isRefreshing) {
-                isRefreshing = true;
-
-                return authService.refresh().pipe(
-                    switchMap(token => {
-                        isRefreshing = false;
-                        return next(addToken(req, token.accessToken));
+            if (error.status === 401 && !isAuthRoute && !req.context.get(IS_RETRY)) {
+                return ensureRefresh(authService).pipe(
+                    switchMap(() => {
+                        const retryReq = req.clone({
+                            withCredentials: true,
+                            context: new HttpContext().set(IS_RETRY, true)
+                        });
+                        return next(retryReq);
                     }),
-                    catchError(refreshError => {
-                        isRefreshing = false;
+                    catchError((refreshError) => {
                         authService.logout();
-                        router.navigate(['/login']);
+                        router.navigate(['/auth/login']);
                         return throwError(() => refreshError);
                     })
                 );
@@ -45,8 +48,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     );
 };
 
-function addToken(req: HttpRequest<unknown>, token: string): HttpRequest<unknown> {
-    return req.clone({
-        setHeaders: { Authorization: `Bearer ${token}` }
-    });
+function ensureRefresh(authService: AuthService) {
+    if (!refreshInFlight) {
+        refreshInFlight = authService.refresh().pipe(
+            shareReplay({ bufferSize: 1, refCount: false }),
+            finalize(() => { refreshInFlight = null; })
+        );
+    }
+    return refreshInFlight;
 }

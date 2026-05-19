@@ -5,8 +5,10 @@ import { provideRouter, withEnabledBlockingInitialNavigation, withInMemoryScroll
 import { definePreset, updateSurfacePalette } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 import { providePrimeNG } from 'primeng/config';
+import { catchError, firstValueFrom, of } from 'rxjs';
 import { appRoutes } from './app.routes';
 import { authInterceptor } from './app/features/core/interceptors/auth.interceptor';
+import { AuthService } from './app/features/auth/service/auth.service';
 
 type Rgb = { r: number; g: number; b: number };
 
@@ -120,12 +122,20 @@ function initBalloonStudioTheme(platformId: Object) {
     };
 }
 
+function initAuthSession(platformId: Object, authService: AuthService) {
+    return async () => {
+        if (!isPlatformBrowser(platformId)) return;
+        await firstValueFrom(authService.initFromSession().pipe(catchError(() => of(void 0))));
+    };
+}
+
 export const appConfig: ApplicationConfig = {
     providers: [
         provideRouter(appRoutes, withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }), withEnabledBlockingInitialNavigation()),
         provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
         provideZonelessChangeDetection(),
         { provide: APP_INITIALIZER, multi: true, useFactory: initBalloonStudioTheme, deps: [PLATFORM_ID] },
+        { provide: APP_INITIALIZER, multi: true, useFactory: initAuthSession, deps: [PLATFORM_ID, AuthService] },
         providePrimeNG({ theme: { preset: BalloonStudioPreset, options: { darkModeSelector: '.app-dark' } } })
     ]
 };

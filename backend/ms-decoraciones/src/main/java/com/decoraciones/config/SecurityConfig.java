@@ -1,5 +1,7 @@
 package com.decoraciones.config;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,6 +13,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -34,6 +38,8 @@ public class SecurityConfig {
 					"/auth/register",
 					"/auth/login",
 					"/auth/refresh",
+					"/auth/logout",
+					"/auth-token/**",
 					"/v3/api-docs/**",
 					"/swagger-ui/**",
 					"/swagger-ui.html"
@@ -41,6 +47,7 @@ public class SecurityConfig {
 				.anyRequest().authenticated()
 			)
 			.oauth2ResourceServer(oauth2 -> oauth2
+				.bearerTokenResolver(bearerTokenResolver())
 				.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
 			)
 			.build();
@@ -63,6 +70,43 @@ public class SecurityConfig {
 	}
 
 	@Bean
+	BearerTokenResolver bearerTokenResolver() {
+		DefaultBearerTokenResolver defaultResolver = new DefaultBearerTokenResolver();
+		return request -> {
+			String uri = request.getRequestURI();
+			if (uri != null) {
+				if (uri.endsWith("/auth/login") || uri.endsWith("/auth/register") || uri.endsWith("/auth/refresh") || uri.endsWith("/auth/logout")) {
+					return defaultResolver.resolve(request);
+				}
+				if (uri.endsWith("/api/auth/login") || uri.endsWith("/api/auth/register") || uri.endsWith("/api/auth/refresh") || uri.endsWith("/api/auth/logout")) {
+					return defaultResolver.resolve(request);
+				}
+			}
+
+			String fromCookie = getCookieValue(request, "access_token");
+			if (fromCookie != null && !fromCookie.isBlank() && looksLikeJwt(fromCookie)) {
+				return fromCookie;
+			}
+			return defaultResolver.resolve(request);
+		};
+	}
+
+	private static boolean looksLikeJwt(String token) {
+		String[] parts = token.split("\\.");
+		if (parts.length != 3) return false;
+		return !parts[0].isBlank() && !parts[1].isBlank() && !parts[2].isBlank();
+	}
+
+	private static String getCookieValue(HttpServletRequest request, String name) {
+		Cookie[] cookies = request.getCookies();
+		if (cookies == null) return null;
+		for (Cookie c : cookies) {
+			if (name.equals(c.getName())) return c.getValue();
+		}
+		return null;
+	}
+
+	@Bean
 	AuthenticationManager authenticationManager(
 			AuthenticationConfiguration config) throws Exception {
 		return config.getAuthenticationManager();
@@ -74,7 +118,7 @@ public class SecurityConfig {
 		configuration.setAllowedOrigins(List.of("http://localhost:4200"));
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers"));
-		configuration.setExposedHeaders(List.of("Authorization"));
+		configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
 		configuration.setAllowCredentials(true);
 		configuration.setMaxAge(3600L);
 
