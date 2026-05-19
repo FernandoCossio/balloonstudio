@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, finalize, map, tap } from 'rxjs';
 import type { ApiResponse } from '@/app/shared/interfaces/core/api-response.interface';
+import type { Role } from '@/app/features/core/constants/role.constant';
 import type { ActivarCuentaDto } from '../interface/activar-cuenta-dto.interface';
 import type { LoginRequest } from '../interface/login-request.interface';
 import type { RegistrarClienteDto } from '../interface/registrar-cliente-dto.interface';
@@ -13,6 +14,17 @@ export type { LoginRequest } from '../interface/login-request.interface';
 export type { RegistrarClienteDto } from '../interface/registrar-cliente-dto.interface';
 export type { ResponseUsuarioDto } from '../interface/response-usuario-dto.interface';
 export type { TokenResponse } from '../interface/token-response.interface';
+
+export type AppRole = Role;
+
+export interface JwtPayload {
+    iss?: string;
+    sub?: string;
+    iat?: number;
+    exp?: number;
+    roles?: string[];
+    uid?: number;
+}
 
 @Injectable({
     providedIn: 'root'
@@ -79,10 +91,63 @@ export class AuthService {
     }
 
     isLoggedIn(): boolean {
-        return !!localStorage.getItem('access_token');
+        return !!this.getToken() && !this.isAccessTokenExpired();
     }
 
     getToken(): string | null {
         return localStorage.getItem('access_token');
+    }
+
+    getAccessTokenPayload(): JwtPayload | null {
+        const token = this.getToken();
+        if (!token) return null;
+        return decodeJwtPayload(token);
+    }
+
+    getRoles(): AppRole[] {
+        const payload = this.getAccessTokenPayload();
+        const roles = payload?.roles ?? [];
+        const normalized = roles
+            .map(r => normalizeRole(r))
+            .filter((r): r is AppRole => r !== null);
+        return Array.from(new Set(normalized));
+    }
+
+    hasRole(role: AppRole): boolean {
+        return this.getRoles().includes(role);
+    }
+
+    hasAnyRole(roles: AppRole[]): boolean {
+        const userRoles = new Set(this.getRoles());
+        return roles.some(r => userRoles.has(r));
+    }
+
+    isAccessTokenExpired(): boolean {
+        const payload = this.getAccessTokenPayload();
+        const exp = payload?.exp;
+        if (!exp) return false;
+        return Date.now() >= exp * 1000;
+    }
+}
+
+function normalizeRole(role: string): AppRole | null {
+    const value = role.trim().toLowerCase();
+    if (value === 'role_administrador' || value === 'role_cliente' || value === 'role_empleado') return value as AppRole;
+    return null;
+}
+
+function decodeJwtPayload(token: string): JwtPayload | null {
+    const parts = token.split('.');
+    if (parts.length < 2) return null;
+
+    const payload = parts[1];
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
+
+    try {
+        const json = atob(padded);
+        return JSON.parse(json) as JwtPayload;
+    } catch {
+        return null;
     }
 }

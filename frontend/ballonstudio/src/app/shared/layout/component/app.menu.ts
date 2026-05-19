@@ -1,8 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { NavigationEnd, RouterModule, Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { AppMenuitem } from './app.menuitem';
+import { filter } from 'rxjs/operators';
+import { AuthService } from '../../../features/auth/service/auth.service';
+import { ROLES } from '../../../features/core/constants/role.constant';
 
 @Component({
     selector: 'app-menu',
@@ -21,10 +24,50 @@ import { AppMenuitem } from './app.menuitem';
 export class AppMenu {
     model: MenuItem[] = [];
 
+    private auth = inject(AuthService);
+    private router = inject(Router);
+
     ngOnInit() {
-        this.model = [
+        this.updateMenu();
+
+        this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
+            this.updateMenu();
+        });
+    }
+
+    private updateMenu() {
+        console.log(this.auth.getRoles())
+        if (this.auth.hasRole(ROLES.ADMINISTRADOR)) {
+            this.model = this.buildAdminMenu();
+            return;
+        }
+
+        if (this.auth.hasRole(ROLES.EMPLEADO)) {
+            this.model = this.buildEmpleadoMenu();
+            return;
+        }
+
+        if (this.auth.hasRole(ROLES.CLIENTE)) {
+            this.model = this.buildClienteMenu();
+            return;
+        }
+
+        this.model = this.buildGuestMenu();
+    }
+
+    private buildGuestMenu(): MenuItem[] {
+        return [
             {
                 label: 'Home',
+                items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
+            }
+        ];
+    }
+
+    private buildAdminMenu(): MenuItem[] {
+        return [
+            {
+                label: 'Administrador',
                 items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
             },
             {
@@ -37,7 +80,25 @@ export class AppMenu {
                         routerLink: ['/inventario']
                     }
                 ]
-            },
+            }
+        ];
+    }
+
+    private buildEmpleadoMenu(): MenuItem[] {
+        return [
+            {
+                label: 'Empleado',
+                items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
+            }
+        ];
+    }
+
+    private buildClienteMenu(): MenuItem[] {
+        return [
+            {
+                label: 'Cliente',
+                items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
+            }
         ];
     }
 }
