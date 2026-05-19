@@ -1,5 +1,6 @@
 package com.decoraciones.features.empleado;
 
+import com.decoraciones.common.response.ApiResponse;
 import com.decoraciones.domain.dtos.empleado.EmpleadoRequest;
 import com.decoraciones.domain.dtos.empleado.EmpleadoResponse;
 import com.decoraciones.domain.models.Empleado;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/empleados")
+@RequestMapping("/empleados")
 public class EmpleadoController {
 
     private final EmpleadoService empleadoService;
@@ -20,37 +21,35 @@ public class EmpleadoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<EmpleadoResponse>> findAll() {
-        return ResponseEntity.ok(empleadoService.findAll().stream().map(this::toResponse).toList());
+    public ResponseEntity<ApiResponse<List<EmpleadoResponse>>> findAll() {
+        List<EmpleadoResponse> response = empleadoService.findAll().stream().map(this::toResponse).toList();
+        return ResponseEntity.ok(ApiResponse.success(response, "Empleados obtenidos correctamente"));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EmpleadoResponse> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(toResponse(empleadoService.findById(id)));
+    public ResponseEntity<ApiResponse<EmpleadoResponse>> findById(@PathVariable Long id) {
+        EmpleadoResponse response = toResponse(empleadoService.findById(id));
+        return ResponseEntity.ok(ApiResponse.success(response, "Empleado obtenido correctamente"));
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody EmpleadoRequest request) {
-        try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(empleadoService.create(toEntity(request))));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<EmpleadoResponse>> create(@RequestBody EmpleadoRequest request) {
+        Empleado created = empleadoService.create(toEntity(request));
+        EmpleadoResponse response = toResponse(created);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "Empleado creado correctamente"));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody EmpleadoRequest request) {
-        try {
-            return ResponseEntity.ok(toResponse(empleadoService.update(id, toEntity(request))));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<EmpleadoResponse>> update(@PathVariable Long id, @RequestBody EmpleadoRequest request) {
+        Empleado updated = empleadoService.update(id, toEntity(request));
+        EmpleadoResponse response = toResponse(updated);
+        return ResponseEntity.ok(ApiResponse.success(response, "Empleado actualizado correctamente"));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         empleadoService.delete(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.success(null, "Empleado eliminado correctamente"));
     }
 
     // ─── Mappers ─────────────────────────────────────────────────────────────

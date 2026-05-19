@@ -4,6 +4,7 @@ import com.decoraciones.auth.userdetails.UsuarioPrincipal;
 import com.decoraciones.config.JwtConfig.JwtSettings;
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -31,7 +32,10 @@ public class JwtService {
 
 		List<String> roles = authentication.getAuthorities().stream()
 			.map(GrantedAuthority::getAuthority)
+			.map(JwtService::mapToAppRole)
+			.filter(role -> role != null && !role.isBlank())
 			.distinct()
+			.map(String::trim)
 			.collect(Collectors.toList());
 
 		JwtClaimsSet.Builder claims = JwtClaimsSet.builder()
@@ -50,5 +54,24 @@ public class JwtService {
 
 		return jwtEncoder.encode(JwtEncoderParameters.from(header, claims.build()))
 			.getTokenValue();
+	}
+
+	private static String mapToAppRole(String authority) {
+		if (authority == null) return null;
+
+		String value = authority.trim();
+		if (value.isEmpty()) return null;
+
+		if (value.startsWith("role_")) {
+			return value.toLowerCase(Locale.ROOT);
+		}
+
+		String upper = value.toUpperCase(Locale.ROOT);
+		return switch (upper) {
+			case "ROLE_ADMIN" -> "role_administrador";
+			case "ROLE_CLIENTE" -> "role_cliente";
+			case "ROLE_EMPLEADO" -> "role_empleado";
+			default -> null;
+		};
 	}
 }

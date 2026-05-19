@@ -1,5 +1,6 @@
 package com.decoraciones.features.authtoken;
 
+import com.decoraciones.common.response.ApiResponse;
 import com.decoraciones.domain.dtos.auth.ActivarCuentaDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,36 +17,21 @@ public class AuthTokenController {
     private final AuthTokenService authTokenService;
 
     @GetMapping("/verify/{token}")
-    public ResponseEntity<?> verifyToken(@PathVariable String token) {
-        boolean isValid = authTokenService.verificarToken(token);
-        if (isValid) {
-            return ResponseEntity.ok(Map.of("message", "Token válido"));
-        } else {
-            return ResponseEntity.badRequest().body(Map.of("message", "Token inválido o expirado"));
-        }
+    public ResponseEntity<ApiResponse<Void>> verifyToken(@PathVariable String token) {
+        authTokenService.verificarToken(token);
+        return ResponseEntity.ok(ApiResponse.success(null, "Token válido"));
     }
 
     @PostMapping("/activate")
-    public ResponseEntity<?> activateAccount(@Valid @RequestBody ActivarCuentaDto dto) {
-        try {
-            authTokenService.activarCuenta(dto);
-            return ResponseEntity.ok(Map.of("message", "Cuenta activada correctamente"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
-        }
+    public ResponseEntity<ApiResponse<Void>> activateAccount(@Valid @RequestBody ActivarCuentaDto dto) {
+        authTokenService.activarCuenta(dto);
+        return ResponseEntity.ok(ApiResponse.success(null, "Cuenta activada correctamente"));
     }
 
     @PostMapping("/resend")
-    public ResponseEntity<?> resendEmail(@RequestBody Map<String, String> request) {
+    public ResponseEntity<ApiResponse<Void>> resendEmail(@RequestBody Map<String, String> request) {
         String email = request.get("email");
-        if (email == null || email.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "El email es obligatorio"));
-        }
-        try {
-            authTokenService.reenviarEmailActivacion(email);
-            return ResponseEntity.ok(Map.of("message", "Email de activación reenviado"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
-        }
+        authTokenService.reenviarEmailActivacion(email);
+        return ResponseEntity.ok(ApiResponse.success(null, "Email de activación reenviado"));
     }
 }

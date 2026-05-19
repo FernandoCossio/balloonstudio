@@ -1,7 +1,8 @@
 package com.decoraciones.features.refreshtoken;
 
-import com.decoraciones.common.errors.ErrorCode;
-import com.decoraciones.common.errors.RefreshTokenException;
+import com.decoraciones.common.errors.AppException;
+import com.decoraciones.common.errors.RefreshTokenInvalidoException;
+import com.decoraciones.common.errors.RefreshTokenRobadoException;
 import com.decoraciones.config.JwtConfig.JwtSettings;
 import com.decoraciones.domain.models.RefreshToken;
 import com.decoraciones.domain.models.Usuario;
@@ -55,21 +56,21 @@ public class RefreshTokenService {
 	public RotationResult findAndRotate(String rawToken) {
 		String hashedToken = DigestUtils.sha256Hex(rawToken);
 		RefreshToken stored = refreshTokenRepository.findByToken(hashedToken)
-			.orElseThrow(() -> new RefreshTokenException(ErrorCode.REFRESH_TOKEN_INVALIDO));
+			.orElseThrow(RefreshTokenInvalidoException::new);
 		String newRawToken = rotate(stored);
 		return new RotationResult(newRawToken, stored.getUsuario());
 	}
 
-	@Transactional(noRollbackFor = RefreshTokenException.class)
+	@Transactional(noRollbackFor = AppException.class)
 	public String rotate(RefreshToken current) {
 		if (current.isRevoked()) {
 			refreshTokenRepository.revokeAllByFamily(current.getFamily());
 			refreshTokenRepository.flush();
-			throw new RefreshTokenException(ErrorCode.REFRESH_TOKEN_ROBADO);
+			throw new RefreshTokenRobadoException();
 		}
 
 		if (current.isExpired()) {
-			throw new RefreshTokenException(ErrorCode.REFRESH_TOKEN_INVALIDO);
+			throw new RefreshTokenInvalidoException();
 		}
 
 		current.setRevoked(true);

@@ -1,5 +1,8 @@
 package com.decoraciones.features.empleado;
 
+import com.decoraciones.common.errors.EmpleadoCiDuplicadoException;
+import com.decoraciones.common.errors.EmpleadoEmailDuplicadoException;
+import com.decoraciones.common.errors.EmpleadoNoEncontradoException;
 import com.decoraciones.domain.models.Empleado;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,15 +27,15 @@ public class EmpleadoService {
     @Transactional(readOnly = true)
     public Empleado findById(Long id) {
         return empleadoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Empleado no encontrado con id: " + id));
+                .orElseThrow(EmpleadoNoEncontradoException::new);
     }
 
     public Empleado create(Empleado empleado) {
         if (empleadoRepository.existsByCi(empleado.getCi())) {
-            throw new RuntimeException("Ya existe un empleado con CI: " + empleado.getCi());
+            throw new EmpleadoCiDuplicadoException();
         }
         if (empleado.getEmail() != null && empleadoRepository.existsByEmail(empleado.getEmail())) {
-            throw new RuntimeException("Ya existe un empleado con email: " + empleado.getEmail());
+            throw new EmpleadoEmailDuplicadoException();
         }
         return empleadoRepository.save(empleado);
     }
@@ -41,12 +44,12 @@ public class EmpleadoService {
         Empleado existente = findById(id);
 
         if (!existente.getCi().equals(datos.getCi()) && empleadoRepository.existsByCi(datos.getCi())) {
-            throw new RuntimeException("Ya existe un empleado con CI: " + datos.getCi());
+            throw new EmpleadoCiDuplicadoException();
         }
         if (datos.getEmail() != null
                 && !datos.getEmail().equalsIgnoreCase(existente.getEmail())
                 && empleadoRepository.existsByEmail(datos.getEmail())) {
-            throw new RuntimeException("Ya existe un empleado con email: " + datos.getEmail());
+            throw new EmpleadoEmailDuplicadoException();
         }
 
         existente.setNombre(datos.getNombre());

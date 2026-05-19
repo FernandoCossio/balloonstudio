@@ -1,5 +1,6 @@
 package com.decoraciones.features.inventario;
 
+import com.decoraciones.common.errors.ArticuloInventarioNoEncontradoException;
 import com.decoraciones.domain.models.ArticuloInventario;
 import com.decoraciones.domain.models.Categoria;
 import com.decoraciones.features.categoria.CategoriaRepository;
@@ -31,7 +32,7 @@ public class ArticuloInventarioService {
     @Transactional(readOnly = true)
     public ArticuloInventario findById(Long id) {
         return articuloRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Artículo de inventario no encontrado con id: " + id));
+                .orElseThrow(ArticuloInventarioNoEncontradoException::new);
     }
 
     public ArticuloInventario create(ArticuloInventario articulo, Set<Long> categoriaIds) {

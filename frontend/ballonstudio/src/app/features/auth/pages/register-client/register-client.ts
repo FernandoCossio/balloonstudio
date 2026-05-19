@@ -9,7 +9,7 @@ import { InputGroupModule } from 'primeng/inputgroup';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
-import { AuthService, RegistrarClienteDto } from '../../service/auth';
+import { AuthService, RegistrarClienteDto } from '../../service/auth.service';
 
 @Component({
     selector: 'app-register-client',

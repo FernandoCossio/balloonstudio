@@ -1,5 +1,6 @@
 package com.decoraciones.features.categoria;
 
+import com.decoraciones.common.response.ApiResponse;
 import com.decoraciones.domain.dtos.categoria.CategoriaRequest;
 import com.decoraciones.domain.dtos.categoria.CategoriaResponse;
 import com.decoraciones.domain.models.Categoria;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/categorias")
+@RequestMapping("/categorias")
 public class CategoriaController {
 
     private final CategoriaService categoriaService;
@@ -20,46 +21,45 @@ public class CategoriaController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CategoriaResponse>> findAll() {
+    public ResponseEntity<ApiResponse<List<CategoriaResponse>>> findAll() {
         List<CategoriaResponse> response = categoriaService.findAll().stream()
                 .map(this::toResponse)
                 .toList();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response, "Categorías obtenidas correctamente"));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoriaResponse> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(toResponse(categoriaService.findById(id)));
+    public ResponseEntity<ApiResponse<CategoriaResponse>> findById(@PathVariable Long id) {
+        CategoriaResponse response = toResponse(categoriaService.findById(id));
+        return ResponseEntity.ok(ApiResponse.success(response, "Categoría obtenida correctamente"));
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody CategoriaRequest request) {
-        try {
-            Categoria categoria = new Categoria();
-            categoria.setNombre(request.nombre());
-            categoria.setDescripcion(request.descripcion());
-            return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(categoriaService.create(categoria)));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<CategoriaResponse>> create(@RequestBody CategoriaRequest request) {
+        Categoria categoria = new Categoria();
+        categoria.setNombre(request.nombre());
+        categoria.setDescripcion(request.descripcion());
+
+        Categoria created = categoriaService.create(categoria);
+        CategoriaResponse response = toResponse(created);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "Categoría creada correctamente"));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody CategoriaRequest request) {
-        try {
-            Categoria categoria = new Categoria();
-            categoria.setNombre(request.nombre());
-            categoria.setDescripcion(request.descripcion());
-            return ResponseEntity.ok(toResponse(categoriaService.update(id, categoria)));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<CategoriaResponse>> update(@PathVariable Long id, @RequestBody CategoriaRequest request) {
+        Categoria categoria = new Categoria();
+        categoria.setNombre(request.nombre());
+        categoria.setDescripcion(request.descripcion());
+
+        Categoria updated = categoriaService.update(id, categoria);
+        CategoriaResponse response = toResponse(updated);
+        return ResponseEntity.ok(ApiResponse.success(response, "Categoría actualizada correctamente"));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         categoriaService.delete(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.success(null, "Categoría eliminada correctamente"));
     }
 
     private CategoriaResponse toResponse(Categoria c) {

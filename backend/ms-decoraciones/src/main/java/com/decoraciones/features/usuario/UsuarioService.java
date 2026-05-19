@@ -1,5 +1,7 @@
 package com.decoraciones.features.usuario;
 
+import com.decoraciones.common.errors.RolNoEncontradoException;
+import com.decoraciones.common.errors.UsuarioDuplicadoException;
 import com.decoraciones.domain.dtos.usuario.RegistrarClienteDto;
 import com.decoraciones.domain.dtos.usuario.ResponseUsuarioDto;
 import com.decoraciones.domain.models.Rol;
@@ -27,10 +29,10 @@ public class UsuarioService {
     @Transactional
     public ResponseUsuarioDto registrarCliente(RegistrarClienteDto dto) {
         if (usuarioRepository.findByUsernameIgnoreCase(dto.username()).isPresent()) {
-            throw new RuntimeException("El nombre de usuario ya está en uso");
+            throw new UsuarioDuplicadoException();
         }
         if (usuarioRepository.findByEmailIgnoreCase(dto.email()).isPresent()) {
-            throw new RuntimeException("El email ya está en uso");
+            throw new UsuarioDuplicadoException();
         }
 
         Usuario usuario = new Usuario();
@@ -43,7 +45,7 @@ public class UsuarioService {
         usuario.setActivo(false);
 
         Rol rolCliente = rolRepository.findByNombre("CLIENTE")
-                .orElseThrow(() -> new RuntimeException("Rol CLIENTE no encontrado"));
+                .orElseThrow(RolNoEncontradoException::new);
         
         usuario.setRoles(Set.of(rolCliente));
 

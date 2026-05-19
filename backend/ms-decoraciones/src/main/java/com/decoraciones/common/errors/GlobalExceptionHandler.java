@@ -15,9 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -63,24 +60,9 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(ErrorCode.VALIDACION_CAMPO.getHttpStatus()).body(body);
 	}
 
-	@ExceptionHandler(RefreshTokenException.class)
-	public ResponseEntity<ApiResponse<Map<String, Object>>> handleRefreshTokenException(RefreshTokenException ex) {
+	@ExceptionHandler(AppException.class)
+	public ResponseEntity<ApiResponse<Map<String, Object>>> handleAppException(AppException ex) {
 		return failWithCode(ex.getErrorCode());
-	}
-
-	@ExceptionHandler(UsernameNotFoundException.class)
-	public ResponseEntity<ApiResponse<Map<String, Object>>> handleUsernameNotFound(UsernameNotFoundException ex) {
-		return failWithCode(ErrorCode.USUARIO_NO_ENCONTRADO);
-	}
-
-	@ExceptionHandler(BadCredentialsException.class)
-	public ResponseEntity<ApiResponse<Map<String, Object>>> handleBadCredentials(BadCredentialsException ex) {
-		return failWithCode(ErrorCode.CREDENCIALES_INVALIDAS);
-	}
-
-	@ExceptionHandler(AuthenticationException.class)
-	public ResponseEntity<ApiResponse<Map<String, Object>>> handleAuthentication(AuthenticationException ex) {
-		return failWithCode(ErrorCode.CREDENCIALES_INVALIDAS);
 	}
 
 	@ExceptionHandler(AccessDeniedException.class)
