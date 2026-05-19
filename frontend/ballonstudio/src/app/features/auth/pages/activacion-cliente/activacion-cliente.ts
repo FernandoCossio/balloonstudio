@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AuthService } from '../../service/auth';
+import { AuthService } from '../../service/auth.service';
 
 import { ButtonModule } from 'primeng/button';
 import { PasswordModule } from 'primeng/password';

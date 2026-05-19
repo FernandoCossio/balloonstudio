@@ -17,8 +17,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Duration;
+import java.util.Arrays;
 
 @Service
 @Transactional
@@ -30,17 +33,30 @@ public class AuthService {
 	private final JwtService jwtService;
 	private final UsuarioService usuarioService;
 	private final RefreshTokenService refreshTokenService;
+	private final boolean refreshCookieSecure;
+	private final String refreshCookiePath;
 
 	public AuthService(
 		AuthenticationManager authenticationManager,
 		JwtService jwtService,
 		UsuarioService usuarioService,
-		RefreshTokenService refreshTokenService
+		RefreshTokenService refreshTokenService,
+		Environment environment,
+		@Value("${server.servlet.context-path:}") String contextPath
 	) {
 		this.authenticationManager = authenticationManager;
 		this.jwtService = jwtService;
 		this.usuarioService = usuarioService;
 		this.refreshTokenService = refreshTokenService;
+
+		boolean isDev = Arrays.asList(environment.getActiveProfiles()).contains("dev");
+		this.refreshCookieSecure = !isDev;
+
+		String normalizedContextPath = contextPath == null ? "" : contextPath.trim();
+		if (!normalizedContextPath.isEmpty() && !normalizedContextPath.startsWith("/")) {
+			normalizedContextPath = "/" + normalizedContextPath;
+		}
+		this.refreshCookiePath = (normalizedContextPath.isEmpty() ? "" : normalizedContextPath) + "/auth";
 	}
 
 	public TokenWithCookie login(LoginRequest request) {
@@ -88,17 +104,17 @@ public class AuthService {
 		return usuarioService.registrarCliente(request);
 	}
 
-	private static ResponseCookie buildRefreshCookie(String rawToken, long maxAgeSeconds) {
+	private ResponseCookie buildRefreshCookie(String rawToken, long maxAgeSeconds) {
 		return ResponseCookie.from("refresh_token", rawToken)
 			.httpOnly(true)
-			.secure(true)
+			.secure(refreshCookieSecure)
 			.sameSite("Strict")
-			.path("/auth/refresh")
+			.path(refreshCookiePath)
 			.maxAge(maxAgeSeconds)
 			.build();
 	}
 
-	private static ResponseCookie buildClearRefreshCookie() {
+	private ResponseCookie buildClearRefreshCookie() {
 		return buildRefreshCookie("", 0);
 	}
 

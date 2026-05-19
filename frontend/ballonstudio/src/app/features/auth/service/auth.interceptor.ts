@@ -1,24 +1,52 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import {
+    HttpInterceptorFn,
+    HttpRequest,
+    HttpHandlerFn,
+    HttpErrorResponse
+} from '@angular/common/http';
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { catchError, switchMap, throwError } from 'rxjs';
+import { AuthService } from './auth.service';
 
-/**
- * Interceptor funcional que adjunta automáticamente el JWT
- * en el header Authorization de cada petición HTTP saliente.
- */
+let isRefreshing = false;
+
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-    const token = localStorage.getItem('access_token');
+    const authService = inject(AuthService);
+    const router = inject(Router);
 
-    console.log(`[authInterceptor] ${req.method} ${req.url}`);
-    console.log('[authInterceptor] token presente:', token ? `${token.substring(0, 20)}...` : 'NULL ❌');
+    const token = authService.getToken();
 
-    if (!token) {
-        console.warn('[authInterceptor] ⚠️ Sin token JWT – la petición irá sin Authorization (espera 401).');
-        return next(req);
-    }
+    const authReq = token ? addToken(req, token) : req;
 
-    const authReq = req.clone({
+    return next(authReq).pipe(
+        catchError((error: HttpErrorResponse) => {
+            const isAuthRoute = req.url.includes('/auth/refresh') || req.url.includes('/auth/login');
+
+            if (error.status === 401 && !isAuthRoute && !isRefreshing) {
+                isRefreshing = true;
+
+                return authService.refresh().pipe(
+                    switchMap(token => {
+                        isRefreshing = false;
+                        return next(addToken(req, token.accessToken));
+                    }),
+                    catchError(refreshError => {
+                        isRefreshing = false;
+                        authService.logout();
+                        router.navigate(['/login']);
+                        return throwError(() => refreshError);
+                    })
+                );
+            }
+
+            return throwError(() => error);
+        })
+    );
+};
+
+function addToken(req: HttpRequest<unknown>, token: string): HttpRequest<unknown> {
+    return req.clone({
         setHeaders: { Authorization: `Bearer ${token}` }
     });
-
-    console.log('[authInterceptor] ✅ Authorization header inyectado correctamente.');
-    return next(authReq);
-};
+}

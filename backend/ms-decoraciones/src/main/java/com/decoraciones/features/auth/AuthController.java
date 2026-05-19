@@ -18,9 +18,11 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/auth")
 public class AuthController {
 
 	private final AuthService authService;
@@ -29,7 +31,7 @@ public class AuthController {
 		this.authService = authService;
 	}
 
-	@PostMapping("/auth/login")
+	@PostMapping("/login")
 	public ResponseEntity<ApiResponse<TokenResponse>> login(
 		@Valid @RequestBody LoginRequest request,
 		HttpServletResponse response
@@ -39,7 +41,7 @@ public class AuthController {
 		return ResponseEntity.ok(ApiResponse.success(result.tokenResponse()));
 	}
 
-	@PostMapping("/auth/refresh")
+	@PostMapping("/refresh")
 	public ResponseEntity<ApiResponse<TokenResponse>> refresh(
 		@CookieValue(name = "refresh_token", required = false) String rawToken,
 		HttpServletResponse response
@@ -49,7 +51,7 @@ public class AuthController {
 		return ResponseEntity.ok(ApiResponse.success(result.tokenResponse()));
 	}
 
-	@PostMapping("/auth/logout")
+	@PostMapping("/logout")
 	public ResponseEntity<ApiResponse<Void>> logout(
 		@AuthenticationPrincipal Jwt jwt,
 		@CookieValue(name = "refresh_token", required = false) String rawToken,
@@ -64,7 +66,7 @@ public class AuthController {
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.success(null));
 	}
 
-	@PostMapping("/auth/register")
+	@PostMapping("/register")
 	public ResponseEntity<ApiResponse<ResponseUsuarioDto>> register(@Valid @RequestBody RegistrarClienteDto request) {
 		ResponseUsuarioDto created = authService.register(request);
 		return ResponseEntity.status(HttpStatus.CREATED)

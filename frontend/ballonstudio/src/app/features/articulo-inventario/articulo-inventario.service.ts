@@ -1,7 +1,7 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable, tap } from 'rxjs';
-import { AuthService } from '../auth/service/auth';
+import { Observable, map, tap } from 'rxjs';
+import type { ApiResponse } from '@/app/shared/interfaces/core/api-response.interface';
 
 // ─── Interfaces (match Java DTOs) ────────────────────────────────────────────
 
@@ -63,37 +63,20 @@ const API_BASE = 'http://localhost:8080/api/inventario';
 @Injectable({ providedIn: 'root' })
 export class ArticuloInventarioService {
     private http = inject(HttpClient);
-    private auth = inject(AuthService);
-
-    /** Construye headers con el JWT actual y loguea el estado del token */
-    private authHeaders(): HttpHeaders {
-        const token = this.auth.getToken();
-        console.log('[ArticuloInventarioService] isLoggedIn:', this.auth.isLoggedIn());
-        console.log('[ArticuloInventarioService] token en localStorage:', token ? `${token.substring(0, 20)}...` : 'NULL ❌ (no hay token)');
-        if (!token) {
-            console.warn('[ArticuloInventarioService] ⚠️  No hay token JWT – el backend responderá 401. Verifica que el usuario esté autenticado.');
-        }
-        return new HttpHeaders({
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-        });
-    }
 
     getAll(): Observable<ArticuloInventarioResponse[]> {
-        const headers = this.authHeaders();
-        console.log('[ArticuloInventarioService] GET', API_BASE, '| Authorization header presente:', headers.has('Authorization'));
-        return this.http.get<ArticuloInventarioResponse[]>(API_BASE, { headers }).pipe(
+        return this.http.get<ApiResponse<ArticuloInventarioResponse[]>>(API_BASE).pipe(
+            map(res => res.data),
             tap({
                 next: data => console.log('[ArticuloInventarioService] ✅ getAll OK – registros:', data.length),
-                error: err  => console.error('[ArticuloInventarioService] ❌ getAll ERROR', err.status, err.message)
+                error: err => console.error('[ArticuloInventarioService] ❌ getAll ERROR', err.status, err.message)
             })
         );
     }
 
     getById(id: number): Observable<ArticuloInventarioResponse> {
-        const headers = this.authHeaders();
-        console.log('[ArticuloInventarioService] GET', `${API_BASE}/${id}`);
-        return this.http.get<ArticuloInventarioResponse>(`${API_BASE}/${id}`, { headers }).pipe(
+        return this.http.get<ApiResponse<ArticuloInventarioResponse>>(`${API_BASE}/${id}`).pipe(
+            map(res => res.data),
             tap({
                 next: data => console.log('[ArticuloInventarioService] ✅ getById OK', data),
                 error: err  => console.error('[ArticuloInventarioService] ❌ getById ERROR', err.status, err.message)
@@ -102,9 +85,8 @@ export class ArticuloInventarioService {
     }
 
     create(request: ArticuloInventarioRequest): Observable<ArticuloInventarioResponse> {
-        const headers = this.authHeaders();
-        console.log('[ArticuloInventarioService] POST', API_BASE, request);
-        return this.http.post<ArticuloInventarioResponse>(API_BASE, request, { headers }).pipe(
+        return this.http.post<ApiResponse<ArticuloInventarioResponse>>(API_BASE, request).pipe(
+            map(res => res.data),
             tap({
                 next: data => console.log('[ArticuloInventarioService] ✅ create OK', data),
                 error: err  => console.error('[ArticuloInventarioService] ❌ create ERROR', err.status, err.message)
@@ -113,9 +95,8 @@ export class ArticuloInventarioService {
     }
 
     update(id: number, request: ArticuloInventarioRequest): Observable<ArticuloInventarioResponse> {
-        const headers = this.authHeaders();
-        console.log('[ArticuloInventarioService] PUT', `${API_BASE}/${id}`, request);
-        return this.http.put<ArticuloInventarioResponse>(`${API_BASE}/${id}`, request, { headers }).pipe(
+        return this.http.put<ApiResponse<ArticuloInventarioResponse>>(`${API_BASE}/${id}`, request).pipe(
+            map(res => res.data),
             tap({
                 next: data => console.log('[ArticuloInventarioService] ✅ update OK', data),
                 error: err  => console.error('[ArticuloInventarioService] ❌ update ERROR', err.status, err.message)
@@ -124,9 +105,8 @@ export class ArticuloInventarioService {
     }
 
     delete(id: number): Observable<void> {
-        const headers = this.authHeaders();
-        console.log('[ArticuloInventarioService] DELETE', `${API_BASE}/${id}`);
-        return this.http.delete<void>(`${API_BASE}/${id}`, { headers }).pipe(
+        return this.http.delete(`${API_BASE}/${id}`, { responseType: 'text' }).pipe(
+            map(() => void 0),
             tap({
                 next: ()  => console.log('[ArticuloInventarioService] ✅ delete OK id:', id),
                 error: err => console.error('[ArticuloInventarioService] ❌ delete ERROR', err.status, err.message)

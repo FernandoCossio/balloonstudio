@@ -10,7 +10,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { RippleModule } from 'primeng/ripple';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
-import { AuthService } from '../../service/auth';
+import { AuthService } from '../../service/auth.service';
 
 @Component({
     selector: 'app-login',
@@ -59,6 +59,7 @@ export class Login {
         this.isLoading = true;
         this.authService.login({ username: this.username, password: this.password }).subscribe({
             next: () => {
+                this.isLoading = false;
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Éxito',

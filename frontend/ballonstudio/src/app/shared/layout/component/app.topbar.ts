@@ -4,8 +4,8 @@ import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { StyleClassModule } from 'primeng/styleclass';
 import { AppConfigurator } from './app.configurator';
-import { LayoutService } from '@/app/layout/service/layout.service';
-import { AuthService } from '@/app/features/auth/service/auth';
+import { LayoutService } from '@/app/shared/layout/service/layout.service';
+import { AuthService } from '@/app/features/auth/service/auth.service';
 
 @Component({
     selector: 'app-topbar',
@@ -62,7 +62,9 @@ export class AppTopbar {
     router = inject(Router);
 
     logout() {
-        this.authService.logout();
-        this.router.navigate(['/auth/login']);
+        this.authService.logoutServer().subscribe({
+            next: () => this.router.navigate(['/auth/login']),
+            error: () => this.router.navigate(['/auth/login'])
+        });
     }
 }

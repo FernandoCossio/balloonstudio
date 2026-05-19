@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/inventario")
+@RequestMapping("/inventario")
 public class ArticuloInventarioController {
 
     private final ArticuloInventarioService articuloService;

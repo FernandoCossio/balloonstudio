@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { LayoutService } from '@/app/layout/service/layout.service';
+import { LayoutService } from '../service/layout.service';
 
 @Component({
     selector: 'app-configurator',
