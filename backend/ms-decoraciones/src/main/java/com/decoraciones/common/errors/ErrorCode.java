@@ -67,6 +67,7 @@ public enum ErrorCode {
     EMPLEADO_NO_ENCONTRADO("EMP101", HttpStatus.NOT_FOUND, "Empleado no encontrado"),
     EMPLEADO_CI_DUPLICADO("EMP201", HttpStatus.CONFLICT, "Ya existe un empleado con ese CI"),
     EMPLEADO_EMAIL_DUPLICADO("EMP202", HttpStatus.CONFLICT, "Ya existe un empleado con ese email"),
+    AUTO_DESACTIVACION_PROHIBIDA("EMP203", HttpStatus.BAD_REQUEST, "No puedes desactivar tu propia cuenta"),
 
     // -------------------------------------------------------------------------
     // INV — Inventario
