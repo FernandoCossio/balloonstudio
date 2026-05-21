@@ -1,0 +1,60 @@
+<!-- catalogo-sidebar.html -->
+<div class="sidebar">
+
+  <div class="sidebar__filters">
+    <input
+      type="text"
+      placeholder="Buscar artículo..."
+      [value]="busqueda()"
+      (input)="busqueda.set($any($event.target).value)"
+      class="sidebar__search"
+    />
+    <select (change)="tipoFiltro.set($any($event.target).value)" class="sidebar__select">
+      <option value="">Todos los tipos</option>
+      @for (tipo of tiposUnicos(); track tipo) {
+        <option [value]="tipo">{{ tipo }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="sidebar__list">
+    @for (articulo of articulosFiltrados(); track articulo.id) {
+      <div
+        class="articulo-card"
+        cdkDrag
+        [cdkDragData]="articulo"
+        (click)="onClickArticulo(articulo)"
+      >
+        <!-- Preview fantasma mientras se arrastra -->
+        <div class="articulo-card__drag-preview" *cdkDragPreview>
+          <img
+            [src]="articulo.imagenThumbnailUrl ?? articulo.imagenUrl"
+            [alt]="articulo.nombre"
+            width="64"
+            height="64"
+          />
+        </div>
+
+        <img
+          class="articulo-card__img"
+          [src]="articulo.imagenThumbnailUrl ?? articulo.imagenUrl"
+          [alt]="articulo.nombre"
+        />
+        <div class="articulo-card__info">
+          <span class="articulo-card__nombre">{{ articulo.nombre }}</span>
+          <span class="articulo-card__precio">
+            Bs. {{ articulo.costoAdquisicion | number: '1.2-2' }}
+          </span>
+          <span class="articulo-card__stock">Stock: {{ articulo.stockTotal }}</span>
+        </div>
+
+        <!-- Placeholder visual cuando el card está siendo arrastrado -->
+        <div class="articulo-card__placeholder" *cdkDragPlaceholder></div>
+      </div>
+    }
+
+    @empty {
+      <p class="sidebar__empty">No se encontraron artículos</p>
+    }
+  </div>
+</div>

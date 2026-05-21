@@ -14,4 +14,8 @@ public interface ArticuloInventarioRepository extends JpaRepository<ArticuloInve
 
     @EntityGraph(attributePaths = "categorias")
     Optional<ArticuloInventario> findById(Long id);
+
+    Optional<ArticuloInventario> findByNombreIgnoreCase(String nombre);
+
+    boolean existsByNombreIgnoreCase(String nombre);
 }

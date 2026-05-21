@@ -4,6 +4,7 @@ import com.decoraciones.common.response.ApiResponse;
 import com.decoraciones.domain.dtos.articuloinventario.ArticuloInventarioRequest;
 import com.decoraciones.domain.dtos.articuloinventario.ArticuloInventarioResponse;
 import com.decoraciones.domain.dtos.categoria.CategoriaResponse;
+import com.decoraciones.domain.dtos.proyectodiseno.ArticuloInventarioDto;
 import com.decoraciones.domain.models.ArticuloInventario;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,6 +61,15 @@ public class ArticuloInventarioController {
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         articuloService.delete(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.success(null, "Artículo de inventario eliminado correctamente"));
+    }
+
+    @GetMapping("/catalogo")
+    public ResponseEntity<ApiResponse<List<ArticuloInventarioDto>>> getCatalogo(
+            @RequestParam(required = false) String tipo,
+            @RequestParam(required = false) String estado) {
+
+        List<ArticuloInventarioDto> response = articuloService.getCatalogo(tipo, estado);
+        return ResponseEntity.ok(ApiResponse.success(response, "Catálogo de artículos de inventario obtenido correctamente"));
     }
 
     // ─── Mappers ─────────────────────────────────────────────────────────────

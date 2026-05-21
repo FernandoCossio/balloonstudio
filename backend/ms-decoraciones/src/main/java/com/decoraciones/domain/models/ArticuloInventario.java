@@ -5,7 +5,9 @@ import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -82,4 +84,8 @@ public class ArticuloInventario extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "categoria_id")
     )
     private Set<Categoria> categorias = new HashSet<>();
+
+    @OneToMany(mappedBy = "articuloInventario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OrderBy("orden ASC")
+    private List<ImagenArticulo> imagenes = new ArrayList<>();
 }

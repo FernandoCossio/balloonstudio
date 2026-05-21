@@ -1,0 +1,51 @@
+<!-- pricing-panel.html -->
+<div class="pricing-panel">
+
+  <h3 class="pricing-panel__title">Resumen de precios</h3>
+
+  <div class="pricing-panel__list">
+    @for (item of canvasState.resumenItems(); track item.instanceId) {
+      <div class="pricing-row">
+        <img
+          class="pricing-row__img"
+          [src]="item.imagenUrl"
+          [alt]="item.nombre"
+          width="36"
+          height="36"
+        />
+        <div class="pricing-row__info">
+          <span class="pricing-row__nombre">{{ item.nombre }}</span>
+          <span class="pricing-row__qty">× {{ item.cantidad }}</span>
+        </div>
+        <span class="pricing-row__subtotal">
+          Bs. {{ item.subtotal | number: '1.2-2' }}
+        </span>
+        <button
+          class="pricing-row__remove"
+          (click)="canvasState.removeItem(item.instanceId)"
+          title="Eliminar del canvas"
+        >
+          ✕
+        </button>
+      </div>
+    }
+
+    @empty {
+      <p class="pricing-panel__empty">Arrastra artículos al canvas para ver el precio</p>
+    }
+  </div>
+
+  <div class="pricing-panel__footer">
+    <span>Total estimado</span>
+    <strong>Bs. {{ canvasState.precioTotal() | number: '1.2-2' }}</strong>
+  </div>
+
+  <button
+    class="pricing-panel__clear"
+    (click)="canvasState.clearCanvas()"
+    [disabled]="canvasState.items().length === 0"
+  >
+    Limpiar canvas
+  </button>
+
+</div>

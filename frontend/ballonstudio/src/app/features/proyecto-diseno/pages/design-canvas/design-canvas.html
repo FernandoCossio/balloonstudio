@@ -1,0 +1,74 @@
+<div class="design-layout">
+
+  <!-- Sidebar izquierdo -->
+  <app-catalogo-sidebar
+    cdkDropList
+    id="catalogo-list"
+    [cdkDropListConnectedTo]="['canvas-drop-zone']"
+  />
+
+  <!-- Canvas central -->
+  <div
+    class="canvas-wrapper"
+    cdkDropList
+    id="canvas-drop-zone"
+    [cdkDropListConnectedTo]="['catalogo-list']"
+    [cdkDropListEnterPredicate]="() => true"
+    (cdkDropListDropped)="onArticuloDrop($event)"
+  >
+    <div class="canvas-toolbar">
+      <span>Canvas de diseño</span>
+      <div class="canvas-toolbar__actions">
+        @if (canvasState.selectedId()) {
+          <button (click)="canvasState.bringToFront(canvasState.selectedId()!)">
+            Traer al frente
+          </button>
+          <button (click)="canvasState.sendToBack(canvasState.selectedId()!)">
+            Enviar al fondo
+          </button>
+        }
+        <button (click)="exportPNG()">Exportar PNG</button>
+      </div>
+    </div>
+
+    <ko-stage
+      #stageRef
+      [config]="stageConfig()"
+      (click)="onStageClick($event)"
+    >
+      <!-- Layer 0: fondo del entorno -->
+      <ko-layer>
+        <ko-rect [config]="backgroundConfig()"/>
+      </ko-layer>
+
+      <!-- Layer 1: objetos de fondo (manteles, alfombras) -->
+      <ko-layer>
+        @for (item of canvasState.midItems(); track item.instanceId) {
+          <ko-image
+            [config]="getImageConfig(item)"
+            (click)="onItemClick($event, item.instanceId)"
+            (dragend)="onDragEnd($event, item.instanceId)"
+          />
+        }
+      </ko-layer>
+
+      <!-- Layer 2: objetos principales + transformer en el MISMO layer -->
+      <ko-layer>
+        @for (item of canvasState.mainItems(); track item.instanceId) {
+          <ko-image
+            [config]="getImageConfig(item)"
+            (click)="onItemClick($event, item.instanceId)"
+            (dragend)="onDragEnd($event, item.instanceId)"
+          />
+        }
+        <!-- Transformer DEBE estar en el mismo layer que los shapes -->
+        <ko-transformer #transformerRef/>
+      </ko-layer>
+
+    </ko-stage>
+  </div>
+
+  <!-- Panel derecho -->
+  <app-pricing-panel/>
+
+</div>

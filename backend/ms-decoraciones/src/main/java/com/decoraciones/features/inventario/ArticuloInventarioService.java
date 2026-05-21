@@ -1,6 +1,7 @@
 package com.decoraciones.features.inventario;
 
 import com.decoraciones.common.errors.ArticuloInventarioNoEncontradoException;
+import com.decoraciones.domain.dtos.proyectodiseno.ArticuloInventarioDto;
 import com.decoraciones.domain.models.ArticuloInventario;
 import com.decoraciones.domain.models.Categoria;
 import com.decoraciones.features.categoria.CategoriaRepository;
@@ -15,13 +16,16 @@ import java.util.Set;
 @Transactional
 public class ArticuloInventarioService {
 
+    private final ArticuloInventarioMapper mapper;
     private final ArticuloInventarioRepository articuloRepository;
     private final CategoriaRepository categoriaRepository;
 
     public ArticuloInventarioService(ArticuloInventarioRepository articuloRepository,
-                                      CategoriaRepository categoriaRepository) {
+                                     CategoriaRepository categoriaRepository,
+                                     ArticuloInventarioMapper mapper) {
         this.articuloRepository = articuloRepository;
         this.categoriaRepository = categoriaRepository;
+        this.mapper = mapper;
     }
 
     @Transactional(readOnly = true)
@@ -77,5 +81,16 @@ public class ArticuloInventarioService {
         ArticuloInventario existente = findById(id);
         existente.setIsDeleted(true);
         articuloRepository.save(existente);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ArticuloInventarioDto> getCatalogo(String tipoArticulo, String estado) {
+        return articuloRepository.findAll().stream()
+                .filter(a -> tipoArticulo == null || tipoArticulo.isBlank()
+                        || tipoArticulo.equalsIgnoreCase(a.getTipoArticulo()))
+                .filter(a -> estado == null || estado.isBlank()
+                        || estado.equalsIgnoreCase(a.getEstado()))
+                .map(mapper::toDto)
+                .toList();
     }
 }
