@@ -28,6 +28,7 @@ public class UsuarioSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
         seedAdminUser();
+        seedEmployees();
     }
 
     private void seedAdminUser() {
@@ -47,6 +48,30 @@ public class UsuarioSeeder implements CommandLineRunner {
 
             usuarioRepository.save(admin);
             System.out.println("Usuario administrador creado por defecto (admin / admin123)");
+        }
+    }
+
+    private void seedEmployees() {
+        seedEmployee("empleado1", "empleado1@decoraciones.com", "Juan Perez", "71020304", true);
+        seedEmployee("empleado2", "empleado2@decoraciones.com", "Maria Lopez", "72030405", false);
+    }
+
+    private void seedEmployee(String username, String email, String nombreCompleto, String telefono, boolean activo) {
+        if (usuarioRepository.findByUsernameIgnoreCase(username).isEmpty()) {
+            Rol empleadoRol = rolRepository.findByNombre("EMPLEADO")
+                    .orElseThrow(() -> new RuntimeException("Error: Rol EMPLEADO no encontrado."));
+
+            Usuario empleado = new Usuario();
+            empleado.setUsername(username);
+            empleado.setEmail(email);
+            empleado.setNombreCompleto(nombreCompleto);
+            empleado.setPassword(passwordEncoder.encode("empleado123"));
+            empleado.setTelefono(telefono);
+            empleado.setActivo(activo);
+            empleado.setRoles(Set.of(empleadoRol));
+
+            usuarioRepository.save(empleado);
+            System.out.println("Usuario empleado creado por defecto: " + username + " (activo: " + activo + ")");
         }
     }
 }
