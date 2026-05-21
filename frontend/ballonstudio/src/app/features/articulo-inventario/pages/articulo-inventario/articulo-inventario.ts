@@ -15,6 +15,8 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { DialogModule } from 'primeng/dialog';
 import { ArticuloInventarioResponse, ArticuloInventarioService, ImagenArticuloResponse } from '../../service/articulo-inventario.service';
 import { API_URL } from '@/enviroment/enviroment';
+import { AuthService } from '@/app/features/auth/service/auth.service';
+import { ROLES } from '@/app/features/core/constants/role.constant';
 
 type FilterTab = 'TODOS' | 'CONSUMIBLE' | 'REUTILIZABLE';
 type ComplejidadLevel = 'FACIL' | 'MEDIO' | 'PROFESIONAL';
@@ -37,6 +39,9 @@ export class ArticuloInventario implements OnInit {
     private confirmSvc = inject(ConfirmationService);
     private msgSvc = inject(MessageService);
     private router = inject(Router);
+    private auth = inject(AuthService);
+
+    isAdmin = computed(() => this.auth.hasRole(ROLES.ADMINISTRADOR));
 
     // ─── State ───────────────────────────────────────────────────────────────
     articulos = signal<ArticuloInventarioResponse[]>([]);
