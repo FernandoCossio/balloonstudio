@@ -34,7 +34,7 @@ public class AuthTokenService {
     private String frontendUrl;
 
     @Transactional
-    public void generarYEnviarTokenActivacion(Usuario usuario) {
+    public String generarYEnviarTokenActivacion(Usuario usuario) {
         // Revocar tokens anteriores de activacion
         authTokenRepository.revokeAllByUsuarioIdAndTipo(usuario.getId(), TipoToken.ACTIVACION_CUENTA);
 
@@ -111,6 +111,7 @@ public class AuthTokenService {
         """.formatted(usuario.getNombreCompleto(), enlace, enlace);
 
         emailService.sendEmail(usuario.getEmail(), "Activación de cuenta - Decoraciones", mensaje);
+        return token;
     }
 
     @Transactional(readOnly = true)
