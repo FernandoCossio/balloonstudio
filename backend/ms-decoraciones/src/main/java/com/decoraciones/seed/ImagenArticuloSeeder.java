@@ -30,7 +30,7 @@ public class ImagenArticuloSeeder implements CommandLineRunner {
 
     private void seedImagenesPrincipales() {
         Map<String, String> urls = Map.of(
-                "sofa1", "uploads/inventario/sofa1/sofas1_123.jpg",
+                "sofa1", "uploads/inventario/sofa1/sofa1_123.jpg",
                 "table1", "uploads/inventario/table1/table1_123.jpg",
                 "table2", "uploads/inventario/table2/table2_123.jpg",
                 "table3", "uploads/inventario/table3/table3_123.jpg"

@@ -44,6 +44,7 @@ public class SecurityConfig {
 					"/swagger-ui/**",
 					"/swagger-ui.html"
 				).permitAll()
+				.requestMatchers("/uploads/**").permitAll()
 				.anyRequest().authenticated()
 			)
 			.oauth2ResourceServer(oauth2 -> oauth2
