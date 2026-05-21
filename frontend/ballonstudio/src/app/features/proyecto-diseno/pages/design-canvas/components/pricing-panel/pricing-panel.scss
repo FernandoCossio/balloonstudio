@@ -1,0 +1,376 @@
+// pricing-panel.scss
+// Panel derecho: resumen de precios, ajustes y acciones del proyecto
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.pricing-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--surface-card);
+  border-left: 1px solid var(--surface-border);
+
+  // ── Encabezado ──────────────────────────────────────────────────────────
+
+  &__title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-color);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0;
+    padding: 1rem 1rem 0;
+    flex-shrink: 0;
+  }
+
+  &__subtitle {
+    font-size: 0.72rem;
+    color: var(--text-color-secondary);
+    padding: 0.15rem 1rem 0.75rem;
+    border-bottom: 1px solid var(--surface-border);
+    flex-shrink: 0;
+  }
+
+  // ── Lista de items ───────────────────────────────────────────────────────
+
+  &__list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--p-surface-300);
+      border-radius: 4px;
+    }
+  }
+
+  &__empty {
+    font-size: 0.78rem;
+    color: var(--text-color-secondary);
+    text-align: center;
+    padding: 2.5rem 1rem;
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  // ── Sección de ajustes ───────────────────────────────────────────────────
+
+  &__adjustments {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--surface-border);
+    flex-shrink: 0;
+
+    h4 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-color-secondary);
+      margin: 0 0 0.6rem;
+    }
+  }
+
+  &__adjustment-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.45rem;
+
+    label {
+      font-size: 0.78rem;
+      color: var(--text-color);
+    }
+
+    input[type='number'],
+    input[type='text'] {
+      width: 80px;
+      padding: 0.3rem 0.5rem;
+      font-size: 0.78rem;
+      color: var(--text-color);
+      background-color: var(--surface-ground);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--content-border-radius);
+      outline: none;
+      text-align: right;
+      transition: border-color var(--transition-duration);
+
+      &:focus {
+        border-color: var(--p-primary-color);
+      }
+    }
+  }
+
+  // ── Footer: total + acciones ─────────────────────────────────────────────
+
+  &__footer {
+    padding: 0.85rem 1rem;
+    border-top: 2px solid var(--surface-border);
+    flex-shrink: 0;
+    background-color: var(--surface-ground);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    span {
+      font-size: 0.78rem;
+      color: var(--text-color-secondary);
+      font-weight: 500;
+    }
+
+    strong {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-color);
+      letter-spacing: -0.02em;
+    }
+  }
+
+  // ── Botones de acción ─────────────────────────────────────────────────────
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--surface-border);
+    flex-shrink: 0;
+  }
+
+  &__btn-primary {
+    width: 100%;
+    padding: 0.6rem 1rem;
+    font-size: 0.83rem;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: var(--p-primary-color);
+    border: none;
+    border-radius: var(--content-border-radius);
+    cursor: pointer;
+    transition: background-color var(--transition-duration),
+                box-shadow var(--transition-duration);
+
+    &:hover {
+      background-color: var(--p-primary-hover-color, color-mix(in srgb, var(--p-primary-color) 88%, #000));
+      box-shadow: 0 4px 12px rgba(194, 24, 91, 0.3);
+    }
+
+    &:active {
+      background-color: var(--p-primary-active-color, color-mix(in srgb, var(--p-primary-color) 76%, #000));
+    }
+  }
+
+  &__btn-secondary {
+    width: 100%;
+    padding: 0.55rem 1rem;
+    font-size: 0.83rem;
+    font-weight: 500;
+    color: var(--p-primary-color);
+    background-color: transparent;
+    border: 1.5px solid var(--p-primary-color);
+    border-radius: var(--content-border-radius);
+    cursor: pointer;
+    transition: background-color var(--transition-duration),
+                color var(--transition-duration);
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--p-primary-color) 8%, transparent);
+    }
+  }
+
+  &__clear {
+    width: calc(100% - 2rem);
+    margin: 0 1rem 0.75rem;
+    padding: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+    background-color: transparent;
+    border: 1px solid var(--surface-border);
+    border-radius: var(--content-border-radius);
+    cursor: pointer;
+    transition: color var(--transition-duration),
+                border-color var(--transition-duration),
+                background-color var(--transition-duration);
+    flex-shrink: 0;
+
+    &:hover:not(:disabled) {
+      color: #ef4444;
+      border-color: #ef4444;
+      background-color: rgba(239, 68, 68, 0.05);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  // ── Notas del proyecto ────────────────────────────────────────────────────
+
+  &__notes {
+    padding: 0 1rem 0.75rem;
+    flex-shrink: 0;
+
+    label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-color-secondary);
+      display: block;
+      margin-bottom: 0.35rem;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 0.5rem 0.65rem;
+      font-size: 0.78rem;
+      color: var(--text-color);
+      background-color: var(--surface-ground);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--content-border-radius);
+      resize: none;
+      font-family: inherit;
+      line-height: 1.5;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color var(--transition-duration);
+
+      &::placeholder {
+        color: var(--p-primary-color);
+        font-style: italic;
+        font-size: 0.75rem;
+        opacity: 0.75;
+      }
+
+      &:focus {
+        border-color: var(--p-primary-color);
+      }
+    }
+  }
+}
+
+// ── Fila de pricing item ──────────────────────────────────────────────────
+
+.pricing-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.5rem;
+  background-color: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--content-border-radius);
+  transition: background-color var(--transition-duration),
+              border-color var(--transition-duration);
+
+  &:hover {
+    background-color: var(--surface-hover);
+    border-color: var(--p-surface-300);
+  }
+
+  &__img {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: calc(var(--content-border-radius) - 2px);
+    background-color: var(--p-surface-100);
+    border: 1px solid var(--surface-border);
+    flex-shrink: 0;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    gap: 0.05rem;
+  }
+
+  &__nombre {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__qty {
+    font-size: 0.68rem;
+    color: var(--text-color-secondary);
+  }
+
+  &__subtotal {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-color);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  &__remove {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: var(--text-color-secondary);
+    font-size: 0.7rem;
+    cursor: pointer;
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: background-color var(--transition-duration),
+                color var(--transition-duration);
+
+    &:hover {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+    }
+  }
+}
+
+// ── Fila de desglose de costos ────────────────────────────────────────────
+
+.cost-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.2rem 0;
+
+  &__label {
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+  }
+
+  &__value {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-color);
+  }
+
+  &--tax {
+    .cost-row__label,
+    .cost-row__value {
+      color: var(--text-color-secondary);
+      font-size: 0.72rem;
+    }
+  }
+}

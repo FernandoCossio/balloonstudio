@@ -16,8 +16,11 @@
     [cdkDropListEnterPredicate]="() => true"
     (cdkDropListDropped)="onArticuloDrop($event)"
   >
+    <!-- Toolbar con nombre del proyecto y acciones -->
     <div class="canvas-toolbar">
-      <span>Canvas de diseño</span>
+      <span class="canvas-toolbar__title">
+        {{ canvasState.proyectoActual()?.nombre ?? 'Canvas de diseño' }}
+      </span>
       <div class="canvas-toolbar__actions">
         @if (canvasState.selectedId()) {
           <button (click)="canvasState.bringToFront(canvasState.selectedId()!)">
@@ -27,21 +30,36 @@
             Enviar al fondo
           </button>
         }
-        <button (click)="exportPNG()">Exportar PNG</button>
+        <p-button
+          label="Guardar"
+          icon="pi pi-save"
+          [loading]="guardando()"
+          [disabled]="!canvasState.proyectoActual()"
+          (onClick)="guardarCanvas()"
+        />
+        <p-button
+          label="Exportar PNG"
+          icon="pi pi-image"
+          severity="secondary"
+          (onClick)="exportPNG()"
+        />
       </div>
     </div>
+
+    <!-- Tabs de escenarios -->
+    <app-escenario-tabs (escenarioCambiado)="onEscenarioCambiado($event)"/>
 
     <ko-stage
       #stageRef
       [config]="stageConfig()"
       (click)="onStageClick($event)"
     >
-      <!-- Layer 0: fondo del entorno -->
+      <!-- Layer 0: imagen de fondo del escenario -->
       <ko-layer>
-        <ko-rect [config]="backgroundConfig()"/>
+        <ko-image [config]="backgroundConfig()"/>
       </ko-layer>
 
-      <!-- Layer 1: objetos de fondo (manteles, alfombras) -->
+      <!-- Layer 1: objetos de fondo -->
       <ko-layer>
         @for (item of canvasState.midItems(); track item.instanceId) {
           <ko-image
@@ -52,7 +70,7 @@
         }
       </ko-layer>
 
-      <!-- Layer 2: objetos principales + transformer en el MISMO layer -->
+      <!-- Layer 2: objetos principales + transformer -->
       <ko-layer>
         @for (item of canvasState.mainItems(); track item.instanceId) {
           <ko-image
@@ -61,7 +79,6 @@
             (dragend)="onDragEnd($event, item.instanceId)"
           />
         }
-        <!-- Transformer DEBE estar en el mismo layer que los shapes -->
         <ko-transformer #transformerRef/>
       </ko-layer>
 
@@ -71,4 +88,5 @@
   <!-- Panel derecho -->
   <app-pricing-panel/>
 
+  <p-toast/>
 </div>

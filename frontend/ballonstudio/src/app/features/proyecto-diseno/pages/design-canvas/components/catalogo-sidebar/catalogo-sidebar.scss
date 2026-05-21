@@ -1,0 +1,280 @@
+// catalogo-sidebar.scss
+// Sidebar izquierdo: catálogo de artículos con filtros y drag-and-drop
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--surface-card);
+
+  // ── Header del sidebar ─────────────────────────────────────────────────
+
+  &__header {
+    padding: 1rem 1rem 0.5rem;
+    border-bottom: 1px solid var(--surface-border);
+    flex-shrink: 0;
+
+    h3 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-color);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 0 0 0.15rem;
+    }
+
+    p {
+      font-size: 0.73rem;
+      color: var(--text-color-secondary);
+      margin: 0;
+    }
+  }
+
+  // ── Zona de filtros ────────────────────────────────────────────────────
+
+  &__filters {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem 0.75rem 0.65rem;
+    border-bottom: 1px solid var(--surface-border);
+    flex-shrink: 0;
+  }
+
+  &__search {
+    width: 100%;
+    padding: 0.42rem 0.65rem;
+    font-size: 0.8rem;
+    color: var(--text-color);
+    background-color: var(--surface-ground);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--content-border-radius);
+    outline: none;
+    transition: border-color var(--transition-duration),
+                box-shadow var(--transition-duration);
+    box-sizing: border-box;
+
+    &::placeholder {
+      color: var(--text-color-secondary);
+      font-size: 0.78rem;
+    }
+
+    &:focus {
+      border-color: var(--p-primary-color);
+      box-shadow: 0 0 0 var(--focus-ring-width) var(--focus-ring-color);
+    }
+  }
+
+  &__select {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.78rem;
+    color: var(--text-color);
+    background-color: var(--surface-ground);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--content-border-radius);
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.55rem center;
+    padding-right: 1.8rem;
+    transition: border-color var(--transition-duration);
+
+    &:focus {
+      border-color: var(--p-primary-color);
+    }
+
+    option {
+      background-color: var(--surface-card);
+      color: var(--text-color);
+    }
+  }
+
+  // ── Lista de artículos ─────────────────────────────────────────────────
+
+  &__list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+
+    // Scrollbar refinada
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--p-surface-300);
+      border-radius: 4px;
+    }
+    &:hover::-webkit-scrollbar-thumb {
+      background-color: var(--p-surface-400);
+    }
+  }
+
+  &__empty {
+    font-size: 0.78rem;
+    color: var(--text-color-secondary);
+    text-align: center;
+    padding: 2rem 1rem;
+    font-style: italic;
+  }
+
+  // ── Saved sets section ─────────────────────────────────────────────────
+
+  &__saved-sets {
+    padding: 0.6rem 0.75rem;
+    border-top: 1px solid var(--surface-border);
+    flex-shrink: 0;
+
+    h4 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-color-secondary);
+      margin: 0 0 0.4rem;
+    }
+  }
+}
+
+// ── Card de artículo ──────────────────────────────────────────────────────
+
+.articulo-card {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 0.5rem;
+  background-color: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: calc(var(--content-border-radius) + 2px);
+  cursor: grab;
+  transition: background-color var(--transition-duration),
+              border-color var(--transition-duration),
+              box-shadow var(--transition-duration),
+              transform 0.15s ease;
+  position: relative;
+
+  &:hover {
+    background-color: var(--surface-hover);
+    border-color: var(--p-primary-color);
+    box-shadow: 0 2px 8px rgba(194, 24, 91, 0.12);
+
+    .articulo-card__add-hint {
+      opacity: 1;
+    }
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  // ── Thumbnail ─────────────────────────────────────────────────────────
+
+  &__img {
+    width: 42px;
+    height: 42px;
+    object-fit: cover;
+    border-radius: calc(var(--content-border-radius));
+    flex-shrink: 0;
+    background-color: var(--p-surface-100);
+    border: 1px solid var(--surface-border);
+  }
+
+  // ── Info del artículo ─────────────────────────────────────────────────
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__nombre {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+  }
+
+  &__precio {
+    font-size: 0.72rem;
+    color: var(--p-primary-color);
+    font-weight: 600;
+  }
+
+  &__stock {
+    font-size: 0.68rem;
+    color: var(--text-color-secondary);
+  }
+
+  // ── Hint de añadir ────────────────────────────────────────────────────
+
+  &__add-hint {
+    opacity: 0;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--p-primary-color);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+    transition: opacity var(--transition-duration);
+  }
+
+  // ── CDK drag: preview y placeholder ──────────────────────────────────
+
+  &__drag-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    background-color: var(--surface-card);
+    border: 2px solid var(--p-primary-color);
+    border-radius: var(--content-border-radius);
+    box-shadow: 0 8px 24px rgba(194, 24, 91, 0.25);
+    padding: 4px;
+
+    img {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+  }
+
+  &__placeholder {
+    height: 60px;
+    background-color: color-mix(in srgb, var(--p-primary-color) 8%, transparent);
+    border: 2px dashed var(--p-primary-color);
+    border-radius: var(--content-border-radius);
+    margin: 0;
+  }
+}
+
+// Estado mientras se arrastra (el item original en lista)
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.articulo-card.cdk-drag-placeholder {
+  opacity: 0;
+}

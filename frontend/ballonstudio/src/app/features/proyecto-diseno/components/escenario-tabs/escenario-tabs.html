@@ -1,0 +1,25 @@
+<div class="escenario-tabs">
+  @for (escenario of canvasState.escenarios(); track escenario.id) {
+    <div
+      class="escenario-tab"
+      [class.escenario-tab--active]="escenario.id === canvasState.escenarioActual()?.id"
+      (click)="seleccionarEscenario(escenario)"
+    >
+      <span class="escenario-tab__nombre">{{ escenario.nombre }}</span>
+      @if (canvasState.escenarios().length > 1) {
+        <button
+          class="escenario-tab__remove"
+          pTooltip="Eliminar escenario"
+          tooltipPosition="top"
+          (click)="confirmarEliminar(escenario, $event)"
+        >✕</button>
+      }
+    </div>
+  }
+
+  <button class="escenario-tab escenario-tab--add" (click)="abrirDialogNuevoEscenario()">
+    + Escenario
+  </button>
+
+  <p-confirmDialog/>
+</div>

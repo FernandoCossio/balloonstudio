@@ -1,0 +1,62 @@
+<div class="proyecto-list">
+  <div class="proyecto-list__header">
+    <h1>Mis proyectos</h1>
+    <p-button label="Nuevo proyecto" icon="pi pi-plus" (onClick)="abrirDialogCrear()"/>
+  </div>
+
+  @if (cargando()) {
+    <div class="proyecto-list__loading">Cargando proyectos...</div>
+  }
+
+  <div class="proyecto-list__grid">
+    @for (proyecto of proyectos(); track proyecto.id) {
+      <div class="proyecto-card" (click)="abrirProyecto(proyecto)">
+
+        <div class="proyecto-card__body">
+          <h3 class="proyecto-card__nombre">{{ proyecto.nombre }}</h3>
+          <p class="proyecto-card__descripcion">{{ proyecto.descripcion }}</p>
+
+          <div class="proyecto-card__meta">
+            @if (proyecto.fechaEvento) {
+              <span>📅 {{ proyecto.fechaEvento | date: 'dd/MM/yyyy' }}</span>
+            }
+            @if (proyecto.lugarEvento) {
+              <span>📍 {{ proyecto.lugarEvento }}</span>
+            }
+            <span>🎨 {{ proyecto.escenarios.length }} escenario(s)</span>
+          </div>
+
+          <span class="proyecto-card__estado" [attr.data-estado]="proyecto.estado">
+            {{ proyecto.estado }}
+          </span>
+        </div>
+
+        <div class="proyecto-card__actions" (click)="$event.stopPropagation()">
+          <p-button
+            icon="pi pi-pencil" severity="secondary" [text]="true" size="small"
+            pTooltip="Editar"
+            (onClick)="abrirDialogEditar(proyecto, $event)"
+          />
+          <p-button
+            icon="pi pi-trash" severity="danger" [text]="true" size="small"
+            pTooltip="Eliminar"
+            (onClick)="confirmarEliminar(proyecto, $event)"
+          />
+        </div>
+
+      </div>
+    }
+
+    @empty {
+      @if (!cargando()) {
+        <div class="proyecto-list__empty">
+          <p>No tienes proyectos aún.</p>
+          <p-button label="Crear tu primer proyecto" (onClick)="abrirDialogCrear()"/>
+        </div>
+      }
+    }
+  </div>
+
+  <p-confirmDialog/>
+  <p-toast/>
+</div>

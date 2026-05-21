@@ -1,0 +1,140 @@
+// design-canvas.scss
+// Layout principal del editor de diseño de eventos
+
+.design-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr 280px;
+  grid-template-rows: 1fr;
+  height: calc(100vh - 60px); // Altura menos el topbar del layout
+  overflow: hidden;
+  background-color: var(--surface-ground);
+  gap: 0;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: 200px 1fr 260px;
+  }
+
+  @media (max-width: 992px) {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    height: auto;
+    overflow: auto;
+  }
+}
+
+// ── Canvas central ─────────────────────────────────────────────────────────
+
+.canvas-wrapper {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--p-surface-200);
+  border-left: 1px solid var(--surface-border);
+  border-right: 1px solid var(--surface-border);
+
+  // El Stage de Konva se posiciona dentro de acá
+  ko-stage,
+  > div:last-child {
+    flex: 1;
+    overflow: hidden;
+  }
+}
+
+// ── Toolbar del canvas ─────────────────────────────────────────────────────
+
+.canvas-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  background-color: var(--surface-card);
+  border-bottom: 1px solid var(--surface-border);
+  gap: 0.75rem;
+  flex-shrink: 0;
+  min-height: 52px;
+
+  &__title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 280px;
+    letter-spacing: -0.01em;
+
+    @media (max-width: 1200px) {
+      max-width: 180px;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+
+    // Botones nativos de HTML (traer al frente / enviar al fondo)
+    button {
+      padding: 0.35rem 0.75rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-color);
+      background-color: var(--surface-ground);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--content-border-radius);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color var(--transition-duration),
+                  border-color var(--transition-duration),
+                  color var(--transition-duration);
+
+      &:hover {
+        background-color: var(--surface-hover);
+        border-color: var(--p-primary-color);
+        color: var(--p-primary-color);
+      }
+    }
+
+    // Overrides mínimos para p-button dentro del toolbar
+    p-button {
+      .p-button {
+        font-size: 0.82rem;
+        padding: 0.38rem 0.85rem;
+        height: 34px;
+      }
+    }
+  }
+
+  @media (max-width: 992px) {
+    flex-wrap: wrap;
+    padding: 0.5rem;
+
+    &__title {
+      max-width: 100%;
+      width: 100%;
+    }
+
+    &__actions {
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
+}
+
+// ── Drop zone visual ────────────────────────────────────────────────────────
+
+.canvas-wrapper.cdk-drop-list-dragging {
+  // Feedback visual cuando un artículo está siendo arrastrado sobre el canvas
+  outline: 2px dashed var(--p-primary-color);
+  outline-offset: -2px;
+}
+
+// ── Escenario tabs (host adjustment) ──────────────────────────────────────
+
+app-escenario-tabs {
+  flex-shrink: 0;
+  display: block;
+  background-color: var(--surface-card);
+  border-bottom: 1px solid var(--surface-border);
+}

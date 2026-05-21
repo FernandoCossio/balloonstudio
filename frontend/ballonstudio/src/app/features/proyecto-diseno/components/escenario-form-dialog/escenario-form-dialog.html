@@ -1,0 +1,47 @@
+<div class="escenario-form">
+  <div class="field">
+    <label for="nombre">Nombre del escenario *</label>
+    <input
+      id="nombre"
+      pInputText
+      [ngModel]="nombre()"
+      (ngModelChange)="nombre.set($event)"
+      placeholder="Ej: Salón Principal"
+      class="w-full"
+    />
+  </div>
+
+  <div class="field">
+    <label for="desc">Descripción</label>
+    <textarea
+      id="desc"
+      pTextarea
+      [ngModel]="descripcion()"
+      (ngModelChange)="descripcion.set($event)"
+      placeholder="Descripción opcional del escenario"
+      rows="3"
+      class="w-full"
+    ></textarea>
+  </div>
+
+  <div class="field">
+    <label>Foto del escenario (opcional)</label>
+    <p-fileupload
+      mode="basic"
+      accept="image/*"
+      [maxFileSize]="5000000"
+      chooseLabel="Seleccionar imagen"
+      (onSelect)="onFileSelect($event)"
+    />
+  </div>
+
+  <div class="escenario-form__actions">
+    <p-button label="Cancelar" severity="secondary" (onClick)="cancelar()"/>
+    <p-button
+      label="Crear escenario"
+      [loading]="cargando()"
+      [disabled]="!nombre().trim()"
+      (onClick)="guardar()"
+    />
+  </div>
+</div>
