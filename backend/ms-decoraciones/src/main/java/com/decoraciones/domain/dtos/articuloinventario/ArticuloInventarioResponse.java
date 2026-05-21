@@ -25,5 +25,6 @@ public record ArticuloInventarioResponse(
         BigDecimal mantenimientoPromedioBs,
         String nivelComplejidad,
         String embeddingVisual,
-        List<CategoriaResponse> categorias
+        List<CategoriaResponse> categorias,
+        List<ImagenArticuloResponse> imagenes
 ) {}
