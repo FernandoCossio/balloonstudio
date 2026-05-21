@@ -56,11 +56,6 @@ export class ArticuloInventarioForm implements OnInit {
     tipoSeleccionado = signal<TipoArticulo>('CONSUMIBLE');
     complejidadSeleccionada = signal<NivelComplejidad>('MEDIO');
     esReutilizable = signal(false);
-
-    imagenes = signal<ImagenArticuloResponse[]>([]);
-    isDragging = signal(false);
-    uploadingImages = signal(false);
-
     // ─── Moneda (accesible desde el template) ────────────────────────────────
     readonly currencySymbol = CURRENCY_SYMBOL;
     readonly currencyCode   = CURRENCY_CODE;
@@ -152,7 +147,6 @@ export class ArticuloInventarioForm implements OnInit {
         this.tipoSeleccionado.set(a.tipoArticulo);
         this.complejidadSeleccionada.set(a.nivelComplejidad ?? 'MEDIO');
         this.esReutilizable.set(a.tipoArticulo === 'REUTILIZABLE');
-        this.imagenes.set(a.imagenes ?? []);
 
         this.form.patchValue({
             step1: { nombre: a.nombre, descripcion: a.descripcion ?? '', estado: a.estado },
@@ -273,93 +267,4 @@ export class ArticuloInventarioForm implements OnInit {
         { label: 'Medio',         value: 'MEDIO',        icon: 'pi pi-star' },
         { label: 'Profesional',   value: 'PROFESIONAL',  icon: 'pi pi-bolt' }
     ];
-
-    // ─── Image Gallery Operations ────────────────────────────────────────────
-    onFilesSelected(event: Event) {
-        const input = event.target as HTMLInputElement;
-        if (input.files && input.files.length > 0) {
-            const files = Array.from(input.files);
-            this.uploadImages(files);
-        }
-    }
-
-    onDragOver(event: DragEvent) {
-        event.preventDefault();
-        this.isDragging.set(true);
-    }
-
-    onDragLeave(event: DragEvent) {
-        event.preventDefault();
-        this.isDragging.set(false);
-    }
-
-    onDrop(event: DragEvent) {
-        event.preventDefault();
-        this.isDragging.set(false);
-        if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
-            const files = Array.from(event.dataTransfer.files);
-            this.uploadImages(files);
-        }
-    }
-
-    uploadImages(files: File[]) {
-        const id = this.editId();
-        if (!id) return;
-
-        this.uploadingImages.set(true);
-        this.svc.uploadImagenes(id, files).subscribe({
-            next: () => {
-                this.uploadingImages.set(false);
-                this.msgSvc.add({ severity: 'success', summary: 'Cargado', detail: 'Imágenes subidas correctamente' });
-                this.reloadImages();
-            },
-            error: (err) => {
-                this.uploadingImages.set(false);
-                this.msgSvc.add({ severity: 'error', summary: 'Error', detail: err?.error ?? 'Error al subir imágenes' });
-            }
-        });
-    }
-
-    reloadImages() {
-        const id = this.editId();
-        if (!id) return;
-        this.svc.getById(id).subscribe({
-            next: (a) => this.imagenes.set(a.imagenes ?? []),
-            error: () => console.error('Error al recargar imágenes')
-        });
-    }
-
-    setAsPrincipal(imagenId: number) {
-        const id = this.editId();
-        if (!id) return;
-
-        this.svc.setPrincipal(id, imagenId).subscribe({
-            next: () => {
-                this.msgSvc.add({ severity: 'success', summary: 'Principal', detail: 'Imagen principal establecida' });
-                this.reloadImages();
-            },
-            error: (err) => {
-                this.msgSvc.add({ severity: 'error', summary: 'Error', detail: err?.error ?? 'Error al establecer imagen principal' });
-            }
-        });
-    }
-
-    deleteImagen(imagenId: number) {
-        const id = this.editId();
-        if (!id) return;
-
-        this.svc.deleteImagen(id, imagenId).subscribe({
-            next: () => {
-                this.msgSvc.add({ severity: 'success', summary: 'Eliminado', detail: 'Imagen eliminada correctamente' });
-                this.reloadImages();
-            },
-            error: (err) => {
-                this.msgSvc.add({ severity: 'error', summary: 'Error', detail: err?.error ?? 'Error al eliminar la imagen' });
-            }
-        });
-    }
-
-    getImageUrl(url: string): string {
-        return `${API_URL}/${url}`;
-    }
 }
