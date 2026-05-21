@@ -126,9 +126,17 @@
                             <tr class="inv-table__row">
                                 <!-- Avatar + Nombre -->
                                 <td class="inv-table__cell-name">
-                                    <div class="inv-avatar" [style.background]="getAvatarColor(art.nombre)">
-                                        {{ getAvatarLetter(art.nombre) }}
-                                    </div>
+                                    @if (getImageForArt(art)) {
+                                        <img [src]="getImageForArt(art)" 
+                                             class="inv-avatar-img" 
+                                             [alt]="art.nombre"
+                                             (mousemove)="onMouseMove($event, art)"
+                                             (mouseleave)="onMouseLeave(art)" />
+                                    } @else {
+                                        <div class="inv-avatar" [style.background]="getAvatarColor(art.nombre)">
+                                            {{ getAvatarLetter(art.nombre) }}
+                                        </div>
+                                    }
                                     <div class="inv-name-group">
                                         <span class="inv-name-primary">{{ art.nombre }}</span>
                                         @if (art.categorias.length) {

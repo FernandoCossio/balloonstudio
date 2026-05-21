@@ -13,6 +13,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ArticuloInventarioResponse, ArticuloInventarioService } from '../../service/articulo-inventario.service';
+import { API_URL } from '@/enviroment/enviroment';
 
 type FilterTab = 'TODOS' | 'CONSUMIBLE' | 'REUTILIZABLE';
 type ComplejidadLevel = 'FACIL' | 'MEDIO' | 'PROFESIONAL';
@@ -41,6 +42,7 @@ export class ArticuloInventario implements OnInit {
     loading = signal(true);
     activeFilter = signal<FilterTab>('TODOS');
     searchQuery = signal('');
+    hoveredImageIndex = signal<Record<number, number>>({});
 
     // ─── Computed ────────────────────────────────────────────────────────────
     articulosFiltrados = computed(() => {
@@ -163,5 +165,51 @@ export class ArticuloInventario implements OnInit {
         let hash = 0;
         for (let i = 0; i < nombre.length; i++) hash = nombre.charCodeAt(i) + ((hash << 5) - hash);
         return colors[Math.abs(hash) % colors.length];
+    }
+
+    getPrincipalImageUrl(art: ArticuloInventarioResponse): string | null {
+        if (!art.imagenes || art.imagenes.length === 0) return null;
+        const principal = art.imagenes.find(img => img.esPrincipal);
+        const img = principal || art.imagenes[0];
+        return `${API_URL}/${img.url}`;
+    }
+
+    getImageForArt(art: ArticuloInventarioResponse): string | null {
+        if (!art.imagenes || art.imagenes.length === 0) return null;
+        
+        const hoverState = this.hoveredImageIndex();
+        const hoveredIndex = hoverState[art.id];
+        
+        if (hoveredIndex !== undefined && hoveredIndex >= 0 && hoveredIndex < art.imagenes.length) {
+            return `${API_URL}/${art.imagenes[hoveredIndex].url}`;
+        }
+        
+        return this.getPrincipalImageUrl(art);
+    }
+
+    onMouseMove(event: MouseEvent, art: ArticuloInventarioResponse) {
+        const imgs = art.imagenes;
+        if (!imgs || imgs.length <= 1) return;
+        
+        const element = event.currentTarget as HTMLElement;
+        const rect = element.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const width = rect.width;
+        
+        const pct = Math.max(0, Math.min(1, x / width));
+        const index = Math.floor(pct * imgs.length);
+        
+        this.hoveredImageIndex.update(state => ({
+            ...state,
+            [art.id]: Math.min(index, imgs.length - 1)
+        }));
+    }
+
+    onMouseLeave(art: ArticuloInventarioResponse) {
+        this.hoveredImageIndex.update(state => {
+            const newState = { ...state };
+            delete newState[art.id];
+            return newState;
+        });
     }
 }

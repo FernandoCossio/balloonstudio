@@ -443,3 +443,20 @@
         &--danger { color: #e53935; }
     }
 }
+
+.inv-avatar-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid var(--surface-border);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: ew-resize;
+
+    &:hover {
+        transform: scale(1.15);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        border-color: #6366f1;
+    }
+}
