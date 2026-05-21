@@ -11,6 +11,7 @@ export const appRoutes: Routes = [
             { path: '', component: Dashboard },
             { path: 'pages', loadChildren: () => import('./app/shared/pages/shared.routes') },
             { path: 'inventario', loadChildren: () => import('./app/features/articulo-inventario/articulo-inventario.routes') },
+            { path: 'empleados', loadChildren: () => import('./app/features/empleado/empleado.routes') },
         ]
     },
     { path: 'notfound', component: Notfound },
