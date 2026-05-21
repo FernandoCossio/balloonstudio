@@ -19,6 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.http.HttpMethod;
 
 import java.util.Arrays;
 import java.util.List;
@@ -45,6 +46,10 @@ public class SecurityConfig {
 					"/swagger-ui.html",
 					"/uploads/**"
 				).permitAll()
+				.requestMatchers("/empleados/**").hasAuthority("role_administrador")
+				.requestMatchers(HttpMethod.POST, "/inventario").hasAuthority("role_administrador")
+				.requestMatchers(HttpMethod.PUT, "/inventario/*").hasAuthority("role_administrador")
+				.requestMatchers(HttpMethod.DELETE, "/inventario/*").hasAuthority("role_administrador")
 				.anyRequest().authenticated()
 			)
 			.oauth2ResourceServer(oauth2 -> oauth2
