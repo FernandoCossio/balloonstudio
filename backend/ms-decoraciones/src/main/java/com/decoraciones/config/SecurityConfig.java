@@ -42,7 +42,8 @@ public class SecurityConfig {
 					"/auth-token/**",
 					"/v3/api-docs/**",
 					"/swagger-ui/**",
-					"/swagger-ui.html"
+					"/swagger-ui.html",
+					"/uploads/**"
 				).permitAll()
 				.anyRequest().authenticated()
 			)
@@ -75,11 +76,11 @@ public class SecurityConfig {
 		return request -> {
 			String uri = request.getRequestURI();
 			if (uri != null) {
-				if (uri.endsWith("/auth/login") || uri.endsWith("/auth/register") || uri.endsWith("/auth/refresh") || uri.endsWith("/auth/logout")) {
-					return defaultResolver.resolve(request);
-				}
-				if (uri.endsWith("/api/auth/login") || uri.endsWith("/api/auth/register") || uri.endsWith("/api/auth/refresh") || uri.endsWith("/api/auth/logout")) {
-					return defaultResolver.resolve(request);
+				if (uri.contains("/uploads/") || 
+					uri.contains("/auth/") || 
+					uri.contains("/v3/api-docs") || 
+					uri.contains("/swagger-ui")) {
+					return null;
 				}
 			}
 
@@ -116,7 +117,7 @@ public class SecurityConfig {
 	CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(List.of("http://localhost:4200"));
-		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"));
 		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers"));
 		configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
 		configuration.setAllowCredentials(true);
