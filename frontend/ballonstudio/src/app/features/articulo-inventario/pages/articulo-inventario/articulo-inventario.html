@@ -181,7 +181,15 @@
                                 </td>
 
                                 <!-- Actions -->
+                                 
                                 <td class="inv-table__actions">
+                                    <button class="inv-icon-btn" 
+                                            [class.inv-icon-btn--has-images]="art.imagenes && art.imagenes.length > 0"
+                                            [pTooltip]="art.imagenes && art.imagenes.length > 0 ? 'Gestionar Galería' : 'Subir Fotos'" 
+                                            tooltipPosition="top"
+                                            (click)="openImageDialog(art)">
+                                        <i [class]="art.imagenes && art.imagenes.length > 0 ? 'pi pi-images' : 'pi pi-upload'"></i>
+                                    </button>
                                     <button class="inv-icon-btn" pTooltip="Editar" tooltipPosition="top"
                                             (click)="editArticulo(art)">
                                         <i class="pi pi-pencil"></i>
@@ -234,3 +242,91 @@
 
     </div><!-- /inv-table-section -->
 </div><!-- /inv-page -->
+
+<p-dialog [(visible)]="showImageDialog" 
+          [modal]="true" 
+          [header]="'Galería de Imágenes: ' + (selectedArticulo()?.nombre || '')"
+          [style]="{ width: '700px', maxWidth: '95vw' }"
+          [draggable]="false"
+          [resizable]="false">
+    
+    <div class="gallery-modal-content">
+        <p class="gallery-card__sub" style="margin-top: 0; margin-bottom: 1.5rem; font-size: 0.875rem; color: var(--text-color-secondary);">
+            Sube una o varias imágenes de este artículo. Selecciona una como principal para la visualización en el catálogo y procesamiento con IA.
+        </p>
+
+        <!-- Drag and Drop Zone -->
+        <div class="upload-zone"
+             [class.upload-zone--dragging]="isDragging()"
+             (dragover)="onDragOver($event)"
+             (dragleave)="onDragLeave($event)"
+             (drop)="onDrop($event)"
+             (click)="fileInput.click()">
+            <input #fileInput type="file" multiple accept="image/*" class="hidden-file-input" (change)="onFilesSelected($event)">
+            
+            @if (uploadingImages()) {
+                <div class="upload-zone__loading">
+                    <i class="pi pi-spin pi-spinner upload-zone__icon upload-zone__icon--spin"></i>
+                    <p class="upload-zone__text">Subiendo imágenes...</p>
+                </div>
+            } @else {
+                <div class="upload-zone__content">
+                    <i class="pi pi-cloud-upload upload-zone__icon"></i>
+                    <p class="upload-zone__text">Arrastra imágenes aquí o <strong>haz clic para buscar</strong></p>
+                    <p class="upload-zone__subtext">Formatos recomendados: PNG, JPG (máx. 5MB)</p>
+                </div>
+            }
+        </div>
+
+        <!-- Image Grid -->
+        @if (imagenes().length > 0) {
+            <div class="gallery-grid">
+                @for (img of imagenes(); track img.id) {
+                    <div class="gallery-item" [class.gallery-item--principal]="img.esPrincipal">
+                        <div class="gallery-item__img-container">
+                            <img [src]="getImageUrl(img.url)" class="gallery-item__img" alt="Imagen de artículo">
+                            @if (img.esPrincipal) {
+                                <span class="gallery-badge-principal">
+                                    Principal
+                                </span>
+                            }
+                        </div>
+                        <div class="gallery-item__actions">
+                            @if (!img.esPrincipal) {
+                                <button pButton 
+                                        class="gallery-action-btn gallery-action-btn--star p-button-text p-button-rounded" 
+                                        icon="pi pi-star" 
+                                        pTooltip="Marcar como principal" 
+                                        tooltipPosition="top"
+                                        (click)="setAsPrincipal(img.id)">
+                                </button>
+                            } @else {
+                                <button pButton 
+                                        class="gallery-action-btn gallery-action-btn--star-active p-button-text p-button-rounded" 
+                                        icon="pi pi-star-fill" 
+                                        pTooltip="Imagen Principal" 
+                                        tooltipPosition="top"
+                                        [disabled]="true">
+                                </button>
+                            }
+                            <button pButton 
+                                    class="gallery-action-btn gallery-action-btn--delete p-button-text p-button-rounded p-button-danger" 
+                                    icon="pi pi-trash" 
+                                    pTooltip="Eliminar imagen" 
+                                    tooltipPosition="top"
+                                    (click)="deleteImagen(img.id)">
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        } @else {
+            <div class="gallery-empty" style="margin-top: 1.5rem;">
+                <i class="pi pi-image gallery-empty__icon"></i>
+                <p class="gallery-empty__text">
+                    Aún no hay imágenes cargadas para este artículo.
+                </p>
+            </div>
+        }
+    </div>
+</p-dialog>

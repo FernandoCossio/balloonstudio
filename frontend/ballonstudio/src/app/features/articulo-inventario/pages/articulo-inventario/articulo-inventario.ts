@@ -12,7 +12,8 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
 import { SkeletonModule } from 'primeng/skeleton';
-import { ArticuloInventarioResponse, ArticuloInventarioService } from '../../service/articulo-inventario.service';
+import { DialogModule } from 'primeng/dialog';
+import { ArticuloInventarioResponse, ArticuloInventarioService, ImagenArticuloResponse } from '../../service/articulo-inventario.service';
 import { API_URL } from '@/enviroment/enviroment';
 
 type FilterTab = 'TODOS' | 'CONSUMIBLE' | 'REUTILIZABLE';
@@ -25,7 +26,7 @@ type ComplejidadLevel = 'FACIL' | 'MEDIO' | 'PROFESIONAL';
         CommonModule, RouterModule, FormsModule,
         ButtonModule, TableModule, TagModule, BadgeModule,
         TooltipModule, ConfirmDialogModule, ToastModule,
-        MenuModule, SkeletonModule
+        MenuModule, SkeletonModule, DialogModule
     ],
     providers: [ConfirmationService, MessageService],
     templateUrl: './articulo-inventario.html',
@@ -43,6 +44,12 @@ export class ArticuloInventario implements OnInit {
     activeFilter = signal<FilterTab>('TODOS');
     searchQuery = signal('');
     hoveredImageIndex = signal<Record<number, number>>({});
+
+    showImageDialog = signal(false);
+    selectedArticulo = signal<ArticuloInventarioResponse | null>(null);
+    imagenes = signal<ImagenArticuloResponse[]>([]);
+    isDragging = signal(false);
+    uploadingImages = signal(false);
 
     // ─── Computed ────────────────────────────────────────────────────────────
     articulosFiltrados = computed(() => {
@@ -211,5 +218,103 @@ export class ArticuloInventario implements OnInit {
             delete newState[art.id];
             return newState;
         });
+    }
+
+    openImageDialog(articulo: ArticuloInventarioResponse) {
+        this.selectedArticulo.set(articulo);
+        this.imagenes.set(articulo.imagenes ?? []);
+        this.showImageDialog.set(true);
+    }
+
+    onFilesSelected(event: Event) {
+        const input = event.target as HTMLInputElement;
+        if (input.files && input.files.length > 0) {
+            const files = Array.from(input.files);
+            this.uploadImages(files);
+        }
+    }
+
+    onDragOver(event: DragEvent) {
+        event.preventDefault();
+        this.isDragging.set(true);
+    }
+
+    onDragLeave(event: DragEvent) {
+        event.preventDefault();
+        this.isDragging.set(false);
+    }
+
+    onDrop(event: DragEvent) {
+        event.preventDefault();
+        this.isDragging.set(false);
+        if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+            const files = Array.from(event.dataTransfer.files);
+            this.uploadImages(files);
+        }
+    }
+
+    uploadImages(files: File[]) {
+        const art = this.selectedArticulo();
+        if (!art) return;
+
+        this.uploadingImages.set(true);
+        this.svc.uploadImagenes(art.id, files).subscribe({
+            next: () => {
+                this.uploadingImages.set(false);
+                this.msgSvc.add({ severity: 'success', summary: 'Cargado', detail: 'Imágenes subidas correctamente' });
+                this.reloadImages();
+            },
+            error: (err) => {
+                this.uploadingImages.set(false);
+                this.msgSvc.add({ severity: 'error', summary: 'Error', detail: err?.error ?? 'Error al subir imágenes' });
+            }
+        });
+    }
+
+    reloadImages() {
+        const art = this.selectedArticulo();
+        if (!art) return;
+        this.svc.getById(art.id).subscribe({
+            next: (updatedArt) => {
+                this.imagenes.set(updatedArt.imagenes ?? []);
+                this.articulos.update(list => list.map(a => a.id === updatedArt.id ? updatedArt : a));
+                this.selectedArticulo.set(updatedArt);
+            },
+            error: () => console.error('Error al recargar imágenes')
+        });
+    }
+
+    setAsPrincipal(imagenId: number) {
+        const art = this.selectedArticulo();
+        if (!art) return;
+
+        this.svc.setPrincipal(art.id, imagenId).subscribe({
+            next: () => {
+                this.msgSvc.add({ severity: 'success', summary: 'Principal', detail: 'Imagen principal establecida' });
+                this.reloadImages();
+            },
+            error: (err) => {
+                this.msgSvc.add({ severity: 'error', summary: 'Error', detail: err?.error ?? 'Error al establecer imagen principal' });
+            }
+        });
+    }
+
+    deleteImagen(imagenId: number) {
+        const art = this.selectedArticulo();
+        if (!art) return;
+
+        this.svc.deleteImagen(art.id, imagenId).subscribe({
+            next: () => {
+                this.msgSvc.add({ severity: 'success', summary: 'Eliminado', detail: 'Imagen eliminada correctamente' });
+                this.reloadImages();
+            },
+            error: (err) => {
+                this.msgSvc.add({ severity: 'error', summary: 'Error', detail: err?.error ?? 'Error al eliminar la imagen' });
+            }
+        });
+    }
+
+    getImageUrl(url: string): string {
+        return `${API_URL}/${url}`;
     }
 }
