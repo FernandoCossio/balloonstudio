@@ -1,0 +1,419 @@
+<p-toast />
+
+<div class="form-page">
+    <!-- Breadcrumb & Header -->
+    <div class="form-header">
+        <div class="form-header__back">
+            <p-button icon="pi pi-arrow-left" [rounded]="true" [text]="true" severity="secondary" styleClass="p-button-rounded p-button-text p-button-secondary" (onClick)="cancel()"></p-button>
+            <span class="form-header__crumb" (click)="cancel()">Empleados</span>
+            <span class="form-header__separator">/</span>
+            <span class="form-header__current">{{ isEdit() ? 'Editar Empleado' : 'Registrar Empleado' }}</span>
+        </div>
+        <h1 class="form-header__title">{{ isEdit() ? 'Actualizar Cuenta de Empleado' : 'Nuevo Miembro de Equipo' }}</h1>
+        <p class="form-header__sub">
+            {{ isEdit() ? 'Edita los datos personales y de contacto del empleado seleccionado.' : 'Sigue el asistente interactivo para registrar y configurar una nueva cuenta de acceso.' }}
+        </p>
+    </div>
+
+    <!-- Main Content Grid -->
+    @if (loading()) {
+        <div class="form-skeleton">
+            <div class="skeleton-left">
+                <p-skeleton width="100%" height="48px" borderRadius="8px" class="mb-4" />
+                <p-skeleton width="100%" height="220px" borderRadius="12px" class="mb-4" />
+                <p-skeleton width="120px" height="40px" borderRadius="6px" />
+            </div>
+            <div class="skeleton-right">
+                <p-skeleton width="100%" height="300px" borderRadius="12px" />
+            </div>
+        </div>
+    } @else {
+        <div class="form-grid">
+            
+            <!-- Left Panel: The Stepper or the Edit Form -->
+            <div class="form-panel-main">
+                
+                @if (isEdit()) {
+                    <!-- ──────────────── EDIT FORM VIEW ──────────────── -->
+                    <form [formGroup]="form" (ngSubmit)="save()" class="edit-mode-form">
+                        <div class="form-section-card">
+                            <div class="form-section-card__title">
+                                <i class="pi pi-user-edit text-pink-600"></i>
+                                Informacion de Empleado
+                            </div>
+
+                            <div class="form-inputs-group" formGroupName="step1">
+                                <!-- Nombre Completo -->
+                                <div class="form-field">
+                                    <label for="nombreCompletoEdit" class="form-field__label">Nombre Completo <span class="required-asterisk">*</span></label>
+                                    <div class="input-icon-wrapper">
+                                        <i class="pi pi-user field-icon"></i>
+                                        <input
+                                            pInputText
+                                            id="nombreCompletoEdit"
+                                            formControlName="nombreCompleto"
+                                            placeholder="Ej. Juan Pérez"
+                                            class="form-field__input"
+                                            [class.invalid-border]="step1Group.get('nombreCompleto')?.touched && step1Group.get('nombreCompleto')?.invalid"
+                                        />
+                                    </div>
+                                    @if (step1Group.get('nombreCompleto')?.touched && step1Group.get('nombreCompleto')?.hasError('required')) {
+                                        <span class="field-error-msg">El nombre completo es obligatorio.</span>
+                                    }
+                                    @if (step1Group.get('nombreCompleto')?.touched && step1Group.get('nombreCompleto')?.hasError('minlength')) {
+                                        <span class="field-error-msg">Debe tener al menos 3 caracteres.</span>
+                                    }
+                                </div>
+
+                                <!-- Teléfono -->
+                                <div class="form-field">
+                                    <label for="telefonoEdit" class="form-field__label">Número de Teléfono</label>
+                                    <div class="input-icon-wrapper">
+                                        <i class="pi pi-phone field-icon"></i>
+                                        <input
+                                            pInputText
+                                            id="telefonoEdit"
+                                            formControlName="telefono"
+                                            placeholder="Ej. +591 70000000"
+                                            class="form-field__input"
+                                            [class.invalid-border]="step1Group.get('telefono')?.touched && step1Group.get('telefono')?.invalid"
+                                            (keypress)="onlyPhoneChars($event)"
+                                            (input)="onPhoneInput($event, 'step1.telefono')"
+                                        />
+                                    </div>
+                                    @if (step1Group.get('telefono')?.touched && step1Group.get('telefono')?.hasError('pattern')) {
+                                        <span class="field-error-msg">El teléfono solo debe contener números, espacios o el signo '+'.</span>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="form-inputs-group pt-4 border-t border-dashed border-gray-200 mt-4" formGroupName="step2">
+                                <!-- Correo Electrónico -->
+                                <div class="form-field">
+                                    <label for="emailEdit" class="form-field__label">Correo Electrónico <span class="required-asterisk">*</span></label>
+                                    <div class="input-icon-wrapper">
+                                        <i class="pi pi-envelope field-icon"></i>
+                                        <input
+                                            pInputText
+                                            id="emailEdit"
+                                            formControlName="email"
+                                            placeholder="ejemplo@balloonstudio.com"
+                                            class="form-field__input"
+                                            [class.invalid-border]="step2Group.get('email')?.touched && step2Group.get('email')?.invalid"
+                                        />
+                                    </div>
+                                    @if (step2Group.get('email')?.touched && step2Group.get('email')?.hasError('required')) {
+                                        <span class="field-error-msg">El email es obligatorio.</span>
+                                    }
+                                    @if (step2Group.get('email')?.touched && step2Group.get('email')?.hasError('email')) {
+                                        <span class="field-error-msg">Formato de email inválido.</span>
+                                    }
+                                </div>
+
+                                <!-- Nombre de Usuario -->
+                                <div class="form-field">
+                                    <label for="usernameEdit" class="form-field__label">Nombre de Usuario</label>
+                                    <div class="input-icon-wrapper">
+                                        <i class="pi pi-at field-icon"></i>
+                                        <input
+                                            pInputText
+                                            id="usernameEdit"
+                                            formControlName="username"
+                                            placeholder="Ej. jperez"
+                                            class="form-field__input"
+                                        />
+                                    </div>
+                                    <span class="field-info-msg">Si se deja vacío, el email se utilizará como nombre de usuario.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons (Edit Mode) -->
+                        <div class="form-actions-footer">
+                            <p-button label="Cancelar" [outlined]="true" severity="secondary" styleClass="border-gray-300" (onClick)="cancel()"></p-button>
+                            <p-button label="Guardar Cambios" type="submit" styleClass="emp-btn-primary" [loading]="saving()"></p-button>
+                        </div>
+                    </form>
+
+                } @else {
+                    <!-- ──────────────── CREATE WIZARD (STEPPER) ──────────────── -->
+                    <div class="wizard-container" [formGroup]="form">
+                        <!-- Stepper Headers -->
+                        <div class="stepper-header">
+                            @for (s of steps; track s.num) {
+                                <div class="step-indicator" 
+                                     [class.step-indicator--active]="step() === s.num" 
+                                     [class.step-indicator--completed]="step() > s.num"
+                                     [class.step-indicator--clickable]="canGoToStep(s.num)"
+                                     (click)="goToStep(s.num)">
+                                    <div class="step-indicator__circle">
+                                        @if (step() > s.num) {
+                                            <i class="pi pi-check"></i>
+                                        } @else {
+                                            {{ s.num }}
+                                        }
+                                    </div>
+                                    <span class="step-indicator__label">{{ s.label }}</span>
+                                </div>
+                                @if (s.num < steps.length) {
+                                    <div class="step-connector" [class.step-connector--active]="step() > s.num"></div>
+                                }
+                            }
+                        </div>
+
+                        <!-- Stepper Body -->
+                        <div class="stepper-body">
+                            
+                            <!-- STEP 1: DATOS BÁSICOS -->
+                            @if (step() === 1) {
+                                <div class="stepper-slide" formGroupName="step1">
+                                    <h3 class="slide-title">Paso 1: Información Personal</h3>
+                                    <p class="slide-subtitle">Ingresa los datos personales del nuevo empleado de la empresa.</p>
+
+                                    <div class="form-inputs-group">
+                                        <!-- Nombre Completo -->
+                                        <div class="form-field">
+                                            <label for="nombreCompleto" class="form-field__label">Nombre Completo <span class="required-asterisk">*</span></label>
+                                            <div class="input-icon-wrapper">
+                                                <i class="pi pi-user field-icon"></i>
+                                                <input
+                                                    pInputText
+                                                    id="nombreCompleto"
+                                                    formControlName="nombreCompleto"
+                                                    placeholder="Ej. Juan Pérez"
+                                                    class="form-field__input"
+                                                    [class.invalid-border]="step1Group.get('nombreCompleto')?.touched && step1Group.get('nombreCompleto')?.invalid"
+                                                />
+                                            </div>
+                                            @if (step1Group.get('nombreCompleto')?.touched && step1Group.get('nombreCompleto')?.hasError('required')) {
+                                                <span class="field-error-msg">El nombre completo es obligatorio.</span>
+                                            }
+                                            @if (step1Group.get('nombreCompleto')?.touched && step1Group.get('nombreCompleto')?.hasError('minlength')) {
+                                                <span class="field-error-msg">Debe tener al menos 3 caracteres.</span>
+                                            }
+                                        </div>
+
+                                        <!-- Teléfono -->
+                                        <div class="form-field">
+                                            <label for="telefono" class="form-field__label">Número de Teléfono</label>
+                                            <div class="input-icon-wrapper">
+                                                <i class="pi pi-phone field-icon"></i>
+                                                <input
+                                                    pInputText
+                                                    id="telefono"
+                                                    formControlName="telefono"
+                                                    placeholder="Ej. +591 70000000"
+                                                    class="form-field__input"
+                                                    [class.invalid-border]="step1Group.get('telefono')?.touched && step1Group.get('telefono')?.invalid"
+                                                    (keypress)="onlyPhoneChars($event)"
+                                                    (input)="onPhoneInput($event, 'step1.telefono')"
+                                                />
+                                            </div>
+                                            @if (step1Group.get('telefono')?.touched && step1Group.get('telefono')?.hasError('pattern')) {
+                                                <span class="field-error-msg">
+                                                    El teléfono solo debe contener números, espacios o el signo '+'.
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- STEP 2: CUENTA Y ROLES -->
+                            @if (step() === 2) {
+                                <div class="stepper-slide" formGroupName="step2">
+                                    <h3 class="slide-title">Paso 2: Credenciales e Identidad</h3>
+                                    <p class="slide-subtitle">Configura los parámetros de inicio de sesión y el rol correspondiente.</p>
+
+                                    <div class="form-inputs-group">
+                                        <!-- Correo Electrónico -->
+                                        <div class="form-field">
+                                            <label for="email" class="form-field__label">
+                                                Correo Electrónico <span class="required-asterisk">*</span>
+                                            </label>
+                                            <div class="input-icon-wrapper">
+                                                <i class="pi pi-envelope field-icon"></i>
+                                                <input
+                                                    pInputText
+                                                    id="email"
+                                                    formControlName="email"
+                                                    placeholder="ejemplo@balloonstudio.com"
+                                                    class="form-field__input"
+                                                    [class.invalid-border]="step2Group.get('email')?.touched && step2Group.get('email')?.invalid"
+                                                />
+                                            </div>
+                                            @if (step2Group.get('email')?.touched && step2Group.get('email')?.hasError('required')) {
+                                                <span class="field-error-msg">El email es obligatorio.</span>
+                                            }
+                                            @if (step2Group.get('email')?.touched && step2Group.get('email')?.hasError('email')) {
+                                                <span class="field-error-msg">Formato de email inválido.</span>
+                                            }
+                                        </div>
+
+                                        <!-- Nombre de Usuario -->
+                                        <div class="form-field">
+                                            <label for="username" class="form-field__label">Nombre de Usuario <span class="optional-badge">(Opcional)</span></label>
+                                            <div class="input-icon-wrapper">
+                                                <i class="pi pi-at field-icon"></i>
+                                                <input
+                                                    pInputText
+                                                    id="username"
+                                                    formControlName="username"
+                                                    placeholder="Ej. jperez"
+                                                    class="form-field__input"
+                                                />
+                                            </div>
+                                            <span class="field-info-msg">Por defecto se usará el correo electrónico como nombre de usuario.</span>
+                                        </div>
+
+                                        <!-- Roles Predefinidos -->
+                                        <div class="form-field pt-2">
+                                            <label class="form-field__label mb-2">Rol Asignado del Sistema</label>
+                                            <div class="default-role-box">
+                                                <div class="default-role-box__left">
+                                                    <div class="role-icon-circle">
+                                                        <i class="pi pi-briefcase"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="default-role-box__right">
+                                                    <h4>EMPLEADO</h4>
+                                                    <p>Otorga acceso completo a la gestión y control operativo del catálogo de inventario de Balloon Studio.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- STEP 3: CONFIRMACIÓN -->
+                            @if (step() === 3) {
+                                <div class="stepper-slide">
+                                    <h3 class="slide-title text-center">Paso 3: Confirmación y Envío</h3>
+                                    <p class="slide-subtitle text-center">Por favor, revisa detalladamente la información del nuevo empleado antes de crear su cuenta.</p>
+
+                                    <!-- Summary Card -->
+                                    <div class="summary-card">
+                                        <div class="summary-item">
+                                            <span class="summary-item__label">Nombre Completo:</span>
+                                            <span class="summary-item__value">{{ step1Group.get('nombreCompleto')?.value }}</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="summary-item__label">Número de Teléfono:</span>
+                                            <span class="summary-item__value">{{ step1Group.get('telefono')?.value || 'Sin teléfono asignado' }}</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="summary-item__label">Email Registrado:</span>
+                                            <span class="summary-item__value summary-item__value--email">{{ step2Group.get('email')?.value }}</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="summary-item__label">Nombre de Usuario:</span>
+                                            <span class="summary-item__value">{{ step2Group.get('username')?.value || '(Se utilizará el Email)' }}</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="summary-item__label">Rol en Plataforma:</span>
+                                            <span class="summary-item__value">
+                                                <span class="emp-role-badge emp-role-badge--empleado">EMPLEADO</span>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Notice Box -->
+                                    <div class="activation-notice">
+                                        <i class="pi pi-info-circle activation-notice__icon"></i>
+                                        <div class="activation-notice__content">
+                                            <h4>Proceso de Activación</h4>
+                                            <p>Al hacer clic en <strong>Finalizar Registro</strong>, el sistema creará la cuenta y enviará un correo con un token seguro para que el empleado defina su propia contraseña.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                        </div>
+
+                        <!-- Stepper Action Buttons -->
+                        <div class="stepper-footer">
+                            <p-button 
+                                label="Cancelar" 
+                                [outlined]="true" 
+                                severity="secondary" 
+                                styleClass="border-gray-300" 
+                                (onClick)="cancel()"></p-button>
+                            <div class="stepper-footer__right">
+                                @if (step() > 1) {
+                                    <p-button 
+                                        label="Anterior" 
+                                        icon="pi pi-arrow-left" 
+                                        [outlined]="true" 
+                                        severity="secondary" 
+                                        styleClass="border-gray-300" 
+                                        (onClick)="prev()"
+                                        ></p-button>
+                                }
+                                @if (step() < 3) {
+                                    <p-button 
+                                        label="Siguiente" 
+                                        icon="pi pi-arrow-right" 
+                                        iconPos="right" 
+                                        styleClass="emp-btn-primary" 
+                                        [disabled]="!canGoNext()" 
+                                        (onClick)="next()"
+                                        ></p-button>
+                                } @else {
+                                    <p-button 
+                                        label="Finalizar Registro" 
+                                        icon="pi pi-check" 
+                                        iconPos="right" 
+                                        styleClass="emp-btn-primary"
+                                        [loading]="saving()" 
+                                        (onClick)="save()"
+                                    ></p-button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+
+            </div>
+
+            <!-- Right Panel: Side Information & Context Helper -->
+            <div class="form-panel-side">
+                <div class="help-card">
+                    <div class="help-card__header">
+                        <i class="pi pi-shield help-card__icon"></i>
+                        <h3>Asistente de Seguridad</h3>
+                    </div>
+                    <div class="help-card__body">
+                        <p class="help-card__intro">
+                            Estás creando un registro administrativo oficial. Recuerda las directrices generales de asignación:
+                        </p>
+                        
+                        <div class="help-bullet">
+                            <i class="pi pi-check-circle help-bullet__icon"></i>
+                            <div class="help-bullet__text">
+                                <strong>Seguridad del Correo</strong>
+                                <p>El email debe pertenecer al dominio corporativo o ser un correo oficial del trabajador para recibir tokens de seguridad.</p>
+                            </div>
+                        </div>
+
+                        <div class="help-bullet">
+                            <i class="pi pi-lock-open help-bullet__icon"></i>
+                            <div class="help-bullet__text">
+                                <strong>Tokens de Activación</strong>
+                                <p>Por seguridad de la plataforma, el sistema NO permite asignar contraseñas genéricas. El empleado gestionará su clave de forma autónoma.</p>
+                            </div>
+                        </div>
+
+                        <div class="help-bullet">
+                            <i class="pi pi-user-minus help-bullet__icon"></i>
+                            <div class="help-bullet__text">
+                                <strong>Auditoría de Acciones</strong>
+                                <p>Si el empleado finaliza su relación laboral, su cuenta puede ser temporalmente desactivada desde el listado sin borrar sus registros históricos.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    }
+</div>
