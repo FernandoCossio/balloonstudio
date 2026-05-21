@@ -8,6 +8,7 @@ import type { LoginRequest } from '../interface/login-request.interface';
 import type { RegistrarClienteDto } from '../interface/registrar-cliente-dto.interface';
 import type { ResponseUsuarioDto } from '../interface/response-usuario-dto.interface';
 import type { TokenResponse } from '../interface/token-response.interface';
+import { API_URL } from '@/enviroment/enviroment';
 
 export type { ActivarCuentaDto } from '../interface/activar-cuenta-dto.interface';
 export type { LoginRequest } from '../interface/login-request.interface';
@@ -31,7 +32,7 @@ export interface JwtPayload {
 })
 export class AuthService {
     private http = inject(HttpClient);
-    private readonly API_URL = 'http://localhost:8080/api'; // Base URL para todos los endpoints
+    private readonly API_URL = API_URL;
 
     private _payload = signal<JwtPayload | null>(null);
 
