@@ -72,6 +72,8 @@ public enum ErrorCode {
     // INV — Inventario
     // -------------------------------------------------------------------------
     ARTICULO_INVENTARIO_NO_ENCONTRADO("INV101", HttpStatus.NOT_FOUND, "Artículo de inventario no encontrado"),
+    IMAGEN_NO_ENCONTRADA("INV102", HttpStatus.NOT_FOUND, "Imagen no encontrada"),
+    IMAGEN_NO_PERTENECE_AL_ARTICULO("INV202", HttpStatus.BAD_REQUEST, "La imagen no pertenece al artículo especificado"),
 
     // -------------------------------------------------------------------------
     // VAL — Validación de campos
