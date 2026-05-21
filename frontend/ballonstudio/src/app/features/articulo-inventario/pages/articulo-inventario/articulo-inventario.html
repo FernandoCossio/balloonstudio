@@ -12,7 +12,9 @@
         </div>
         <div class="inv-header__actions">
             <button pButton class="p-button-outlined inv-btn-filter" icon="pi pi-filter" label="Filtros Avanzados"></button>
-            <button pButton class="inv-btn-primary" icon="pi pi-plus" label="Nuevo Artículo" (click)="openNew()"></button>
+            @if (isAdmin()) {
+                <button pButton class="inv-btn-primary" icon="pi pi-plus" label="Nuevo Artículo" (click)="openNew()"></button>
+            }
         </div>
     </div>
 
@@ -106,7 +108,9 @@
             <div class="inv-empty">
                 <i class="pi pi-inbox inv-empty__icon"></i>
                 <p>No se encontraron artículos</p>
-                <button pButton class="inv-btn-primary" label="Agregar el primero" icon="pi pi-plus" (click)="openNew()"></button>
+                @if (isAdmin()) {
+                    <button pButton class="inv-btn-primary" label="Agregar el primero" icon="pi pi-plus" (click)="openNew()"></button>
+                }
             </div>
         } @else {
             <div class="inv-table-wrapper">
@@ -190,14 +194,16 @@
                                             (click)="openImageDialog(art)">
                                         <i [class]="art.imagenes && art.imagenes.length > 0 ? 'pi pi-images' : 'pi pi-upload'"></i>
                                     </button>
-                                    <button class="inv-icon-btn" pTooltip="Editar" tooltipPosition="top"
-                                            (click)="editArticulo(art)">
-                                        <i class="pi pi-pencil"></i>
-                                    </button>
-                                    <button class="inv-icon-btn inv-icon-btn--danger" pTooltip="Eliminar" tooltipPosition="top"
-                                            (click)="confirmDelete(art)">
-                                        <i class="pi pi-trash"></i>
-                                    </button>
+                                    @if (isAdmin()) {
+                                        <button class="inv-icon-btn" pTooltip="Editar" tooltipPosition="top"
+                                                (click)="editArticulo(art)">
+                                            <i class="pi pi-pencil"></i>
+                                        </button>
+                                        <button class="inv-icon-btn inv-icon-btn--danger" pTooltip="Eliminar" tooltipPosition="top"
+                                                (click)="confirmDelete(art)">
+                                            <i class="pi pi-trash"></i>
+                                        </button>
+                                    }
                                 </td>
                             </tr>
                         }
