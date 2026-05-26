@@ -20,6 +20,7 @@ import { ArticuloInventarioDto } from '@/app/features/proyecto-diseno/interfaces
 import { EscenarioBaseResponse } from '@/app/features/proyecto-diseno/interfaces/proyecto-diseno.interface';
 import { CatalogoSidebar } from './components/catalogo-sidebar/catalogo-sidebar';
 import { PricingPanel } from './components/pricing-panel/pricing-panel';
+import { Location } from '@angular/common';
 
 const CANVAS_W = 1600;
 const CANVAS_H = 900;
@@ -44,6 +45,7 @@ const ZOOM_MAX = 3;
 })
 export class DesignCanvas implements AfterViewInit, OnDestroy {
 
+  private location = inject(Location);
   readonly canvasState    = inject(CanvasStateService);
   private ngZone          = inject(NgZone);
   private route           = inject(ActivatedRoute);
@@ -54,7 +56,8 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
   @ViewChild('transformerRef')   transformerRef!: any;
   @ViewChild('canvasWrapperRef') canvasWrapperRef!: ElementRef<HTMLElement>;
 
-  // El stage siempre es 1600x900 — zoom y pan se aplican vía Konva directamente
+  // El stage adopta el tamaño del wrapper — se inicializa con valores temporales
+  // y se actualiza en initKonvaListeners() una vez que el DOM está listo.
   readonly stageConfig = signal<StageConfig>({
     width:  CANVAS_W,
     height: CANVAS_H,
@@ -74,6 +77,9 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
 
   // Referencia al stage de Konva — se obtiene una vez en ngAfterViewInit
   private stage!: Konva.Stage;
+
+  // ResizeObserver para mantener el stage al tamaño del wrapper
+  private resizeObserver!: ResizeObserver;
 
   // Listeners registrados fuera de Angular para no disparar CD
   private wheelListener!:       (e: WheelEvent) => void;
@@ -105,11 +111,17 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
   }
 
   // Llamado desde el template una vez que el ko-stage está en el DOM
-  // (usamos (click) del stage como señal de que Konva ya inicializó)
   private initKonvaListeners(): void {
     if (this.stage) return;   // ya inicializado
     this.stage = this.stageRef.getNode() as Konva.Stage;
     if (!this.stage) return;
+
+    // ── Ajustar el stage al tamaño real del wrapper ────────────────────────
+    // Esto es crítico: el canvas de Konva debe coincidir con el contenedor
+    // para que el pan no muestre áreas recortadas fuera del canvas HTML.
+    this.resizeStageToWrapper();
+    this.resizeObserver = new ResizeObserver(() => this.resizeStageToWrapper());
+    this.resizeObserver.observe(this.canvasWrapperRef.nativeElement);
 
     const container = this.stage.container();
 
@@ -169,9 +181,6 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
     window.addEventListener(   'mouseup',    this.middleUpListener);
 
     // ── Persistir dimensiones tras redimensionar con el transformer ────────
-    // Konva modifica scaleX/scaleY del nodo al redimensionar. Lo normalizamos
-    // a width/height reales y reseteamos la escala a 1 para que Angular no
-    // revierta al tamaño original al re-renderizar desde el signal.
     this.transformEndHandler = () => {
       const tr = this.transformerRef?.getNode() as Konva.Transformer;
       if (!tr) return;
@@ -180,11 +189,9 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
         const instanceId = node.name();
         if (!instanceId) return;
 
-        // Calcular el nuevo tamaño real absorbiendo la escala del transformer
         const newW  = Math.max(10, node.width()  * node.scaleX());
         const newH  = Math.max(10, node.height() * node.scaleY());
 
-        // Resetear escala en el nodo — el tamaño ya está en width/height
         node.width(newW);
         node.height(newH);
         node.scaleX(1);
@@ -210,6 +217,8 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.resizeObserver?.disconnect();
+
     if (!this.stage) return;
     const container = this.stage.container();
     container.removeEventListener('wheel',     this.wheelListener);
@@ -217,6 +226,28 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
     window.removeEventListener(  'mousemove',  this.middleMoveListener);
     window.removeEventListener(  'mouseup',    this.middleUpListener);
     this.stage.off('transformend', this.transformEndHandler);
+  }
+
+  // ── Resize: sincroniza el canvas de Konva con el wrapper ─────────────────
+  // El stage debe tener exactamente el tamaño del contenedor para que el pan
+  // no deje áreas recortadas al mover el contenido fuera del canvas HTML.
+
+  private resizeStageToWrapper(): void {
+    const wrapper = this.canvasWrapperRef?.nativeElement;
+    if (!this.stage || !wrapper) return;
+
+    const w = wrapper.clientWidth;
+    const h = wrapper.clientHeight;
+
+    this.stage.width(w);
+    this.stage.height(h);
+    this.stage.batchDraw();
+
+    // Actualizar el signal para que Angular conozca el nuevo tamaño
+    // (evita que un re-render posterior revierta las dimensiones)
+    this.ngZone.run(() => {
+      this.stageConfig.set({ width: w, height: h });
+    });
   }
 
   // ── Fit to screen ─────────────────────────────────────────────────────────
@@ -421,7 +452,6 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
   // ── Selección, transformer, drag ─────────────────────────────────────────
 
   onItemClick(event: NgKonvaEventObject<MouseEvent>, instanceId: string): void {
-    // Ignorar si el click viene de un pan con botón medio (raro, pero posible)
     if (this._isPanningMiddle) return;
 
     this.canvasState.selectItem(instanceId);
@@ -447,8 +477,6 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
 
   onDragEnd(event: NgKonvaEventObject<MouseEvent>, instanceId: string): void {
     const node = event.event.target as unknown as Konva.Node;
-    // Persistir posición + escala + rotación actuales del nodo
-    // para que el estado siempre refleje lo que Konva tiene
     this.canvasState.updateConfig(instanceId, {
       x:        node.x(),
       y:        node.y(),
@@ -479,5 +507,9 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
       return updated;
     });
     this.canvasState.removeItem(instanceId);
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 }

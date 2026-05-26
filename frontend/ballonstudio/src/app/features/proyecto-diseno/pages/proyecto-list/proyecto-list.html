@@ -1,45 +1,83 @@
 <div class="proyecto-list">
+
   <div class="proyecto-list__header">
     <h1>Mis proyectos</h1>
     <p-button label="Nuevo proyecto" icon="pi pi-plus" (onClick)="abrirDialogCrear()"/>
   </div>
 
   @if (cargando()) {
-    <div class="proyecto-list__loading">Cargando proyectos...</div>
+    <div class="proyecto-list__loading">
+      <i class="pi pi-spin pi-spinner"></i>
+      Cargando proyectos...
+    </div>
   }
 
   <div class="proyecto-list__grid">
+
     @for (proyecto of proyectos(); track proyecto.id) {
       <div class="proyecto-card" (click)="abrirProyecto(proyecto)">
 
+        <!-- Cuerpo de la card -->
         <div class="proyecto-card__body">
-          <h3 class="proyecto-card__nombre">{{ proyecto.nombre }}</h3>
-          <p class="proyecto-card__descripcion">{{ proyecto.descripcion }}</p>
 
-          <div class="proyecto-card__meta">
-            @if (proyecto.fechaEvento) {
-              <span>📅 {{ proyecto.fechaEvento | date: 'dd/MM/yyyy' }}</span>
-            }
-            @if (proyecto.lugarEvento) {
-              <span>📍 {{ proyecto.lugarEvento }}</span>
-            }
-            <span>🎨 {{ proyecto.escenarios.length }} escenario(s)</span>
+          <!-- Nombre + badge de estado -->
+          <div class="proyecto-card__header">
+            <h3 class="proyecto-card__nombre">{{ proyecto.nombre }}</h3>
+            <span class="proyecto-card__estado" [attr.data-estado]="proyecto.estado">
+              <i
+                class="pi"
+                [class.pi-circle-fill]="proyecto.estado === 'ACTIVO' || proyecto.estado === 'activo'"
+                [class.pi-file-edit]="proyecto.estado === 'BORRADOR' || proyecto.estado === 'borrador'"
+                [class.pi-info-circle]="proyecto.estado !== 'ACTIVO' && proyecto.estado !== 'activo' && proyecto.estado !== 'BORRADOR' && proyecto.estado !== 'borrador'"
+              ></i>
+              {{ proyecto.estado }}
+            </span>
           </div>
 
-          <span class="proyecto-card__estado" [attr.data-estado]="proyecto.estado">
-            {{ proyecto.estado }}
-          </span>
+          <!-- Descripción -->
+          @if (proyecto.descripcion) {
+            <p class="proyecto-card__descripcion">{{ proyecto.descripcion }}</p>
+          }
+
+          <!-- Meta: fecha, lugar, escenarios -->
+          <div class="proyecto-card__meta">
+            @if (proyecto.fechaEvento) {
+              <div class="proyecto-card__meta-row proyecto-card__meta-row--fecha">
+                <i class="pi pi-calendar" aria-hidden="true"></i>
+                <span>{{ proyecto.fechaEvento | date: 'dd/MM/yyyy' }}</span>
+              </div>
+            }
+            @if (proyecto.lugarEvento) {
+              <div class="proyecto-card__meta-row proyecto-card__meta-row--lugar">
+                <i class="pi pi-map-marker" aria-hidden="true"></i>
+                <span>{{ proyecto.lugarEvento }}</span>
+              </div>
+            }
+            <div class="proyecto-card__meta-row proyecto-card__meta-row--escena">
+              <i class="pi pi-th-large" aria-hidden="true"></i>
+              <span>{{ proyecto.escenarios.length }} escenario{{ proyecto.escenarios.length !== 1 ? 's' : '' }}</span>
+            </div>
+          </div>
+
         </div>
 
+        <!-- Acciones -->
         <div class="proyecto-card__actions" (click)="$event.stopPropagation()">
           <p-button
-            icon="pi pi-pencil" severity="secondary" [text]="true" size="small"
-            pTooltip="Editar"
+            icon="pi pi-pencil"
+            severity="secondary"
+            [text]="true"
+            size="small"
+            pTooltip="Editar proyecto"
             (onClick)="abrirDialogEditar(proyecto, $event)"
           />
+          <div class="proyecto-card__actions-divider"></div>
           <p-button
-            icon="pi pi-trash" severity="danger" [text]="true" size="small"
-            pTooltip="Eliminar"
+            icon="pi pi-trash"
+            severity="danger"
+            [text]="true"
+            size="small"
+            pTooltip="Eliminar proyecto"
             (onClick)="confirmarEliminar(proyecto, $event)"
           />
         </div>
@@ -50,11 +88,14 @@
     @empty {
       @if (!cargando()) {
         <div class="proyecto-list__empty">
-          <p>No tienes proyectos aún.</p>
-          <p-button label="Crear tu primer proyecto" (onClick)="abrirDialogCrear()"/>
+          <i class="pi pi-folder-open proyecto-list__empty-icon"></i>
+          <p class="proyecto-list__empty-title">Sin proyectos aún</p>
+          <p class="proyecto-list__empty-desc">Crea tu primer proyecto para empezar a diseñar.</p>
+          <p-button label="Crear proyecto" icon="pi pi-plus" (onClick)="abrirDialogCrear()"/>
         </div>
       }
     }
+
   </div>
 
   <p-confirmDialog/>
