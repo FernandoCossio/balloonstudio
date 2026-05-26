@@ -1,0 +1,25 @@
+<div class="escenario-list">
+  @for (escenario of canvasState.escenarios(); track escenario.id; let i = $index) {
+    <div
+      class="escenario-item"
+      [class.escenario-item--active]="escenario.id === canvasState.escenarioActual()?.id"
+      (click)="seleccionarEscenario(escenario)"
+    >
+      <span class="escenario-item__num">{{ i + 1 }}</span>
+      <span class="escenario-item__nombre">{{ escenario.nombre }}</span>
+
+      @if (canvasState.escenarios().length > 1) {
+        <button
+          class="escenario-item__remove"
+          pTooltip="Eliminar escenario"
+          tooltipPosition="right"
+          (click)="confirmarEliminar(escenario, $event)"
+        >
+          <i class="pi pi-times"></i>
+        </button>
+      }
+    </div>
+  }
+
+  <p-confirmDialog/>
+</div>

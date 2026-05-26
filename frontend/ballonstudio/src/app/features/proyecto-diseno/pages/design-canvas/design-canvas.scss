@@ -1,0 +1,421 @@
+// design-canvas.scss
+
+.design-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr 280px;
+  // 100vh sin restar nada — no hay navbar
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--surface-ground);
+
+  @media (max-width: 1200px) {
+    grid-template-columns: 200px 1fr 260px;
+  }
+}
+
+// ── Sidebar izquierdo ──────────────────────────────────────────────────────
+
+.left-sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--surface-card);
+  border-right: 1px solid var(--surface-border);
+
+  &__header {
+    padding: 1rem 1rem 0.85rem;
+    border-bottom: 1px solid var(--surface-border);
+    flex-shrink: 0;
+  }
+
+  &__back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-color-secondary);
+    font-size: 1rem;
+    padding: 0 0 0.5rem 0;
+    transition: color var(--transition-duration);
+    margin-bottom: 0.5rem;
+
+    i { font-size: 0.7rem; }
+
+    &:hover { color: var(--p-primary-color); }
+  }
+
+  &__brand {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--p-primary-color);
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+  }
+
+  &__sub {
+    display: block;
+    font-size: 0.68rem;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-top: 0.1rem;
+  }
+
+  &__section {
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--surface-border);
+
+    &--catalog {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border-bottom: none;
+    }
+  }
+
+  &__section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem 0.4rem;
+    flex-shrink: 0;
+  }
+
+  &__section-label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+  }
+
+  &__add-btn {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: var(--p-primary-color);
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 400;
+    line-height: 1;
+    transition: background-color var(--transition-duration);
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--p-primary-color) 82%, #000);
+    }
+  }
+}
+
+app-escenario-tabs {
+  display: block;
+  flex-shrink: 0;
+}
+
+app-catalogo-sidebar {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+// ── Área central: contiene tanto el empty state como el canvas ────────────
+
+.canvas-area {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--p-surface-200);
+  // Necesario para que el hijo canvas-wrapper pueda usar height: 100%
+  height: 100%;
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────
+
+.canvas-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.85rem;
+    max-width: 380px;
+    text-align: center;
+    padding: 2.5rem 2rem;
+    background-color: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 8px;
+  }
+
+  &__icon {
+    width: 120px;
+    height: 80px;
+    opacity: 0.9;
+  }
+
+  &__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
+    letter-spacing: -0.015em;
+  }
+
+  &__desc {
+    font-size: 0.82rem;
+    color: var(--text-color-secondary);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.62rem 1.25rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: var(--p-primary-color);
+    border: none;
+    border-radius: var(--content-border-radius);
+    cursor: pointer;
+    margin-top: 0.25rem;
+    transition: background-color var(--transition-duration),
+                box-shadow var(--transition-duration);
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--p-primary-color) 86%, #000);
+      box-shadow: 0 4px 14px rgba(194, 24, 91, 0.3);
+    }
+  }
+
+  &__hint {
+    font-size: 0.74rem;
+    color: var(--text-color-secondary);
+    font-style: italic;
+    margin: 0;
+  }
+}
+
+// ── Canvas wrapper — el stage de Konva vive aquí ──────────────────────────
+
+.canvas-wrapper {
+  // Ocupa todo el espacio restante en .canvas-area
+  flex: 1;
+  // position relative es la referencia para el stage absoluto
+  position: relative;
+  // overflow hidden recorta el canvas si el stage desbordara (no debería)
+  overflow: hidden;
+  // El fondo de la "pizarra" — área fuera del canvas de 1600×900
+  background-color: #18181f;
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+
+  // ng2-konva renderiza <ko-stage> → <div> → <canvas>
+  // Posicionamos el host y el div contenedor como absolute para que el canvas
+  // ocupe exactamente el wrapper. Konva setea width/height del <canvas>
+  // directamente vía JS, por lo que no necesitamos forzar tamaño en CSS.
+  ko-stage {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    // El div que ng2-konva inserta como contenedor del stage
+    > div {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  // Cursor grab activo durante pan con click medio
+  &--panning {
+    cursor: grabbing !important;
+  }
+}
+
+// ── Info bar flotante ──────────────────────────────────────────────────────
+
+.canvas-info-bar {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08);
+  white-space: nowrap;
+  max-width: calc(100% - 48px);
+  pointer-events: none;   // no bloquea eventos del canvas
+
+  // Las acciones sí necesitan pointer-events
+  &__actions {
+    pointer-events: all;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex-shrink: 0;
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 360px;
+  }
+
+  &__hint {
+    font-size: 0.67rem;
+    color: var(--text-color-secondary);
+  }
+}
+
+.canvas-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.22rem 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid var(--surface-border);
+  background-color: var(--surface-ground);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: border-color var(--transition-duration),
+              color var(--transition-duration),
+              background-color var(--transition-duration);
+
+  i { font-size: 0.65rem; }
+
+  &:hover {
+    border-color: var(--p-primary-color);
+    color: var(--p-primary-color);
+    background-color: color-mix(in srgb, var(--p-primary-color) 6%, transparent);
+  }
+
+  &--danger:hover {
+    border-color: #ef4444;
+    color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.06);
+  }
+}
+
+// ── Toolbar flotante inferior (pill) ──────────────────────────────────────
+
+.canvas-floating-toolbar {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  background-color: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 999px;
+  padding: 0.35rem 0.55rem;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+  pointer-events: all;
+
+  &__btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: none;
+    background-color: transparent;
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background-color var(--transition-duration),
+                color var(--transition-duration);
+
+    &:hover:not(:disabled) {
+      background-color: var(--surface-hover);
+    }
+
+    &:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+
+    &--primary {
+      background-color: var(--p-primary-color);
+      color: #ffffff;
+
+      &:hover:not(:disabled) {
+        background-color: color-mix(in srgb, var(--p-primary-color) 84%, #000);
+      }
+    }
+  }
+
+  &__divider {
+    width: 1px;
+    height: 20px;
+    background-color: var(--surface-border);
+    margin: 0 0.2rem;
+    flex-shrink: 0;
+  }
+
+  // Label de porcentaje de zoom
+  &__zoom {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-color-secondary);
+    min-width: 36px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -0.02em;
+  }
+}
+
+// ── Drop zone feedback ────────────────────────────────────────────────────
+
+.canvas-wrapper.cdk-drop-list-dragging {
+  outline: 2px dashed var(--p-primary-color);
+  outline-offset: -3px;
+}

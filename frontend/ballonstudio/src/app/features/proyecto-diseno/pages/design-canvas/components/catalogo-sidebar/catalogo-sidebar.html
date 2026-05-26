@@ -1,6 +1,7 @@
 <!-- catalogo-sidebar.html -->
 <div class="sidebar">
 
+  <!-- Filtros de búsqueda y tipo -->
   <div class="sidebar__filters">
     <input
       type="text"
@@ -17,13 +18,13 @@
     </select>
   </div>
 
+  <!-- Lista de artículos -->
   <div class="sidebar__list">
     @for (articulo of articulosFiltrados(); track articulo.id) {
       <div
         class="articulo-card"
         cdkDrag
         [cdkDragData]="articulo"
-        (click)="onClickArticulo(articulo)"
       >
         <!-- Preview fantasma mientras se arrastra -->
         <div class="articulo-card__drag-preview" *cdkDragPreview>
@@ -40,13 +41,22 @@
           [src]="articulo.imagenThumbnailUrl ?? articulo.imagenUrl"
           [alt]="articulo.nombre"
         />
+
         <div class="articulo-card__info">
           <span class="articulo-card__nombre">{{ articulo.nombre }}</span>
           <span class="articulo-card__precio">
-            Bs. {{ articulo.costoAdquisicion | number: '1.2-2' }}
+            Bs. {{ articulo.costoAdquisicion | number: '1.2-2' }} / unit
           </span>
-          <span class="articulo-card__stock">Stock: {{ articulo.stockTotal }}</span>
         </div>
+
+        <!-- Botón "+" para agregar directamente al canvas -->
+        <button
+          class="articulo-card__add-btn"
+          (click)="onClickArticulo(articulo)"
+          title="Agregar al canvas"
+        >
+          <i class="pi pi-plus"></i>
+        </button>
 
         <!-- Placeholder visual cuando el card está siendo arrastrado -->
         <div class="articulo-card__placeholder" *cdkDragPlaceholder></div>
@@ -57,4 +67,5 @@
       <p class="sidebar__empty">No se encontraron artículos</p>
     }
   </div>
+
 </div>

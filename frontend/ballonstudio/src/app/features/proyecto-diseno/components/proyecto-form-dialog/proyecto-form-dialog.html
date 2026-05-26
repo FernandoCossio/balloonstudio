@@ -1,0 +1,27 @@
+<div class="proyecto-form">
+  <div class="field">
+    <label>Nombre del proyecto *</label>
+    <input pInputText [ngModel]="nombre()" (ngModelChange)="nombre.set($event)"
+           placeholder="Ej: Boda García 2025" class="w-full"/>
+  </div>
+  <div class="field">
+    <label>Descripción</label>
+    <textarea pTextarea [ngModel]="descripcion()" (ngModelChange)="descripcion.set($event)"
+              rows="3" class="w-full"></textarea>
+  </div>
+  <div class="field">
+    <label>Lugar del evento</label>
+    <input pInputText [ngModel]="lugarEvento()" (ngModelChange)="lugarEvento.set($event)"
+           placeholder="Ej: Club Social" class="w-full"/>
+  </div>
+  <div class="field">
+    <label>Fecha del evento</label>
+    <p-datepicker [ngModel]="fechaEvento()" (ngModelChange)="fechaEvento.set($event)"
+                  dateFormat="dd/mm/yy" [showIcon]="true" class="w-full"/>
+  </div>
+  <div class="proyecto-form__actions">
+    <p-button label="Cancelar" severity="secondary" (onClick)="cancelar()"/>
+    <p-button [label]="modoEdicion ? 'Guardar cambios' : 'Crear proyecto'"
+              [loading]="cargando()" [disabled]="!nombre().trim()" (onClick)="guardar()"/>
+  </div>
+</div>

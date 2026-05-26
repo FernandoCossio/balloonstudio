@@ -98,6 +98,18 @@ export class AppMenu {
                 label: 'Cliente',
                 items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
             }
+            ,
+            {
+                label: 'Proyectos',
+                icon: 'pi pi-fw pi-box',
+                items: [
+                    {
+                        label: 'Proyectos',
+                        icon: 'pi pi-fw pi-box',
+                        routerLink: ['/proyectos']
+                    }
+                ]
+            }
         ];
     }
 }
