@@ -8,6 +8,10 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { FileUploadModule } from 'primeng/fileupload';
 
+// Dimensiones fijas del lienzo — deben coincidir con CANVAS_W/H en design-canvas.ts
+const LIENZO_ANCHO = 1600;
+const LIENZO_ALTO  = 900;
+
 @Component({
   selector: 'app-escenario-form-dialog',
   imports: [FormsModule, InputTextModule, TextareaModule, FileUploadModule],
@@ -38,8 +42,10 @@ export class EscenarioFormDialogComponent {
     this.cargando.set(true);
 
     const request: EscenarioBaseRequest = {
-      nombre:      this.nombre().trim(),
-      descripcion: this.descripcion().trim() || undefined
+      nombre:             this.nombre().trim(),
+      descripcion:        this.descripcion().trim() || undefined,
+      dimensionesAnchoPx: LIENZO_ANCHO,
+      dimensionesAltoPx:  LIENZO_ALTO
     };
 
     this.proyectoService.createEscenario(this.proyectoId, request).subscribe({
@@ -59,7 +65,6 @@ export class EscenarioFormDialogComponent {
             },
             error: () => {
               this.cargando.set(false);
-              // No es crítico: cerramos con el escenario sin imagen
               this.ref.close(escenario);
             }
           });
