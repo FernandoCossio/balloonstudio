@@ -6,23 +6,23 @@ import { ProyectoDisenoService } from '../../services/proyecto-diseno.service';
 import { EscenarioBaseRequest } from '../../interfaces/proyecto-diseno.interface';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
-import { ButtonModule } from 'primeng/button';
 import { FileUploadModule } from 'primeng/fileupload';
 
 @Component({
   selector: 'app-escenario-form-dialog',
-  imports: [FormsModule, InputTextModule, TextareaModule, ButtonModule, FileUploadModule],
-  templateUrl: './escenario-form-dialog.html'
+  imports: [FormsModule, InputTextModule, TextareaModule, FileUploadModule],
+  templateUrl: './escenario-form-dialog.html',
+  styleUrl: './escenario-form-dialog.scss'
 })
 export class EscenarioFormDialogComponent {
 
-  private ref            = inject(DynamicDialogRef);
-  private config         = inject(DynamicDialogConfig);
+  private ref             = inject(DynamicDialogRef);
+  private config          = inject(DynamicDialogConfig);
   private proyectoService = inject(ProyectoDisenoService);
 
-  readonly cargando = signal(false);
-  readonly nombre   = signal('');
-  readonly descripcion = signal('');
+  readonly cargando            = signal(false);
+  readonly nombre              = signal('');
+  readonly descripcion         = signal('');
   readonly archivoSeleccionado = signal<File | null>(null);
 
   private get proyectoId(): number {
@@ -50,7 +50,6 @@ export class EscenarioFormDialogComponent {
           this.ref.close(escenario);
           return;
         }
-        // Si hay imagen, subirla y luego cerrar
         this.proyectoService
           .uploadImagenEscenario(this.proyectoId, escenario.id, archivo)
           .subscribe({
@@ -60,7 +59,7 @@ export class EscenarioFormDialogComponent {
             },
             error: () => {
               this.cargando.set(false);
-              // Cerramos con el escenario sin imagen — no es crítico
+              // No es crítico: cerramos con el escenario sin imagen
               this.ref.close(escenario);
             }
           });

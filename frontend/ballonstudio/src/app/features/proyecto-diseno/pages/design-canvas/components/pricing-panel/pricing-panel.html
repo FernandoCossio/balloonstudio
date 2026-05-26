@@ -1,8 +1,18 @@
 <!-- pricing-panel.html -->
 <div class="pricing-panel">
 
-  <h3 class="pricing-panel__title">Resumen de precios</h3>
+  <!-- Header: título + badge "Live Estimate" + menú -->
+  <div class="pricing-panel__header">
+    <div class="pricing-panel__header-left">
+      <h3 class="pricing-panel__title">Pricing Summary</h3>
+      <span class="pricing-panel__live-badge">Live Estimate</span>
+    </div>
+    <button class="pricing-panel__menu-btn" title="Opciones">
+      <i class="pi pi-ellipsis-h"></i>
+    </button>
+  </div>
 
+  <!-- Lista de items del canvas -->
   <div class="pricing-panel__list">
     @for (item of canvasState.resumenItems(); track item.instanceId) {
       <div class="pricing-row">
@@ -25,7 +35,7 @@
           (click)="canvasState.removeItem(item.instanceId)"
           title="Eliminar del canvas"
         >
-          ✕
+          <i class="pi pi-times"></i>
         </button>
       </div>
     }
@@ -35,17 +45,41 @@
     }
   </div>
 
+  <!-- Ajustes: delivery, impuestos -->
+  @if (canvasState.resumenItems().length > 0) {
+    <div class="pricing-panel__adjustments">
+      <div class="cost-row">
+        <span class="cost-row__label">Delivery &amp; Setup</span>
+        <span class="cost-row__value">Bs. {{ deliverySetup() | number: '1.2-2' }}</span>
+      </div>
+      <div class="cost-row cost-row--tax">
+        <span class="cost-row__label">Tax ({{ taxRate() }}%)</span>
+        <span class="cost-row__value">Bs. {{ taxAmount() | number: '1.2-2' }}</span>
+      </div>
+    </div>
+  }
+
+  <!-- Footer: total estimado -->
   <div class="pricing-panel__footer">
-    <span>Total estimado</span>
-    <strong>Bs. {{ canvasState.precioTotal() | number: '1.2-2' }}</strong>
+    <span class="pricing-panel__footer-label">Estimated Total</span>
+    <strong class="pricing-panel__footer-total">
+      Bs. {{ grandTotal() | number: '1.2-2' }}
+    </strong>
   </div>
 
-  <button
-    class="pricing-panel__clear"
-    (click)="canvasState.clearCanvas()"
-    [disabled]="canvasState.items().length === 0"
-  >
-    Limpiar canvas
-  </button>
+  <!-- Acciones principales -->
+  <div class="pricing-panel__actions">
+    <button class="pricing-panel__btn-primary">
+      <i class="pi pi-file-edit"></i>
+      Create Invoice
+    </button>
+    <button
+      class="pricing-panel__clear"
+      (click)="canvasState.clearCanvas()"
+      [disabled]="canvasState.items().length === 0"
+    >
+      Limpiar canvas
+    </button>
+  </div>
 
 </div>

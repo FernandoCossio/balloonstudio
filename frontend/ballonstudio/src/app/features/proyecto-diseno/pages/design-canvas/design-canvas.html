@@ -1,13 +1,44 @@
 <div class="design-layout">
 
-  <!-- Sidebar izquierdo -->
-  <app-catalogo-sidebar
-    cdkDropList
-    id="catalogo-list"
-    [cdkDropListConnectedTo]="['canvas-drop-zone']"
-  />
+  <!-- ── Sidebar izquierdo: header + escenarios + catálogo ────────────────── -->
+  <aside class="left-sidebar">
 
-  <!-- Canvas central -->
+    <div class="left-sidebar__header">
+      <span class="left-sidebar__brand">Diseño</span>
+      <span class="left-sidebar__sub">Area de Trabajo</span>
+    </div>
+
+    <!-- Sección escenarios -->
+    <div class="left-sidebar__section">
+      <div class="left-sidebar__section-header">
+        <span class="left-sidebar__section-label">ESCENARIOS</span>
+        <button
+          class="left-sidebar__add-btn"
+          title="Nuevo escenario"
+          (click)="escenarioTabsRef.abrirDialogNuevoEscenario()"
+        >+</button>
+      </div>
+      <app-escenario-tabs
+        #escenarioTabsRef
+        (escenarioCambiado)="onEscenarioCambiado($event)"
+      />
+    </div>
+
+    <!-- Sección catálogo -->
+    <div class="left-sidebar__section left-sidebar__section--catalog">
+      <div class="left-sidebar__section-header">
+        <span class="left-sidebar__section-label">CATÁLOGO</span>
+      </div>
+      <app-catalogo-sidebar
+        cdkDropList
+        id="catalogo-list"
+        [cdkDropListConnectedTo]="['canvas-drop-zone']"
+      />
+    </div>
+
+  </aside>
+
+  <!-- ── Canvas central ───────────────────────────────────────────────────── -->
   <div
     class="canvas-wrapper"
     cdkDropList
@@ -16,50 +47,54 @@
     [cdkDropListEnterPredicate]="() => true"
     (cdkDropListDropped)="onArticuloDrop($event)"
   >
-    <!-- Toolbar con nombre del proyecto y acciones -->
-    <div class="canvas-toolbar">
-      <span class="canvas-toolbar__title">
-        {{ canvasState.proyectoActual()?.nombre ?? 'Canvas de diseño' }}
-      </span>
-      <div class="canvas-toolbar__actions">
-        @if (canvasState.selectedId()) {
-          <button (click)="canvasState.bringToFront(canvasState.selectedId()!)">
-            Traer al frente
-          </button>
-          <button (click)="canvasState.sendToBack(canvasState.selectedId()!)">
-            Enviar al fondo
-          </button>
-        }
-        <p-button
-          label="Guardar"
-          icon="pi pi-save"
-          [loading]="guardando()"
-          [disabled]="!canvasState.proyectoActual()"
-          (onClick)="guardarCanvas()"
-        />
-        <p-button
-          label="Exportar PNG"
-          icon="pi pi-image"
-          severity="secondary"
-          (onClick)="exportPNG()"
-        />
+
+    <!-- Info bar flotante (arriba del canvas) -->
+    <div class="canvas-info-bar">
+      <div class="canvas-info-bar__text">
+        <span class="canvas-info-bar__title">
+          Design Canvas —
+          {{ canvasState.proyectoActual()?.nombre ?? 'Canvas de diseño' }}
+        </span>
+        <span class="canvas-info-bar__hint">Drag items from catalog to stage.</span>
       </div>
+
+      @if (canvasState.selectedId()) {
+        <div class="canvas-info-bar__actions">
+          <button
+            class="canvas-chip-btn"
+            (click)="canvasState.bringToFront(canvasState.selectedId()!)"
+          >
+            <i class="pi pi-arrow-up"></i> Frente
+          </button>
+          <button
+            class="canvas-chip-btn"
+            (click)="canvasState.sendToBack(canvasState.selectedId()!)"
+          >
+            <i class="pi pi-arrow-down"></i> Fondo
+          </button>
+          <button
+            class="canvas-chip-btn canvas-chip-btn--danger"
+            (click)="onRemoveItem(canvasState.selectedId()!)"
+            title="Eliminar elemento"
+          >
+            <i class="pi pi-trash"></i>
+          </button>
+        </div>
+      }
     </div>
 
-    <!-- Tabs de escenarios -->
-    <app-escenario-tabs (escenarioCambiado)="onEscenarioCambiado($event)"/>
-
+    <!-- Stage Konva -->
     <ko-stage
       #stageRef
       [config]="stageConfig()"
       (click)="onStageClick($event)"
     >
-      <!-- Layer 0: imagen de fondo del escenario -->
+      <!-- Layer 0: imagen/color de fondo del escenario -->
       <ko-layer>
         <ko-image [config]="backgroundConfig()"/>
       </ko-layer>
 
-      <!-- Layer 1: objetos de fondo -->
+      <!-- Layer 1: objetos de fondo (midItems) -->
       <ko-layer>
         @for (item of canvasState.midItems(); track item.instanceId) {
           <ko-image
@@ -81,11 +116,44 @@
         }
         <ko-transformer #transformerRef/>
       </ko-layer>
-
     </ko-stage>
+
+    <!-- Toolbar flotante inferior (pill) -->
+    <div class="canvas-floating-toolbar">
+      <button
+        class="canvas-floating-toolbar__btn canvas-floating-toolbar__btn--primary"
+        [disabled]="!canvasState.proyectoActual() || guardando()"
+        (click)="guardarCanvas()"
+        title="Guardar"
+      >
+        <i [class]="'pi ' + (guardando() ? 'pi-spin pi-spinner' : 'pi-cloud-upload')"></i>
+      </button>
+
+      <button
+        class="canvas-floating-toolbar__btn"
+        title="Exportar PNG"
+        (click)="exportPNG()"
+      >
+        <i class="pi pi-undo"></i>
+      </button>
+
+      <button
+        class="canvas-floating-toolbar__btn"
+        title="Eliminar seleccionado"
+        [disabled]="!canvasState.selectedId()"
+        (click)="canvasState.selectedId() && onRemoveItem(canvasState.selectedId()!)"
+      >
+        <i class="pi pi-sparkles"></i>
+      </button>
+
+      <button class="canvas-floating-toolbar__btn" title="Zoom out">
+        <i class="pi pi-search-minus"></i>
+      </button>
+    </div>
+
   </div>
 
-  <!-- Panel derecho -->
+  <!-- ── Panel derecho de precios ─────────────────────────────────────────── -->
   <app-pricing-panel/>
 
   <p-toast/>

@@ -1,0 +1,110 @@
+// escenario-tabs.scss
+// Lista vertical de escenarios dentro del left-sidebar
+
+:host {
+  display: block;
+}
+
+.escenario-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0.25rem 0.5rem 0.5rem;
+}
+
+// ── Ítem de escenario ──────────────────────────────────────────────────────
+
+.escenario-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.42rem 0.5rem;
+  border-radius: var(--content-border-radius);
+  cursor: pointer;
+  position: relative;
+  transition: background-color var(--transition-duration),
+              color var(--transition-duration);
+
+  &:hover {
+    background-color: var(--surface-hover);
+
+    .escenario-item__remove {
+      opacity: 1;
+    }
+  }
+
+  // ── Estado activo ──────────────────────────────────────────────────────
+
+  &--active {
+    background-color: color-mix(in srgb, var(--p-primary-color) 10%, transparent);
+
+    .escenario-item__num {
+      background-color: var(--p-primary-color);
+      color: #ffffff;
+    }
+
+    .escenario-item__nombre {
+      color: var(--p-primary-color);
+      font-weight: 600;
+    }
+  }
+
+  // ── Número de escenario (badge circular) ───────────────────────────────
+
+  &__num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border-radius: 50%;
+    background-color: var(--surface-border);
+    color: var(--text-color-secondary);
+    font-size: 0.65rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: background-color var(--transition-duration),
+                color var(--transition-duration);
+  }
+
+  // ── Nombre del escenario ───────────────────────────────────────────────
+
+  &__nombre {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-color);
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color var(--transition-duration);
+  }
+
+  // ── Botón eliminar (visible solo en hover) ─────────────────────────────
+
+  &__remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: transparent;
+    color: var(--text-color-secondary);
+    font-size: 0.6rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity var(--transition-duration),
+                background-color var(--transition-duration),
+                color var(--transition-duration);
+
+    &:hover {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+    }
+  }
+}

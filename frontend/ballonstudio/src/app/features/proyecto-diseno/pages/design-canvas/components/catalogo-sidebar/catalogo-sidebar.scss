@@ -2,41 +2,21 @@
 // Sidebar izquierdo: catálogo de artículos con filtros y drag-and-drop
 
 :host {
+  // Ocupa el espacio que le asigna el padre (left-sidebar__section--catalog)
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
 .sidebar {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
   background-color: var(--surface-card);
-
-  // ── Header del sidebar ─────────────────────────────────────────────────
-
-  &__header {
-    padding: 1rem 1rem 0.5rem;
-    border-bottom: 1px solid var(--surface-border);
-    flex-shrink: 0;
-
-    h3 {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--text-color);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin: 0 0 0.15rem;
-    }
-
-    p {
-      font-size: 0.73rem;
-      color: var(--text-color-secondary);
-      margin: 0;
-    }
-  }
 
   // ── Zona de filtros ────────────────────────────────────────────────────
 
@@ -44,7 +24,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    padding: 0.75rem 0.75rem 0.65rem;
+    padding: 0.65rem 0.75rem 0.6rem;
     border-bottom: 1px solid var(--surface-border);
     flex-shrink: 0;
   }
@@ -104,19 +84,15 @@
 
   &__list {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
     padding: 0.5rem 0.5rem;
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
 
-    // Scrollbar refinada
-    &::-webkit-scrollbar {
-      width: 4px;
-    }
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-track { background: transparent; }
     &::-webkit-scrollbar-thumb {
       background-color: var(--p-surface-300);
       border-radius: 4px;
@@ -133,23 +109,6 @@
     padding: 2rem 1rem;
     font-style: italic;
   }
-
-  // ── Saved sets section ─────────────────────────────────────────────────
-
-  &__saved-sets {
-    padding: 0.6rem 0.75rem;
-    border-top: 1px solid var(--surface-border);
-    flex-shrink: 0;
-
-    h4 {
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-color-secondary);
-      margin: 0 0 0.4rem;
-    }
-  }
 }
 
 // ── Card de artículo ──────────────────────────────────────────────────────
@@ -158,38 +117,35 @@
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  padding: 0.45rem 0.5rem;
+  padding: 0.45rem 0.45rem 0.45rem 0.5rem;
   background-color: var(--surface-card);
   border: 1px solid var(--surface-border);
   border-radius: calc(var(--content-border-radius) + 2px);
   cursor: grab;
   transition: background-color var(--transition-duration),
               border-color var(--transition-duration),
-              box-shadow var(--transition-duration),
-              transform 0.15s ease;
+              box-shadow var(--transition-duration);
   position: relative;
 
   &:hover {
     background-color: var(--surface-hover);
     border-color: var(--p-primary-color);
-    box-shadow: 0 2px 8px rgba(194, 24, 91, 0.12);
+    box-shadow: 0 2px 8px rgba(194, 24, 91, 0.1);
 
-    .articulo-card__add-hint {
+    .articulo-card__add-btn {
       opacity: 1;
     }
   }
 
-  &:active {
-    cursor: grabbing;
-  }
+  &:active { cursor: grabbing; }
 
   // ── Thumbnail ─────────────────────────────────────────────────────────
 
   &__img {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     object-fit: cover;
-    border-radius: calc(var(--content-border-radius));
+    border-radius: var(--content-border-radius);
     flex-shrink: 0;
     background-color: var(--p-surface-100);
     border: 1px solid var(--surface-border);
@@ -216,27 +172,35 @@
   }
 
   &__precio {
-    font-size: 0.72rem;
-    color: var(--p-primary-color);
-    font-weight: 600;
-  }
-
-  &__stock {
-    font-size: 0.68rem;
+    font-size: 0.71rem;
     color: var(--text-color-secondary);
+    font-weight: 500;
   }
 
-  // ── Hint de añadir ────────────────────────────────────────────────────
+  // ── Botón "+" de agregar ──────────────────────────────────────────────
 
-  &__add-hint {
-    opacity: 0;
-    font-size: 0.65rem;
-    font-weight: 700;
+  &__add-btn {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1.5px solid var(--p-primary-color);
+    background-color: transparent;
     color: var(--p-primary-color);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    cursor: pointer;
     flex-shrink: 0;
-    transition: opacity var(--transition-duration);
+    opacity: 0;
+    transition: opacity var(--transition-duration),
+                background-color var(--transition-duration),
+                color var(--transition-duration);
+    font-size: 0.7rem;
+
+    &:hover {
+      background-color: var(--p-primary-color);
+      color: #ffffff;
+    }
   }
 
   // ── CDK drag: preview y placeholder ──────────────────────────────────
@@ -262,15 +226,13 @@
   }
 
   &__placeholder {
-    height: 60px;
-    background-color: color-mix(in srgb, var(--p-primary-color) 8%, transparent);
+    height: 58px;
+    background-color: color-mix(in srgb, var(--p-primary-color) 7%, transparent);
     border: 2px dashed var(--p-primary-color);
     border-radius: var(--content-border-radius);
-    margin: 0;
   }
 }
 
-// Estado mientras se arrastra (el item original en lista)
 .cdk-drag-animating {
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }

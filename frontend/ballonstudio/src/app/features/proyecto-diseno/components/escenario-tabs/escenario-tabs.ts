@@ -1,6 +1,6 @@
 // features/proyecto-diseno/components/escenario-tabs/escenario-tabs.ts
-import { Component, inject, output, signal } from '@angular/core';
-import { DialogService, DynamicDialogModule, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { Component, inject, output } from '@angular/core';
+import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { ConfirmationService } from 'primeng/api';
 import { CanvasStateService } from '../../services/canvas-state.service';
 import { ProyectoDisenoService } from '../../services/proyecto-diseno.service';
@@ -18,12 +18,12 @@ import { TooltipModule } from 'primeng/tooltip';
 })
 export class EscenarioTabsComponent {
 
-  readonly canvasState      = inject(CanvasStateService);
-  private proyectoService   = inject(ProyectoDisenoService);
-  private dialogService     = inject(DialogService);
-  private confirmService    = inject(ConfirmationService);
+  readonly canvasState    = inject(CanvasStateService);
+  private proyectoService = inject(ProyectoDisenoService);
+  private dialogService   = inject(DialogService);
+  private confirmService  = inject(ConfirmationService);
 
-  // Emite cuando se cambia de escenario — el canvas padre recarga imageElements
+  // El canvas padre recarga imageElements cuando cambia el escenario
   readonly escenarioCambiado = output<EscenarioBaseResponse>();
 
   seleccionarEscenario(escenario: EscenarioBaseResponse): void {
@@ -32,20 +32,21 @@ export class EscenarioTabsComponent {
     this.escenarioCambiado.emit(escenario);
   }
 
+  // Llamado desde el botón "+" del section-header en design-canvas.html
   abrirDialogNuevoEscenario(): void {
     const proyecto = this.canvasState.proyectoActual();
     if (!proyecto) return;
 
     const ref = this.dialogService.open(EscenarioFormDialogComponent, {
-        header: 'Nuevo escenario',
-        width:  '480px',
-        data:   { proyectoId: proyecto.id }
+      header: 'Nuevo escenario',
+      width:  '480px',
+      data:   { proyectoId: proyecto.id }
     });
 
     ref?.onClose.subscribe((nuevoEscenario: EscenarioBaseResponse | undefined) => {
-        if (!nuevoEscenario) return;
-        this.canvasState.escenarios.update(prev => [...prev, nuevoEscenario]);
-        this.seleccionarEscenario(nuevoEscenario);
+      if (!nuevoEscenario) return;
+      this.canvasState.escenarios.update(prev => [...prev, nuevoEscenario]);
+      this.seleccionarEscenario(nuevoEscenario);
     });
   }
 
@@ -61,7 +62,6 @@ export class EscenarioTabsComponent {
     const proyectoId = this.canvasState.proyectoActual()!.id;
     this.proyectoService.deleteEscenario(proyectoId, escenario.id).subscribe(() => {
       this.canvasState.escenarios.update(prev => prev.filter(e => e.id !== escenario.id));
-      // Si se eliminó el activo, cargar el primero disponible
       if (this.canvasState.escenarioActual()?.id === escenario.id) {
         const primero = this.canvasState.escenarios()[0];
         if (primero) this.seleccionarEscenario(primero);

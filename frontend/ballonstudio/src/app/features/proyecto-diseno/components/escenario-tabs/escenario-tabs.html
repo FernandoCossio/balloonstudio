@@ -1,25 +1,25 @@
-<div class="escenario-tabs">
-  @for (escenario of canvasState.escenarios(); track escenario.id) {
+<div class="escenario-list">
+  @for (escenario of canvasState.escenarios(); track escenario.id; let i = $index) {
     <div
-      class="escenario-tab"
-      [class.escenario-tab--active]="escenario.id === canvasState.escenarioActual()?.id"
+      class="escenario-item"
+      [class.escenario-item--active]="escenario.id === canvasState.escenarioActual()?.id"
       (click)="seleccionarEscenario(escenario)"
     >
-      <span class="escenario-tab__nombre">{{ escenario.nombre }}</span>
+      <span class="escenario-item__num">{{ i + 1 }}</span>
+      <span class="escenario-item__nombre">{{ escenario.nombre }}</span>
+
       @if (canvasState.escenarios().length > 1) {
         <button
-          class="escenario-tab__remove"
+          class="escenario-item__remove"
           pTooltip="Eliminar escenario"
-          tooltipPosition="top"
+          tooltipPosition="right"
           (click)="confirmarEliminar(escenario, $event)"
-        >✕</button>
+        >
+          <i class="pi pi-times"></i>
+        </button>
       }
     </div>
   }
-
-  <button class="escenario-tab escenario-tab--add" (click)="abrirDialogNuevoEscenario()">
-    + Escenario
-  </button>
 
   <p-confirmDialog/>
 </div>
