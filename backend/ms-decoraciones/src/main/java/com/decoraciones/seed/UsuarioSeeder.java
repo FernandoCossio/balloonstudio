@@ -29,6 +29,7 @@ public class UsuarioSeeder implements CommandLineRunner {
     public void run(String... args) {
         seedAdminUser();
         seedEmployees();
+        seedClientUsers();
     }
 
     private void seedAdminUser() {
@@ -50,7 +51,6 @@ public class UsuarioSeeder implements CommandLineRunner {
             System.out.println("Usuario administrador creado por defecto (admin / admin123)");
         }
     }
-
     private void seedEmployees() {
         seedEmployee("empleado1", "empleado1@decoraciones.com", "Juan Perez", "71020304", true);
         seedEmployee("empleado2", "empleado2@decoraciones.com", "Maria Lopez", "72030405", false);
@@ -72,6 +72,33 @@ public class UsuarioSeeder implements CommandLineRunner {
 
             usuarioRepository.save(empleado);
             System.out.println("Usuario empleado creado por defecto: " + username + " (activo: " + activo + ")");
+        }
+    }
+     private void seedClientUsers() {
+        // Obtenemos el rol CLIENTE una sola vez para pasarlo a todos los usuarios
+        Rol clienteRol = rolRepository.findByNombre("CLIENTE")
+                .orElseThrow(() -> new RuntimeException("Error: Rol CLIENTE no encontrado."));
+
+        // Generamos los 4 clientes usando el método de ayuda
+        seedCliente("cliente1", "cliente1@decoraciones.com", "Carlos Mendoza", "71111111", clienteRol);
+        seedCliente("cliente2", "cliente2@decoraciones.com", "Ana Rojas", "72222222", clienteRol);
+        seedCliente("cliente3", "cliente3@decoraciones.com", "Luis Silva", "73333333", clienteRol);
+        seedCliente("cliente4", "cliente4@decoraciones.com", "Marta Guzmán", "74444444", clienteRol);
+    }
+
+    private void seedCliente(String username, String email, String nombreCompleto, String telefono, Rol rol) {
+        if (usuarioRepository.findByUsernameIgnoreCase(username).isEmpty()) {
+            Usuario cliente = new Usuario();
+            cliente.setUsername(username);
+            cliente.setEmail(email);
+            cliente.setNombreCompleto(nombreCompleto);
+            cliente.setPassword(passwordEncoder.encode("cliente123")); // Contraseña genérica para pruebas
+            cliente.setTelefono(telefono);
+            cliente.setActivo(true);
+            cliente.setRoles(Set.of(rol));
+
+            usuarioRepository.save(cliente);
+            System.out.println("Usuario cliente creado por defecto (" + username + " / cliente123)");
         }
     }
 }

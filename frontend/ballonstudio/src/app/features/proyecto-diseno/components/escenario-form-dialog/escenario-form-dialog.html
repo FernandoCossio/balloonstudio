@@ -1,0 +1,67 @@
+<div class="escenario-form">
+
+  <div class="escenario-form__field">
+    <label class="escenario-form__label" for="nombre">Nombre del escenario *</label>
+    <input
+      id="nombre"
+      pInputText
+      class="escenario-form__input"
+      [ngModel]="nombre()"
+      (ngModelChange)="nombre.set($event)"
+      placeholder="Ej: Salón Principal"
+      autocomplete="off"
+    />
+  </div>
+
+  <div class="escenario-form__field">
+    <label class="escenario-form__label" for="desc">Descripción</label>
+    <textarea
+      id="desc"
+      pTextarea
+      class="escenario-form__input escenario-form__input--textarea"
+      [ngModel]="descripcion()"
+      (ngModelChange)="descripcion.set($event)"
+      placeholder="Descripción opcional del escenario"
+      rows="3"
+    ></textarea>
+  </div>
+
+  <div class="escenario-form__field">
+    <label class="escenario-form__label">Foto de fondo <span class="escenario-form__optional">(opcional)</span></label>
+    <p-fileupload
+      mode="basic"
+      accept="image/*"
+      [maxFileSize]="5000000"
+      chooseLabel="Seleccionar imagen"
+      styleClass="escenario-form__file-btn"
+      (onSelect)="onFileSelect($event)"
+    />
+    @if (archivoSeleccionado()) {
+      <span class="escenario-form__file-name">
+        <i class="pi pi-image"></i> {{ archivoSeleccionado()!.name }}
+      </span>
+    }
+  </div>
+
+  <div class="escenario-form__actions">
+    <button
+      class="escenario-form__btn escenario-form__btn--secondary"
+      type="button"
+      (click)="cancelar()"
+    >
+      Cancelar
+    </button>
+    <button
+      class="escenario-form__btn escenario-form__btn--primary"
+      type="button"
+      [disabled]="!nombre().trim() || cargando()"
+      (click)="guardar()"
+    >
+      @if (cargando()) {
+        <i class="pi pi-spin pi-spinner"></i>
+      }
+      Crear escenario
+    </button>
+  </div>
+
+</div>

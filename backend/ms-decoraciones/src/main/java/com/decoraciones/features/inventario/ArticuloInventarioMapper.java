@@ -40,7 +40,7 @@ public class ArticuloInventarioMapper {
         // Thumbnail: llama al endpoint dedicado pasando la url relativa como param
         // Ejemplo: "http://localhost:8080/api/thumbnails?url=uploads/inventario/..."
         String thumbnailUrl = urlRelativa
-                .map(url -> baseUrl + "/api/thumbnails?url=" + url)
+                .map(url -> baseUrl + "/thumbnails?url=" + url)
                 .orElse(null);
 
         return new ArticuloInventarioDto(

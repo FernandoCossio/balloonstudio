@@ -1,0 +1,158 @@
+// escenario-form-dialog.scss
+// Dialog para crear un nuevo escenario — alineado al design system
+
+.escenario-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0.25rem 0 0.5rem;
+
+  // ── Campo ──────────────────────────────────────────────────────────────────
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  &__label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-color-secondary);
+  }
+
+  &__optional {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.72rem;
+  }
+
+  // ── Inputs — sin background, solo borde inferior en reposo ────────────────
+
+  &__input {
+    width: 100%;
+    padding: 0.55rem 0;
+    font-size: 0.875rem;
+    color: var(--text-color);
+    background-color: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid var(--surface-border) !important;
+    border-radius: 0 !important;
+    outline: none;
+    box-shadow: none !important;
+    transition: border-color var(--transition-duration);
+    box-sizing: border-box;
+    resize: none;
+
+    &::placeholder {
+      color: var(--text-color-secondary);
+      font-size: 0.84rem;
+    }
+
+    &:focus {
+      border-bottom-color: var(--p-primary-color) !important;
+    }
+
+    &--textarea {
+      min-height: 72px;
+      line-height: 1.5;
+    }
+  }
+
+  // ── File upload ────────────────────────────────────────────────────────────
+
+  // Sobrescribe el botón de PrimeNG para que siga el design system
+  ::ng-deep .escenario-form__file-btn {
+    .p-button {
+      background-color: transparent;
+      border: 1px solid var(--surface-border);
+      color: var(--text-color);
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 0.42rem 0.85rem;
+      border-radius: var(--content-border-radius);
+      transition: border-color var(--transition-duration),
+                  color var(--transition-duration);
+
+      &:hover {
+        border-color: var(--p-primary-color);
+        color: var(--p-primary-color);
+        background-color: color-mix(in srgb, var(--p-primary-color) 6%, transparent);
+      }
+    }
+  }
+
+  &__file-name {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+    margin-top: 0.15rem;
+
+    i {
+      font-size: 0.8rem;
+      color: var(--p-primary-color);
+    }
+  }
+
+  // ── Acciones ───────────────────────────────────────────────────────────────
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding-top: 0.25rem;
+    border-top: 1px solid var(--surface-border);
+  }
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.55rem 1.1rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: var(--content-border-radius);
+    cursor: pointer;
+    transition: background-color var(--transition-duration),
+                border-color var(--transition-duration),
+                color var(--transition-duration),
+                box-shadow var(--transition-duration);
+
+    &:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+
+    &--secondary {
+      background-color: transparent;
+      border: 1px solid var(--surface-border);
+      color: var(--text-color-secondary);
+
+      &:hover:not(:disabled) {
+        border-color: var(--text-color-secondary);
+        color: var(--text-color);
+      }
+    }
+
+    &--primary {
+      background-color: var(--p-primary-color);
+      border: 1px solid transparent;
+      color: #ffffff;
+
+      &:hover:not(:disabled) {
+        background-color: color-mix(in srgb, var(--p-primary-color) 86%, #000);
+        box-shadow: 0 4px 14px rgba(194, 24, 91, 0.3);
+      }
+
+      &:active:not(:disabled) {
+        background-color: color-mix(in srgb, var(--p-primary-color) 74%, #000);
+        box-shadow: none;
+      }
+    }
+  }
+}

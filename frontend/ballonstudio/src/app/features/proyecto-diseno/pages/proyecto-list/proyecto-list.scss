@@ -1,0 +1,337 @@
+// features/proyecto-diseno/pages/proyecto-list/proyecto-list.scss
+
+// ── Variables locales ─────────────────────────────────────────────────────
+// Los colores de PrimeNG se usan vía var(--p-*) y var(--surface-*).
+// Las constantes propias del componente viven aquí para no dispersarlas.
+
+:host {
+  // Acento de meta-iconos — complementarios al primary #C2185B
+  --pl-icon-fecha:   #b45309;   // ámbar oscuro
+  --pl-icon-lugar:   #0f766e;   // teal oscuro
+  --pl-icon-escena:  #6d28d9;   // violeta
+
+  // Badge de estado
+  --pl-badge-activo-bg:       color-mix(in srgb, #22c55e 11%, transparent);
+  --pl-badge-activo-color:    #15803d;
+  --pl-badge-activo-dot:      #22c55e;
+  --pl-badge-borrador-bg:     color-mix(in srgb, var(--p-primary-color) 10%, transparent);
+  --pl-badge-borrador-color:  var(--p-primary-color);
+
+  // Card
+  --pl-card-radius:        12px;
+  --pl-card-accent-color:  var(--p-primary-color);
+  --pl-card-shadow:        0 1px 3px rgba(0,0,0,.06), 0 4px 14px rgba(0,0,0,.05);
+  --pl-card-shadow-hover:  0 4px 10px rgba(0,0,0,.08), 0 14px 32px rgba(0,0,0,.09);
+
+  // Transición
+  --pl-t: 160ms ease;
+}
+
+// ── Host ──────────────────────────────────────────────────────────────────
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+// ── Contenedor principal ──────────────────────────────────────────────────
+
+.proyecto-list {
+  min-height: 100vh;
+  padding: 2.5rem 2rem 3rem;
+  background-color: var(--surface-ground);
+  max-width: 1440px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────
+
+.proyecto-list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+
+  h1 {
+    margin: 0;
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: var(--text-color);
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+    position: relative;
+    padding-bottom: 0.35rem;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 2rem;
+      height: 3px;
+      border-radius: 2px;
+      background-color: var(--p-primary-color);
+    }
+  }
+}
+
+// ── Loading ───────────────────────────────────────────────────────────────
+
+.proyecto-list__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 3rem 0;
+  color: var(--text-color-secondary);
+  font-size: 0.88rem;
+
+  .pi { font-size: 1rem; color: var(--p-primary-color); }
+}
+
+// ── Grid ──────────────────────────────────────────────────────────────────
+
+.proyecto-list__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 340px));
+  gap: 1.1rem;
+  align-items: start;
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────
+
+.proyecto-list__empty {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.proyecto-list__empty-icon {
+  font-size: 2.5rem;
+  color: var(--text-color-secondary);
+  opacity: 0.45;
+  margin-bottom: 0.25rem;
+}
+
+.proyecto-list__empty-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-color);
+  letter-spacing: -0.015em;
+}
+
+.proyecto-list__empty-desc {
+  margin: 0 0 0.5rem;
+  font-size: 0.82rem;
+  color: var(--text-color-secondary);
+  line-height: 1.55;
+}
+
+// ── Card ──────────────────────────────────────────────────────────────────
+
+.proyecto-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--pl-card-radius);
+  box-shadow: var(--pl-card-shadow);
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    box-shadow var(--pl-t),
+    border-color var(--pl-t),
+    transform var(--pl-t);
+
+  // Línea de acento izquierda — aparece en hover
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background-color: var(--pl-card-accent-color);
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform var(--pl-t);
+    border-radius: 0;
+  }
+
+  &:hover {
+    box-shadow: var(--pl-card-shadow-hover);
+    border-color: color-mix(in srgb, var(--p-primary-color) 30%, var(--surface-border));
+    transform: translateY(-2px);
+
+    &::before { transform: scaleY(1); }
+
+    .proyecto-card__actions {
+      opacity: 1;
+      pointer-events: all;
+    }
+  }
+}
+
+// ── Cuerpo ────────────────────────────────────────────────────────────────
+
+.proyecto-card__body {
+  flex: 1;
+  padding: 1rem 1.1rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+// ── Header interno: nombre + badge ────────────────────────────────────────
+
+.proyecto-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.proyecto-card__nombre {
+  margin: 0;
+  font-size: 0.93rem;
+  font-weight: 700;
+  color: var(--text-color);
+  letter-spacing: -0.015em;
+  line-height: 1.35;
+
+  // Máximo 2 líneas
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ── Badge de estado ───────────────────────────────────────────────────────
+
+.proyecto-card__estado {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+
+  // Default
+  background-color: var(--surface-200, #e2e8f0);
+  color: var(--text-color-secondary);
+
+  .pi { font-size: 0.55rem; }
+
+  &[data-estado="ACTIVO"],
+  &[data-estado="activo"] {
+    background-color: var(--pl-badge-activo-bg);
+    color: var(--pl-badge-activo-color);
+    .pi { color: var(--pl-badge-activo-dot); }
+  }
+
+  &[data-estado="BORRADOR"],
+  &[data-estado="borrador"] {
+    background-color: var(--pl-badge-borrador-bg);
+    color: var(--pl-badge-borrador-color);
+  }
+}
+
+// ── Descripción ───────────────────────────────────────────────────────────
+
+.proyecto-card__descripcion {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-color-secondary);
+  line-height: 1.55;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ── Meta ──────────────────────────────────────────────────────────────────
+
+.proyecto-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--surface-border);
+  margin-top: 0.1rem;
+}
+
+.proyecto-card__meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.74rem;
+  color: var(--text-color-secondary);
+  line-height: 1.4;
+
+  .pi {
+    font-size: 0.78rem;
+    flex-shrink: 0;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &--fecha .pi  { color: var(--pl-icon-fecha); }
+  &--lugar .pi  { color: var(--pl-icon-lugar); }
+  &--escena .pi { color: var(--pl-icon-escena); }
+}
+
+// ── Acciones ──────────────────────────────────────────────────────────────
+
+.proyecto-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.1rem;
+  padding: 0.35rem 0.6rem;
+  border-top: 1px solid var(--surface-border);
+  background-color: color-mix(in srgb, var(--surface-ground) 55%, transparent);
+  opacity: var(--pl-t);
+}
+
+.proyecto-card__actions-divider {
+  width: 1px;
+  height: 14px;
+  background-color: var(--surface-border);
+  margin: 0 0.1rem;
+  flex-shrink: 0;
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────
+
+@media (max-width: 640px) {
+  .proyecto-list {
+    padding: 1.5rem 1rem 2rem;
+  }
+
+  .proyecto-list__grid {
+    grid-template-columns: 1fr;
+  }
+
+  // En móvil siempre visibles (sin hover)
+  .proyecto-card__actions {
+    opacity: 1;
+    pointer-events: all;
+  }
+}

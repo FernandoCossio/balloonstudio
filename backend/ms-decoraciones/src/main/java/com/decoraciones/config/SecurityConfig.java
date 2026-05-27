@@ -50,6 +50,7 @@ public class SecurityConfig {
 				.requestMatchers(HttpMethod.POST, "/inventario").hasAuthority("role_administrador")
 				.requestMatchers(HttpMethod.PUT, "/inventario/*").hasAuthority("role_administrador")
 				.requestMatchers(HttpMethod.DELETE, "/inventario/*").hasAuthority("role_administrador")
+				.requestMatchers("/uploads/**").permitAll()
 				.anyRequest().authenticated()
 			)
 			.oauth2ResourceServer(oauth2 -> oauth2
