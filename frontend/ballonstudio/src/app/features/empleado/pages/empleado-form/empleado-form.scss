@@ -1,0 +1,629 @@
+// ─── Page Layout & Grid ──────────────────────────────────────────────────────
+.form-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    min-height: 100vh;
+    background: var(--surface-ground);
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+// ─── Header & Breadcrumbs ───────────────────────────────────────────────────
+.form-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    &__back {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--text-color-secondary);
+        
+        .p-button {
+            width: 2rem !important;
+            height: 2rem !important;
+            padding: 0 !important;
+        }
+    }
+
+    &__crumb {
+        cursor: pointer;
+        transition: color 0.2s;
+        font-weight: 500;
+        
+        &:hover {
+            color: #c2185b;
+        }
+    }
+
+    &__separator {
+        opacity: 0.5;
+        user-select: none;
+    }
+
+    &__current {
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    &__title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+
+    &__sub {
+        font-size: 0.875rem;
+        color: var(--text-color-secondary);
+        margin: 0;
+        max-width: 600px;
+    }
+}
+
+.emp-btn-primary {
+    background: #c2185b !important;
+    border-color: #c2185b !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    padding: 0.6rem 1.2rem !important;
+    transition: background-color 0.2s, transform 0.2s !important;
+
+    &:hover {
+        background: #ad1457 !important;
+        border-color: #ad1457 !important;
+        transform: translateY(-1px);
+    }
+    &:active {
+        transform: translateY(0);
+    }
+    &:disabled {
+        background: var(--surface-300) !important;
+        border-color: var(--surface-300) !important;
+        color: var(--text-color-secondary) !important;
+        opacity: 0.6 !important;
+        cursor: not-allowed !important;
+        transform: none !important;
+    }
+}
+
+// ─── Content Grid ───────────────────────────────────────────────────────────
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.form-panel-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+// ─── Skeleton Loading ───────────────────────────────────────────────────────
+.form-skeleton {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 1.5rem;
+    
+    .skeleton-left, .skeleton-right {
+        background: var(--surface-card);
+        border: 1px solid var(--surface-border);
+        border-radius: 16px;
+        padding: 2rem;
+    }
+}
+
+// ─── Edit Mode Card ─────────────────────────────────────────────────────────
+.edit-mode-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-section-card {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+
+    &__title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--text-color);
+        border-bottom: 1px solid var(--surface-border);
+        padding-bottom: 0.75rem;
+        margin-bottom: 0.5rem;
+
+        i {
+            font-size: 1.25rem;
+        }
+    }
+}
+
+// ─── Form Inputs & Fields ───────────────────────────────────────────────────
+.form-inputs-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+
+    @media (max-width: 640px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+
+    &__label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    &__input {
+        width: 100% !important;
+        padding: 0.65rem 1rem 0.65rem 2.25rem !important;
+        font-size: 0.9rem !important;
+        background: var(--surface-card) !important;
+        border: 1px solid var(--surface-border) !important;
+        border-radius: 8px !important;
+        color: var(--text-color) !important;
+        transition: border-color 0.2s, box-shadow 0.2s;
+
+        &:focus {
+            outline: none !important;
+            border-color: #c2185b !important;
+            box-shadow: 0 0 0 3px rgba(194, 24, 91, 0.15) !important;
+        }
+
+        &.invalid-border {
+            border-color: #e53935 !important;
+            &:focus {
+                box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.15) !important;
+            }
+        }
+    }
+}
+
+.input-icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    .field-icon {
+        position: absolute;
+        left: 12px;
+        color: var(--text-color-secondary);
+        opacity: 0.7;
+        font-size: 0.95rem;
+        pointer-events: none;
+    }
+}
+
+.required-asterisk {
+    color: #e53935;
+    margin-left: 2px;
+}
+
+.optional-badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+    opacity: 0.7;
+}
+
+.field-error-msg {
+    font-size: 0.75rem;
+    color: #e53935;
+    font-weight: 600;
+    margin-top: 2px;
+    animation: slideDown 0.15s ease-out;
+}
+
+.field-info-msg {
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+    opacity: 0.8;
+    margin-top: 2px;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+// ─── Stepper / Wizard Layout ────────────────────────────────────────────────
+.wizard-container {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+// ─── Stepper Headers ────────────────────────────────────────────────────────
+.stepper-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface-50);
+    padding: 1.25rem 2rem;
+    border-bottom: 1px solid var(--surface-border);
+    
+    @media (max-width: 640px) {
+        padding: 1rem;
+    }
+}
+
+.step-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: not-allowed;
+    opacity: 0.6;
+    user-select: none;
+    z-index: 2;
+    transition: opacity 0.25s ease;
+
+    &__circle {
+        width: 1.85rem;
+        height: 1.85rem;
+        border-radius: 50%;
+        background: var(--surface-200);
+        color: var(--text-color-secondary);
+        font-weight: 700;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid transparent;
+        transition: all 0.25s ease;
+    }
+
+    &__label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-color-secondary);
+        transition: color 0.25s ease;
+        
+        @media (max-width: 640px) {
+            display: none;
+        }
+    }
+
+    // States
+    &--clickable {
+        cursor: pointer;
+        opacity: 1;
+    }
+
+    &--active {
+        opacity: 1;
+        cursor: default;
+        .step-indicator__circle {
+            background: var(--surface-card);
+            border-color: #c2185b;
+            color: #c2185b;
+            box-shadow: 0 0 0 4px rgba(194, 24, 91, 0.15);
+        }
+        .step-indicator__label {
+            color: var(--text-color);
+            font-weight: 700;
+        }
+    }
+
+    &--completed {
+        opacity: 1;
+        cursor: pointer;
+        .step-indicator__circle {
+            background: #c2185b;
+            color: #fff;
+            border-color: #c2185b;
+        }
+        .step-indicator__label {
+            color: #c2185b;
+        }
+    }
+}
+
+.step-connector {
+    flex: 1;
+    height: 2px;
+    background: var(--surface-border);
+    margin: 0 0.75rem;
+    transition: background-color 0.25s ease;
+
+    &--active {
+        background: #c2185b;
+    }
+}
+
+// ─── Stepper Body & Slides ──────────────────────────────────────────────────
+.stepper-body {
+    padding: 2rem;
+    min-height: 280px;
+}
+
+.stepper-slide {
+    animation: slideIn 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(12px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.slide-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0 0 4px;
+}
+
+.slide-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+    margin: 0 0 1.5rem;
+    opacity: 0.85;
+}
+
+// ─── Default Role Box (Visual step 2 helper) ─────────────────────────────────
+.default-role-box {
+    grid-column: span 2;
+    background: #e3f2fd;
+    border: 1px solid #bbdefb;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    &__left {
+        display: flex;
+    }
+
+    .role-icon-circle {
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 10px;
+        background: #bbdefb;
+        color: #0d47a1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    &__right {
+        h4 {
+            margin: 0;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #0d47a1;
+            letter-spacing: 0.05em;
+        }
+
+        p {
+            margin: 4px 0 0;
+            font-size: 0.85rem;
+            color: #0d47a1;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+    }
+}
+
+@keyframes popIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+// ─── Summary Card & Notice (Step 3 review) ────────────────────────────────────
+.summary-card {
+    background: var(--surface-50);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--surface-border);
+    padding-bottom: 0.65rem;
+    font-size: 0.9rem;
+
+    &:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    &__label {
+        font-weight: 600;
+        color: var(--text-color-secondary);
+    }
+
+    &__value {
+        font-weight: 700;
+        color: var(--text-color);
+        
+        &--email {
+            font-weight: 600;
+            font-family: monospace;
+            color: #c2185b;
+            background: #fce4ec;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+    }
+}
+
+.activation-notice {
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+
+    &__icon {
+        color: #f57f17;
+        font-size: 1.25rem;
+        padding-top: 2px;
+    }
+
+    &__content {
+        h4 {
+            margin: 0;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #f57f17;
+        }
+        
+        p {
+            margin: 2px 0 0;
+            font-size: 0.8rem;
+            color: #5d4037;
+            line-height: 1.35;
+        }
+    }
+}
+
+// ─── Footers & Actions ──────────────────────────────────────────────────────
+.form-actions-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 16px;
+    padding: 1.25rem 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01);
+}
+
+.stepper-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid var(--surface-border);
+    padding: 1.25rem 2rem;
+    background: var(--surface-50);
+
+    &__right {
+        display: flex;
+        gap: 0.75rem;
+    }
+}
+
+// ─── Help Card (Side Panel) ─────────────────────────────────────────────────
+.help-card {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+
+    &__header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-bottom: 1px solid var(--surface-border);
+        padding-bottom: 0.75rem;
+
+        h3 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+    }
+
+    &__icon {
+        font-size: 1.15rem;
+        color: #c2185b;
+    }
+
+    &__intro {
+        font-size: 0.85rem;
+        color: var(--text-color-secondary);
+        margin: 0 0 0.5rem;
+        line-height: 1.4;
+    }
+}
+
+.help-bullet {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    &__icon {
+        color: #c2185b;
+        font-size: 0.95rem;
+        padding-top: 3px;
+        opacity: 0.8;
+    }
+
+    &__text {
+        strong {
+            font-size: 0.85rem;
+            color: var(--text-color);
+            display: block;
+        }
+
+        p {
+            margin: 2px 0 0;
+            font-size: 0.8rem;
+            color: var(--text-color-secondary);
+            line-height: 1.35;
+        }
+    }
+}
+
+// ─── Responsive Layouts ──────────────────────────────────────────────────────
+@media (max-width: 992px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    .form-panel-side {
+        order: -1; // Bring helper card to the top on tablet/mobile for context
+    }
+}

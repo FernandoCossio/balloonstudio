@@ -67,11 +67,14 @@ public enum ErrorCode {
     EMPLEADO_NO_ENCONTRADO("EMP101", HttpStatus.NOT_FOUND, "Empleado no encontrado"),
     EMPLEADO_CI_DUPLICADO("EMP201", HttpStatus.CONFLICT, "Ya existe un empleado con ese CI"),
     EMPLEADO_EMAIL_DUPLICADO("EMP202", HttpStatus.CONFLICT, "Ya existe un empleado con ese email"),
+    AUTO_DESACTIVACION_PROHIBIDA("EMP203", HttpStatus.BAD_REQUEST, "No puedes desactivar tu propia cuenta"),
 
     // -------------------------------------------------------------------------
     // INV — Inventario
     // -------------------------------------------------------------------------
     ARTICULO_INVENTARIO_NO_ENCONTRADO("INV101", HttpStatus.NOT_FOUND, "Artículo de inventario no encontrado"),
+    IMAGEN_NO_ENCONTRADA("INV102", HttpStatus.NOT_FOUND, "Imagen no encontrada"),
+    IMAGEN_NO_PERTENECE_AL_ARTICULO("INV202", HttpStatus.BAD_REQUEST, "La imagen no pertenece al artículo especificado"),
 
     // -------------------------------------------------------------------------
     // VAL — Validación de campos

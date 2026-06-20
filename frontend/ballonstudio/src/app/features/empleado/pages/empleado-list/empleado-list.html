@@ -1,0 +1,231 @@
+<p-toast />
+<p-confirmDialog />
+
+<div class="emp-page">
+
+    <!-- Header Section -->
+    <div class="emp-header">
+        <div class="emp-header__text">
+            <h1 class="emp-header__title">Gestión de Empleados</h1>
+            <p class="emp-header__sub">Administra las cuentas, roles y acceso del equipo de Balloon Studio.</p>
+        </div>
+        <div class="emp-header__actions">
+            <p-button 
+                label="Nuevo Empleado" 
+                icon="pi pi-plus" 
+                styleClass="emp-btn-primary" 
+                (onClick)="openNew()"
+            ></p-button>
+        </div>
+    </div>
+
+    <!-- Pastel Metrics Cards -->
+    <div class="emp-metrics">
+        <!-- Metric: Total Equipo -->
+        <div class="emp-card emp-card--pink">
+            <div class="emp-card__icon">
+                <i class="pi pi-users"></i>
+            </div>
+            <div class="emp-card__body">
+                <h3>Total Equipo</h3>
+                <p>Cuentas registradas</p>
+                <span class="emp-card__value">
+                    {{ totalCount() }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Metric: Activos -->
+        <div class="emp-card emp-card--blue">
+            <div class="emp-card__icon">
+                <i class="pi pi-user-check"></i>
+            </div>
+            <div class="emp-card__body">
+                <h3>Activos</h3>
+                <p>Acceso habilitado</p>
+                <span class="emp-card__value">
+                    {{ activeCount() }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Metric: Inactivos -->
+        <div class="emp-card emp-card--red">
+            <div class="emp-card__icon">
+                <i class="pi pi-ban"></i>
+            </div>
+            <div class="emp-card__body">
+                <h3>Inactivos</h3>
+                <p>Acceso deshabilitado</p>
+                <span class="emp-card__value">
+                    {{ inactiveCount() }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="emp-table-section">
+        
+        <!-- Filters Bar -->
+        <div class="emp-filters-bar">
+            <!-- Search Input -->
+            <div class="emp-search">
+                <i class="pi pi-search emp-search__icon"></i>
+                <input
+                    type="text"
+                    class="emp-search__input"
+                    placeholder="Buscar por nombre..."
+                    [ngModel]="searchQuery()"
+                    (ngModelChange)="onSearchChange($event)"
+                />
+            </div>
+
+            <!-- Role filter tabs -->
+            <div class="emp-tabs">
+                <button class="emp-tab" [class.emp-tab--active]="selectedRolFilter() === ''" (click)="setRolFilter('')">
+                    Todos
+                </button>
+                <button class="emp-tab" [class.emp-tab--active]="selectedRolFilter() === 'ADMIN'" (click)="setRolFilter('ADMIN')">
+                    Administradores
+                </button>
+                <button class="emp-tab" [class.emp-tab--active]="selectedRolFilter() === 'EMPLEADO'" (click)="setRolFilter('EMPLEADO')">
+                    Empleados
+                </button>
+            </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="emp-table-container">
+            <p-table
+                [value]="empleados()"
+                [lazy]="true"
+                (onLazyLoad)="loadLazy($event)"
+                [paginator]="true"
+                [rows]="rowsPerPage()"
+                [totalRecords]="totalRecords()"
+                [loading]="loading()"
+                [rowsPerPageOptions]="[5, 10, 20]"
+                responsiveLayout="scroll"
+                styleClass="p-datatable-striped emp-table-custom"
+            >
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 70px; text-align: center;">Avatar</th>
+                        <th pSortableColumn="nombreCompleto">Nombre Completo <p-sortIcon field="nombreCompleto"></p-sortIcon></th>
+                        <th pSortableColumn="username">Usuario <p-sortIcon field="username"></p-sortIcon></th>
+                        <th pSortableColumn="email">Email <p-sortIcon field="email"></p-sortIcon></th>
+                        <th>Teléfono</th>
+                        <th>Roles</th>
+                        <th>Estado</th>
+                        <th style="width: 140px; text-align: center;">Acciones</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-emp>
+                    <tr class="emp-row">
+                        <!-- Avatar -->
+                        <td style="text-align: center;">
+                            <div class="emp-avatar" [style.background-color]="getAvatarColor(emp.nombreCompleto)">
+                                {{ getInitials(emp.nombreCompleto) }}
+                            </div>
+                        </td>
+                        <!-- Nombre Completo -->
+                        <td>
+                            <div class="emp-name-cell">
+                                <span class="emp-text-main">{{ emp.nombreCompleto }}</span>
+                            </div>
+                        </td>
+                        <!-- Username -->
+                        <td>
+                            <span class="emp-text-username">@{{ emp.username }}</span>
+                        </td>
+                        <!-- Email -->
+                        <td>
+                            <span class="emp-text-sub">{{ emp.email }}</span>
+                        </td>
+                        <!-- Teléfono -->
+                        <td>
+                            <span class="emp-text-sub">{{ emp.telefono || '-' }}</span>
+                        </td>
+                        <!-- Roles -->
+                        <td>
+                            <div class="emp-roles-container">
+                                @for (roleName of emp.roles; track roleName) {
+                                    <span class="emp-role-badge" 
+                                          [class.emp-role-badge--admin]="roleName === 'ADMIN' || roleName === 'ROLE_ADMIN' || roleName === 'ROLE_ADMINISTRADOR'" 
+                                          [class.emp-role-badge--empleado]="roleName === 'EMPLEADO' || roleName === 'ROLE_EMPLEADO'">
+                                        {{ (roleName === 'ADMIN' || roleName === 'ROLE_ADMIN' || roleName === 'ROLE_ADMINISTRADOR') ? 'ADMIN' : 'EMPLEADO' }}
+                                    </span>
+                                }
+                            </div>
+                        </td>
+                        <!-- Estado -->
+                        <td>
+                            <span class="emp-status-badge" [class.emp-status-badge--active]="emp.activo" [class.emp-status-badge--inactive]="!emp.activo">
+                                <span class="emp-status-dot"></span>
+                                {{ emp.activo ? 'Activo' : 'Inactivo' }}
+                            </span>
+                        </td>
+                        <!-- Acciones -->
+                        <td>
+                            <div class="emp-actions">
+                                <button
+                                    pButton
+                                    type="button"
+                                    icon="pi pi-pencil"
+                                    class="p-button-rounded p-button-text p-button-secondary emp-action-btn"
+                                    pTooltip="Editar Empleado"
+                                    tooltipPosition="top"
+                                    (click)="editEmpleado(emp)"
+                                ></button>
+
+                                @if (canToggleState(emp)) {
+                                    @if (emp.activo) {
+                                        <button
+                                            pButton
+                                            type="button"
+                                            icon="pi pi-user-minus"
+                                            class="p-button-rounded p-button-text p-button-danger emp-action-btn"
+                                            pTooltip="Desactivar Cuenta"
+                                            tooltipPosition="top"
+                                            (click)="deactivateEmpleado(emp)"
+                                            [loading]="togglingIds().includes(emp.id)"
+                                        ></button>
+                                    } @else {
+                                        <button
+                                            pButton
+                                            type="button"
+                                            icon="pi pi-user-plus"
+                                            class="p-button-rounded p-button-text p-button-success emp-action-btn"
+                                            pTooltip="Activar Cuenta"
+                                            tooltipPosition="top"
+                                            (click)="activateEmpleado(emp)"
+                                            [loading]="togglingIds().includes(emp.id)"
+                                        ></button>
+                                    }
+                                } @else {
+                                    <span class="emp-self-badge" pTooltip="Tú (Sesión Activa)" tooltipPosition="top">
+                                        <i class="pi pi-lock"></i>
+                                    </span>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="8">
+                            <div class="emp-empty-state">
+                                <i class="pi pi-users emp-empty-state__icon"></i>
+                                <h3>Sin Empleados</h3>
+                                <p>No se encontraron empleados con los filtros aplicados.</p>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>

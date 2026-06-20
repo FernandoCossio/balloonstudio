@@ -24,6 +24,7 @@ public class RolSeeder implements CommandLineRunner {
     private void seedRoles() {
         seedRol("ADMIN", "Administrador del sistema con acceso total");
         seedRol("CLIENTE", "Usuario cliente con acceso a funciones de compra");
+        seedRol("EMPLEADO", "Empleado con acceso a funciones de sistema");
     }
 
     private void seedRol(String nombre, String descripcion) {

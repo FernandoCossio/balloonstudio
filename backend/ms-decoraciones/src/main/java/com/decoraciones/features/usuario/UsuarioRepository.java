@@ -12,4 +12,20 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
 	@EntityGraph(attributePaths = "roles")
 	Optional<Usuario> findByEmailIgnoreCase(String email);
+
+	boolean existsByEmailIgnoreCase(String email);
+	boolean existsByEmailIgnoreCaseAndIdNot(String email, Long id);
+	boolean existsByUsernameIgnoreCase(String username);
+	boolean existsByUsernameIgnoreCaseAndIdNot(String username, Long id);
+
+	@EntityGraph(attributePaths = "roles")
+	@org.springframework.data.jpa.repository.Query("SELECT u FROM Usuario u WHERE NOT EXISTS (" +
+			"  SELECT r FROM u.roles r WHERE r.nombre = 'CLIENTE'" +
+			") AND (CAST(:nombre AS string) IS NULL OR LOWER(u.nombreCompleto) LIKE LOWER(CONCAT('%', CAST(:nombre AS string), '%')))" +
+			"  AND (CAST(:rol AS string) IS NULL OR EXISTS (SELECT r FROM u.roles r WHERE r.nombre = CAST(:rol AS string)))")
+	org.springframework.data.domain.Page<Usuario> findEmpleados(
+			@org.springframework.data.repository.query.Param("nombre") String nombre, 
+			@org.springframework.data.repository.query.Param("rol") String rol, 
+			org.springframework.data.domain.Pageable pageable
+	);
 }

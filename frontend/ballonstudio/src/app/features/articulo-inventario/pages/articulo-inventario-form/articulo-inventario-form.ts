@@ -13,7 +13,8 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { MessageService } from 'primeng/api';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { ArticuloInventarioRequest, ArticuloInventarioResponse, ArticuloInventarioService } from '../../service/articulo-inventario.service';
+import { ArticuloInventarioRequest, ArticuloInventarioResponse, ArticuloInventarioService, ImagenArticuloResponse } from '../../service/articulo-inventario.service';
+import { API_URL } from '@/enviroment/enviroment';
 
 // ─── Moneda configurable ─────────────────────────────────────────────────────
 /** Cambia aquí el símbolo que se muestra en inputs y etiquetas de moneda */
@@ -55,7 +56,6 @@ export class ArticuloInventarioForm implements OnInit {
     tipoSeleccionado = signal<TipoArticulo>('CONSUMIBLE');
     complejidadSeleccionada = signal<NivelComplejidad>('MEDIO');
     esReutilizable = signal(false);
-
     // ─── Moneda (accesible desde el template) ────────────────────────────────
     readonly currencySymbol = CURRENCY_SYMBOL;
     readonly currencyCode   = CURRENCY_CODE;

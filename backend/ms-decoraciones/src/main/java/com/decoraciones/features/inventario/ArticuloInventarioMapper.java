@@ -1,6 +1,9 @@
-// features/inventario/ArticuloInventarioMapper.java
 package com.decoraciones.features.inventario;
 
+import com.decoraciones.domain.dtos.articuloinventario.ArticuloInventarioRequest;
+import com.decoraciones.domain.dtos.articuloinventario.ArticuloInventarioResponse;
+import com.decoraciones.domain.dtos.articuloinventario.ImagenArticuloResponse;
+import com.decoraciones.domain.dtos.categoria.CategoriaResponse;
 import com.decoraciones.domain.dtos.proyectodiseno.ArticuloInventarioDto;
 import com.decoraciones.domain.models.ArticuloInventario;
 import com.decoraciones.domain.models.Categoria;
@@ -68,5 +71,51 @@ public class ArticuloInventarioMapper {
                             ? Optional.empty()
                             : Optional.of(imagenes.get(0).getUrl());
                 });
+    }
+
+    public ArticuloInventarioResponse toResponse(ArticuloInventario a) {
+        List<CategoriaResponse> cats = a.getCategorias() == null ? List.of() :
+                a.getCategorias().stream()
+                        .map(c -> new CategoriaResponse(c.getId(), c.getNombre(), c.getDescripcion()))
+                        .toList();
+        List<ImagenArticuloResponse> imgs = a.getImagenes() == null ? List.of() :
+                a.getImagenes().stream()
+                        .map(i -> new ImagenArticuloResponse(
+                                i.getId(), i.getUrl(), i.getEsPrincipal(), i.getOrden(), i.getProcesadoIa(), i.getFechaSubida()
+                        ))
+                        .toList();
+        return new ArticuloInventarioResponse(
+                a.getId(), a.getNombre(), a.getDescripcion(), a.getTipoArticulo(), a.getEstado(),
+                a.getCostoAdquisicion(), a.getPorcentajeGanancia(), a.getValorResidual(),
+                a.getVidaUtilAnos(), a.getVidaUtilUsos(), a.getStockTotal(),
+                a.getPesoKg(), a.getVolumenM3(), a.getTiempoArmadoMin(),
+                a.getDiasPreparacionPrevios(), a.getDiasLimpiezaPosteriores(),
+                a.getMantenimientoPromedioBs(), a.getNivelComplejidad(), a.getEmbeddingVisual(),
+                cats,
+                imgs
+        );
+    }
+
+    public ArticuloInventario toEntity(ArticuloInventarioRequest r) {
+        ArticuloInventario a = new ArticuloInventario();
+        a.setNombre(r.nombre());
+        a.setDescripcion(r.descripcion());
+        a.setTipoArticulo(r.tipoArticulo());
+        a.setEstado(r.estado());
+        a.setCostoAdquisicion(r.costoAdquisicion());
+        a.setPorcentajeGanancia(r.porcentajeGanancia());
+        a.setValorResidual(r.valorResidual());
+        a.setVidaUtilAnos(r.vidaUtilAnos());
+        a.setVidaUtilUsos(r.vidaUtilUsos());
+        a.setStockTotal(r.stockTotal());
+        a.setPesoKg(r.pesoKg());
+        a.setVolumenM3(r.volumenM3());
+        a.setTiempoArmadoMin(r.tiempoArmadoMin());
+        a.setDiasPreparacionPrevios(r.diasPreparacionPrevios());
+        a.setDiasLimpiezaPosteriores(r.diasLimpiezaPosteriores());
+        a.setMantenimientoPromedioBs(r.mantenimientoPromedioBs());
+        a.setNivelComplejidad(r.nivelComplejidad());
+        a.setEmbeddingVisual(r.embeddingVisual());
+        return a;
     }
 }

@@ -1,6 +1,8 @@
 package com.decoraciones.features.inventario;
 
 import com.decoraciones.common.errors.ArticuloInventarioNoEncontradoException;
+import com.decoraciones.domain.dtos.articuloinventario.ArticuloInventarioRequest;
+import com.decoraciones.domain.dtos.articuloinventario.ArticuloInventarioResponse;
 import com.decoraciones.domain.dtos.proyectodiseno.ArticuloInventarioDto;
 import com.decoraciones.domain.models.ArticuloInventario;
 import com.decoraciones.domain.models.Categoria;
@@ -28,57 +30,66 @@ public class ArticuloInventarioService {
         this.mapper = mapper;
     }
 
-    @Transactional(readOnly = true)
-    public List<ArticuloInventario> findAll() {
-        return articuloRepository.findAll();
-    }
-
-    @Transactional(readOnly = true)
-    public ArticuloInventario findById(Long id) {
+    private ArticuloInventario findEntityById(Long id) {
         return articuloRepository.findById(id)
                 .orElseThrow(ArticuloInventarioNoEncontradoException::new);
     }
 
-    public ArticuloInventario create(ArticuloInventario articulo, Set<Long> categoriaIds) {
-        if (categoriaIds != null && !categoriaIds.isEmpty()) {
-            Set<Categoria> categorias = new HashSet<>(categoriaRepository.findAllById(categoriaIds));
-            articulo.setCategorias(categorias);
-        }
-        return articuloRepository.save(articulo);
+    @Transactional(readOnly = true)
+    public List<ArticuloInventarioResponse> findAll() {
+        return articuloRepository.findAll().stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 
-    public ArticuloInventario update(Long id, ArticuloInventario datos, Set<Long> categoriaIds) {
-        ArticuloInventario existente = findById(id);
+    @Transactional(readOnly = true)
+    public ArticuloInventarioResponse findById(Long id) {
+        return mapper.toResponse(findEntityById(id));
+    }
 
-        existente.setNombre(datos.getNombre());
-        existente.setDescripcion(datos.getDescripcion());
-        existente.setTipoArticulo(datos.getTipoArticulo());
-        existente.setEstado(datos.getEstado());
-        existente.setCostoAdquisicion(datos.getCostoAdquisicion());
-        existente.setPorcentajeGanancia(datos.getPorcentajeGanancia());
-        existente.setValorResidual(datos.getValorResidual());
-        existente.setVidaUtilAnos(datos.getVidaUtilAnos());
-        existente.setVidaUtilUsos(datos.getVidaUtilUsos());
-        existente.setStockTotal(datos.getStockTotal());
-        existente.setPesoKg(datos.getPesoKg());
-        existente.setVolumenM3(datos.getVolumenM3());
-        existente.setTiempoArmadoMin(datos.getTiempoArmadoMin());
-        existente.setDiasPreparacionPrevios(datos.getDiasPreparacionPrevios());
-        existente.setDiasLimpiezaPosteriores(datos.getDiasLimpiezaPosteriores());
-        existente.setMantenimientoPromedioBs(datos.getMantenimientoPromedioBs());
-        existente.setNivelComplejidad(datos.getNivelComplejidad());
-        existente.setEmbeddingVisual(datos.getEmbeddingVisual());
+    public ArticuloInventarioResponse create(ArticuloInventarioRequest request) {
+        ArticuloInventario articulo = mapper.toEntity(request);
+        if (request.categoriaIds() != null && !request.categoriaIds().isEmpty()) {
+            Set<Categoria> categorias = new HashSet<>(categoriaRepository.findAllById(request.categoriaIds()));
+            articulo.setCategorias(categorias);
+        }
+        ArticuloInventario saved = articuloRepository.save(articulo);
+        return mapper.toResponse(saved);
+    }
 
-        if (categoriaIds != null) {
-            Set<Categoria> categorias = new HashSet<>(categoriaRepository.findAllById(categoriaIds));
+    public ArticuloInventarioResponse update(Long id, ArticuloInventarioRequest request) {
+        ArticuloInventario existente = findEntityById(id);
+
+        existente.setNombre(request.nombre());
+        existente.setDescripcion(request.descripcion());
+        existente.setTipoArticulo(request.tipoArticulo());
+        existente.setEstado(request.estado());
+        existente.setCostoAdquisicion(request.costoAdquisicion());
+        existente.setPorcentajeGanancia(request.porcentajeGanancia());
+        existente.setValorResidual(request.valorResidual());
+        existente.setVidaUtilAnos(request.vidaUtilAnos());
+        existente.setVidaUtilUsos(request.vidaUtilUsos());
+        existente.setStockTotal(request.stockTotal());
+        existente.setPesoKg(request.pesoKg());
+        existente.setVolumenM3(request.volumenM3());
+        existente.setTiempoArmadoMin(request.tiempoArmadoMin());
+        existente.setDiasPreparacionPrevios(request.diasPreparacionPrevios());
+        existente.setDiasLimpiezaPosteriores(request.diasLimpiezaPosteriores());
+        existente.setMantenimientoPromedioBs(request.mantenimientoPromedioBs());
+        existente.setNivelComplejidad(request.nivelComplejidad());
+        existente.setEmbeddingVisual(request.embeddingVisual());
+
+        if (request.categoriaIds() != null) {
+            Set<Categoria> categorias = new HashSet<>(categoriaRepository.findAllById(request.categoriaIds()));
             existente.setCategorias(categorias);
         }
 
-        return articuloRepository.save(existente);
+        ArticuloInventario saved = articuloRepository.save(existente);
+        return mapper.toResponse(saved);
     }
 
     public void delete(Long id) {
-        ArticuloInventario existente = findById(id);
+        ArticuloInventario existente = findEntityById(id);
         existente.setIsDeleted(true);
         articuloRepository.save(existente);
     }
