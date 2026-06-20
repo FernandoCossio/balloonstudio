@@ -1,5 +1,6 @@
 package com.decoraciones.domain.models;
 
+import com.decoraciones.domain.enums.imagenarticulo.EstadoIa;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,11 +32,19 @@ public class ImagenArticulo extends BaseEntity{
     @Column(name = "es_principal")
     private Boolean esPrincipal = false;
 
+    @Column(name = "tipo_vista")
+    @Enumerated(EnumType.STRING)
+    private TipoVistaImagen tipoVista;
+
     @Column
     private Integer orden;
 
+    //deprecated field, se eliminara en futuras versiones
     @Column(name = "procesado_ia")
     private Boolean procesadoIa = false;
+
+    @Column(name = "estado_ia")
+    private EstadoIa estadoIa;
 
     @Column(name = "fecha_subida")
     private LocalDateTime fechaSubida;
