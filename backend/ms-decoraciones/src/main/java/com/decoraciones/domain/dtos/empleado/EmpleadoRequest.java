@@ -1,14 +1,16 @@
 package com.decoraciones.domain.dtos.empleado;
 
-import java.time.LocalDate;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
 public record EmpleadoRequest(
-        String nombre,
-        String apellido,
-        String ci,
-        String cargo,
-        String telefono,
+        @NotBlank(message = "El nombre completo es obligatorio")
+        String nombreCompleto,
+
+        @NotBlank(message = "El email es obligatorio")
+        @Email(message = "El email debe tener un formato válido")
         String email,
-        LocalDate fechaContratacion,
-        Boolean activo
+
+        String telefono,
+        String username
 ) {}

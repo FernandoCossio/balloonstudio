@@ -26,6 +26,7 @@ public class ImagenArticuloSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
         seedImagenesPrincipales();
+        seedImagenesAdicionales();
     }
 
     private void seedImagenesPrincipales() {
@@ -63,6 +64,71 @@ public class ImagenArticuloSeeder implements CommandLineRunner {
 
             imagenRepository.save(imagen);
             System.out.println("Imagen principal creada para: " + nombreArticulo);
+        }
+    }
+
+    private void seedImagenesAdicionales() {
+        String[] nombres = {"sofa1", "table1", "table2", "table3"};
+
+        for (String nombreArticulo : nombres) {
+            ArticuloInventario articulo = articuloRepository.findByNombreIgnoreCase(nombreArticulo).orElse(null);
+            if (articulo == null) {
+                continue;
+            }
+
+            ImagenArticulo principal = imagenRepository
+                    .findByArticuloInventarioIdAndEsPrincipalTrue(articulo.getId())
+                    .orElse(null);
+            if (principal == null) {
+                continue;
+            }
+
+            java.util.List<ImagenArticulo> existing = imagenRepository.findByArticuloInventarioIdOrderByOrdenAsc(articulo.getId());
+            if (existing.size() > 1) {
+                continue;
+            }
+
+            String baseWebPath = principal.getUrl();
+            int dotIdx = baseWebPath.lastIndexOf('.');
+            if (dotIdx == -1) {
+                continue;
+            }
+
+            String baseWithoutExt = baseWebPath.substring(0, dotIdx);
+            String ext = baseWebPath.substring(dotIdx);
+
+            java.nio.file.Path storageDir = java.nio.file.Paths.get("storage").toAbsolutePath();
+            java.nio.file.Path srcPath = storageDir.resolve(baseWebPath);
+
+            if (!java.nio.file.Files.exists(srcPath)) {
+                System.out.println("Source physical image file does not exist: " + srcPath);
+                continue;
+            }
+
+            for (int i = 1; i <= 3; i++) {
+                String targetWebPath = baseWithoutExt + "_" + i + ext;
+                java.nio.file.Path destPath = storageDir.resolve(targetWebPath);
+
+                try {
+                    if (!java.nio.file.Files.exists(destPath)) {
+                        java.nio.file.Files.copy(srcPath, destPath, java.nio.file.StandardCopyOption.COPY_ATTRIBUTES);
+                        System.out.println("Copied physical file to: " + destPath);
+                    }
+
+                    ImagenArticulo extraImg = new ImagenArticulo();
+                    extraImg.setArticuloInventario(articulo);
+                    extraImg.setUrl(targetWebPath);
+                    extraImg.setEsPrincipal(false);
+                    extraImg.setOrden(i + 1);
+                    extraImg.setProcesadoIa(false);
+                    extraImg.setFechaSubida(LocalDateTime.now());
+
+                    imagenRepository.save(extraImg);
+                    System.out.println("Seeded additional image: " + targetWebPath);
+                } catch (Exception e) {
+                    System.err.println("Error copying or seeding additional image: " + e.getMessage());
+                }
+            }
         }
     }
 }

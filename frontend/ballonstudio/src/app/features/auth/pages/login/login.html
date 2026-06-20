@@ -27,7 +27,7 @@
                     <div class="bs-subtitle">Ingresa tus credenciales para acceder al Management Hub</div>
                 </div>
 
-                <div class="bs-form__fields">
+                <form class="bs-form__fields" (ngSubmit)="onLogin()">
                     <div class="bs-form__field">
                         <p-inputgroup>
                             <p-inputgroup-addon>
@@ -61,7 +61,7 @@
                         <span class="bs-link">¿Olvidaste tu contraseña?</span>
                     </div>
 
-                    <p-button label="Iniciar Sesión" styleClass="w-full" (onClick)="onLogin()" [loading]="isLoading" />
+                    <p-button type="submit" label="Iniciar Sesión" styleClass="w-full" [loading]="isLoading" />
 
                     <div class="bs-separator">
                         <div class="bs-separator-line"></div>
@@ -78,7 +78,7 @@
                         <span class="bs-form__footer-muted">¿No tienes una cuenta? </span>
                         <span class="bs-link" routerLink="/auth/register">Crea una cuenta aqui</span>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </section>

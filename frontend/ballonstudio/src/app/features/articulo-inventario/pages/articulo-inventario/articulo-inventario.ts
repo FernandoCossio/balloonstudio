@@ -12,7 +12,11 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
 import { SkeletonModule } from 'primeng/skeleton';
-import { ArticuloInventarioResponse, ArticuloInventarioService } from '../../service/articulo-inventario.service';
+import { DialogModule } from 'primeng/dialog';
+import { ArticuloInventarioResponse, ArticuloInventarioService, ImagenArticuloResponse } from '../../service/articulo-inventario.service';
+import { API_URL } from '@/enviroment/enviroment';
+import { AuthService } from '@/app/features/auth/service/auth.service';
+import { ROLES } from '@/app/features/core/constants/role.constant';
 
 type FilterTab = 'TODOS' | 'CONSUMIBLE' | 'REUTILIZABLE';
 type ComplejidadLevel = 'FACIL' | 'MEDIO' | 'PROFESIONAL';
@@ -24,7 +28,7 @@ type ComplejidadLevel = 'FACIL' | 'MEDIO' | 'PROFESIONAL';
         CommonModule, RouterModule, FormsModule,
         ButtonModule, TableModule, TagModule, BadgeModule,
         TooltipModule, ConfirmDialogModule, ToastModule,
-        MenuModule, SkeletonModule
+        MenuModule, SkeletonModule, DialogModule
     ],
     providers: [ConfirmationService, MessageService],
     templateUrl: './articulo-inventario.html',
@@ -35,12 +39,22 @@ export class ArticuloInventario implements OnInit {
     private confirmSvc = inject(ConfirmationService);
     private msgSvc = inject(MessageService);
     private router = inject(Router);
+    private auth = inject(AuthService);
+
+    isAdmin = computed(() => this.auth.hasRole(ROLES.ADMINISTRADOR));
 
     // ─── State ───────────────────────────────────────────────────────────────
     articulos = signal<ArticuloInventarioResponse[]>([]);
     loading = signal(true);
     activeFilter = signal<FilterTab>('TODOS');
     searchQuery = signal('');
+    hoveredImageIndex = signal<Record<number, number>>({});
+
+    showImageDialog = signal(false);
+    selectedArticulo = signal<ArticuloInventarioResponse | null>(null);
+    imagenes = signal<ImagenArticuloResponse[]>([]);
+    isDragging = signal(false);
+    uploadingImages = signal(false);
 
     // ─── Computed ────────────────────────────────────────────────────────────
     articulosFiltrados = computed(() => {
@@ -163,5 +177,149 @@ export class ArticuloInventario implements OnInit {
         let hash = 0;
         for (let i = 0; i < nombre.length; i++) hash = nombre.charCodeAt(i) + ((hash << 5) - hash);
         return colors[Math.abs(hash) % colors.length];
+    }
+
+    getPrincipalImageUrl(art: ArticuloInventarioResponse): string | null {
+        if (!art.imagenes || art.imagenes.length === 0) return null;
+        const principal = art.imagenes.find(img => img.esPrincipal);
+        const img = principal || art.imagenes[0];
+        return `${API_URL}/${img.url}`;
+    }
+
+    getImageForArt(art: ArticuloInventarioResponse): string | null {
+        if (!art.imagenes || art.imagenes.length === 0) return null;
+        
+        const hoverState = this.hoveredImageIndex();
+        const hoveredIndex = hoverState[art.id];
+        
+        if (hoveredIndex !== undefined && hoveredIndex >= 0 && hoveredIndex < art.imagenes.length) {
+            return `${API_URL}/${art.imagenes[hoveredIndex].url}`;
+        }
+        
+        return this.getPrincipalImageUrl(art);
+    }
+
+    onMouseMove(event: MouseEvent, art: ArticuloInventarioResponse) {
+        const imgs = art.imagenes;
+        if (!imgs || imgs.length <= 1) return;
+        
+        const element = event.currentTarget as HTMLElement;
+        const rect = element.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const width = rect.width;
+        
+        const pct = Math.max(0, Math.min(1, x / width));
+        const index = Math.floor(pct * imgs.length);
+        
+        this.hoveredImageIndex.update(state => ({
+            ...state,
+            [art.id]: Math.min(index, imgs.length - 1)
+        }));
+    }
+
+    onMouseLeave(art: ArticuloInventarioResponse) {
+        this.hoveredImageIndex.update(state => {
+            const newState = { ...state };
+            delete newState[art.id];
+            return newState;
+        });
+    }
+
+    openImageDialog(articulo: ArticuloInventarioResponse) {
+        this.selectedArticulo.set(articulo);
+        this.imagenes.set(articulo.imagenes ?? []);
+        this.showImageDialog.set(true);
+    }
+
+    onFilesSelected(event: Event) {
+        const input = event.target as HTMLInputElement;
+        if (input.files && input.files.length > 0) {
+            const files = Array.from(input.files);
+            this.uploadImages(files);
+        }
+    }
+
+    onDragOver(event: DragEvent) {
+        event.preventDefault();
+        this.isDragging.set(true);
+    }
+
+    onDragLeave(event: DragEvent) {
+        event.preventDefault();
+        this.isDragging.set(false);
+    }
+
+    onDrop(event: DragEvent) {
+        event.preventDefault();
+        this.isDragging.set(false);
+        if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+            const files = Array.from(event.dataTransfer.files);
+            this.uploadImages(files);
+        }
+    }
+
+    uploadImages(files: File[]) {
+        const art = this.selectedArticulo();
+        if (!art) return;
+
+        this.uploadingImages.set(true);
+        this.svc.uploadImagenes(art.id, files).subscribe({
+            next: () => {
+                this.uploadingImages.set(false);
+                this.msgSvc.add({ severity: 'success', summary: 'Cargado', detail: 'Imágenes subidas correctamente' });
+                this.reloadImages();
+            },
+            error: (err) => {
+                this.uploadingImages.set(false);
+                this.msgSvc.add({ severity: 'error', summary: 'Error', detail: err?.error ?? 'Error al subir imágenes' });
+            }
+        });
+    }
+
+    reloadImages() {
+        const art = this.selectedArticulo();
+        if (!art) return;
+        this.svc.getById(art.id).subscribe({
+            next: (updatedArt) => {
+                this.imagenes.set(updatedArt.imagenes ?? []);
+                this.articulos.update(list => list.map(a => a.id === updatedArt.id ? updatedArt : a));
+                this.selectedArticulo.set(updatedArt);
+            },
+            error: () => console.error('Error al recargar imágenes')
+        });
+    }
+
+    setAsPrincipal(imagenId: number) {
+        const art = this.selectedArticulo();
+        if (!art) return;
+
+        this.svc.setPrincipal(art.id, imagenId).subscribe({
+            next: () => {
+                this.msgSvc.add({ severity: 'success', summary: 'Principal', detail: 'Imagen principal establecida' });
+                this.reloadImages();
+            },
+            error: (err) => {
+                this.msgSvc.add({ severity: 'error', summary: 'Error', detail: err?.error ?? 'Error al establecer imagen principal' });
+            }
+        });
+    }
+
+    deleteImagen(imagenId: number) {
+        const art = this.selectedArticulo();
+        if (!art) return;
+
+        this.svc.deleteImagen(art.id, imagenId).subscribe({
+            next: () => {
+                this.msgSvc.add({ severity: 'success', summary: 'Eliminado', detail: 'Imagen eliminada correctamente' });
+                this.reloadImages();
+            },
+            error: (err) => {
+                this.msgSvc.add({ severity: 'error', summary: 'Error', detail: err?.error ?? 'Error al eliminar la imagen' });
+            }
+        });
+    }
+
+    getImageUrl(url: string): string {
+        return `${API_URL}/${url}`;
     }
 }

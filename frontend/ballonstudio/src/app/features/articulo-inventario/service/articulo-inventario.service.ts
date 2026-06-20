@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable, map, tap } from 'rxjs';
 import type { ApiResponse } from '@/app/shared/interfaces/core/api-response.interface';
+import { API_URL } from '@/enviroment/enviroment';
 
 // ─── Interfaces (match Java DTOs) ────────────────────────────────────────────
 
@@ -33,6 +34,15 @@ export interface ArticuloInventarioRequest {
     categoriaIds?: number[];
 }
 
+export interface ImagenArticuloResponse {
+    id: number;
+    url: string;
+    esPrincipal: boolean;
+    orden: number;
+    procesadoIa: boolean;
+    fechaSubida: string;
+}
+
 export interface ArticuloInventarioResponse {
     id: number;
     nombre: string;
@@ -54,11 +64,12 @@ export interface ArticuloInventarioResponse {
     nivelComplejidad?: 'FACIL' | 'MEDIO' | 'PROFESIONAL';
     embeddingVisual?: number[];
     categorias: CategoriaResponse[];
+    imagenes?: ImagenArticuloResponse[];
 }
 
 // ─── Service ─────────────────────────────────────────────────────────────────
 
-const API_BASE = 'http://localhost:8080/api/inventario';
+const API_BASE = `${API_URL}/inventario`;
 
 @Injectable({ providedIn: 'root' })
 export class ArticuloInventarioService {
@@ -110,6 +121,40 @@ export class ArticuloInventarioService {
             tap({
                 next: ()  => console.log('[ArticuloInventarioService] ✅ delete OK id:', id),
                 error: err => console.error('[ArticuloInventarioService] ❌ delete ERROR', err.status, err.message)
+            })
+        );
+    }
+
+    uploadImagenes(articuloId: number, files: File[]): Observable<ImagenArticuloResponse[]> {
+        const formData = new FormData();
+        for (const file of files) {
+            formData.append('files', file);
+        }
+        return this.http.post<ApiResponse<ImagenArticuloResponse[]>>(`${API_BASE}/${articuloId}/imagenes`, formData).pipe(
+            map(res => res.data),
+            tap({
+                next: data => console.log('[ArticuloInventarioService] ✅ uploadImagenes OK', data),
+                error: err  => console.error('[ArticuloInventarioService] ❌ uploadImagenes ERROR', err)
+            })
+        );
+    }
+
+    setPrincipal(articuloId: number, imagenId: number): Observable<void> {
+        return this.http.patch<ApiResponse<void>>(`${API_BASE}/${articuloId}/imagenes/${imagenId}/principal`, {}).pipe(
+            map(() => void 0),
+            tap({
+                next: () => console.log('[ArticuloInventarioService] ✅ setPrincipal OK'),
+                error: err => console.error('[ArticuloInventarioService] ❌ setPrincipal ERROR', err)
+            })
+        );
+    }
+
+    deleteImagen(articuloId: number, imagenId: number): Observable<void> {
+        return this.http.delete<ApiResponse<void>>(`${API_BASE}/${articuloId}/imagenes/${imagenId}`).pipe(
+            map(() => void 0),
+            tap({
+                next: () => console.log('[ArticuloInventarioService] ✅ deleteImagen OK'),
+                error: err => console.error('[ArticuloInventarioService] ❌ deleteImagen ERROR', err)
             })
         );
     }

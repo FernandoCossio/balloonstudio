@@ -1,15 +1,13 @@
 package com.decoraciones.domain.dtos.empleado;
 
-import java.time.LocalDate;
+import java.util.Set;
 
 public record EmpleadoResponse(
         Long id,
-        String nombre,
-        String apellido,
-        String ci,
-        String cargo,
-        String telefono,
+        String username,
+        String nombreCompleto,
         String email,
-        LocalDate fechaContratacion,
-        Boolean activo
+        String telefono,
+        Boolean activo,
+        Set<String> roles
 ) {}

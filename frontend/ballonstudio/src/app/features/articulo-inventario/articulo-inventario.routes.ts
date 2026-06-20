@@ -1,11 +1,11 @@
 import { Routes } from '@angular/router';
 import { roleGuard } from '@/app/features/core/guards/role.guard';
-import { ROLE_ADMINISTRADOR } from '@/app/features/core/constants/role.constant';
+import { ROLE_ADMINISTRADOR, ROLE_EMPLEADO } from '@/app/features/core/constants/role.constant';
 
 export default [
     {
         path: '',
-        canActivate: [roleGuard(ROLE_ADMINISTRADOR)],
+        canActivate: [roleGuard([ROLE_ADMINISTRADOR, ROLE_EMPLEADO])],
         loadComponent: () =>
             import('./pages/articulo-inventario/articulo-inventario').then(m => m.ArticuloInventario)
     },
