@@ -26,6 +26,7 @@ public class ProyectoDisenoService {
     private final EscenarioBaseRepository escenarioRepository;
     private final ElementoLienzoRepository elementoRepository;
     private final ImagenArticuloRepository imagenArticuloRepository;
+    private final com.decoraciones.features.reserva.InventarioLockService lockService;
 
     @Value("${app.base-url}")
     private String baseUrl;
@@ -36,11 +37,13 @@ public class ProyectoDisenoService {
     public ProyectoDisenoService(ProyectoDisenoRepository proyectoRepository,
                                  EscenarioBaseRepository escenarioRepository,
                                  ElementoLienzoRepository elementoRepository,
-                                 ImagenArticuloRepository imagenArticuloRepository) {
+                                 ImagenArticuloRepository imagenArticuloRepository,
+                                 com.decoraciones.features.reserva.InventarioLockService lockService) {
         this.proyectoRepository    = proyectoRepository;
         this.escenarioRepository   = escenarioRepository;
         this.elementoRepository    = elementoRepository;
         this.imagenArticuloRepository = imagenArticuloRepository;
+        this.lockService = lockService;
     }
 
     // ── Proyectos ─────────────────────────────────────────────────────────────
@@ -206,6 +209,7 @@ public class ProyectoDisenoService {
             el.setOpacity(req.opacity() != null ? req.opacity() : 1.0);
             el.setZIndex(req.zIndex() != null ? req.zIndex() : 0);
             el.setLayer(req.layer() != null ? req.layer() : "main");
+            el.setVistaActual(req.vistaActual() != null ? req.vistaActual() : "FRONTAL");
             return el;
         }).toList();
 
@@ -228,6 +232,9 @@ public class ProyectoDisenoService {
 
     private void validarStock(List<ElementoLienzoRequest> requests,
                               Long proyectoId, Long escenarioIdActual) {
+        ProyectoDiseno proyecto = proyectoRepository.findById(proyectoId).orElseThrow();
+        java.time.LocalDate fechaEvento = proyecto.getFechaEvento() != null ? proyecto.getFechaEvento() : java.time.LocalDate.now().plusDays(30);
+
         // Agrupar por artículo para validar en lote
         requests.stream()
                 .collect(java.util.stream.Collectors.groupingBy(
@@ -235,23 +242,16 @@ public class ProyectoDisenoService {
                         java.util.stream.Collectors.summingInt(ElementoLienzoRequest::cantidad)
                 ))
                 .forEach((articuloId, cantidadEnEsteEscenario) -> {
-                    // Cantidad ya usada en otros escenarios del mismo proyecto
+                    // Cantidad ya usada en otros escenarios del mismo proyecto (excluyendo el actual)
                     Integer cantidadOtrosEscenarios = elementoRepository
-                            .sumCantidadByArticuloAndProyecto(articuloId, proyectoId);
+                            .sumCantidadByArticuloAndProyectoExcludingEscenario(articuloId, proyectoId, escenarioIdActual);
 
-                    // Stock del artículo
-                    // Se obtiene directo de la relación para evitar un service extra
-                    ElementoLienzoRequest ref = requests.stream()
-                            .filter(r -> r.articuloId().equals(articuloId))
-                            .findFirst().orElseThrow();
+                    int totalRequerido = cantidadOtrosEscenarios + cantidadEnEsteEscenario;
+                    int disponible = lockService.getStockDisponible(articuloId, fechaEvento, fechaEvento.plusDays(1), proyectoId);
 
-                    // Si la suma total excede el stock lanzar excepción
-                    // El stock real se obtiene desde ArticuloInventario
-                    // Esta validación es ligera — bloqueo_inventario se gestiona en reservas
-                    int totalUsado = cantidadOtrosEscenarios + cantidadEnEsteEscenario;
-
-                    // Nota: aquí se podría inyectar ArticuloInventarioRepository
-                    // para comparar con stockTotal. Por ahora se delega a BD constraint.
+                    if (disponible < totalRequerido) {
+                        throw new IllegalArgumentException("Stock insuficiente para el artículo ID: " + articuloId + ". Requerido: " + totalRequerido + ", Disponible: " + disponible);
+                    }
                 });
     }
 
@@ -304,6 +304,20 @@ public class ProyectoDisenoService {
                 .map(img -> baseUrl + "/" + img.getUrl())
                 .orElse(null);
 
+        List<com.decoraciones.domain.dtos.articuloinventario.ImagenArticuloResponse> imagenes = imagenArticuloRepository
+                .findByArticuloInventarioIdOrderByOrdenAsc(art.getId())
+                .stream()
+                .map(img -> new com.decoraciones.domain.dtos.articuloinventario.ImagenArticuloResponse(
+                        img.getId(),
+                        baseUrl + "/" + img.getUrl(),
+                        img.getEsPrincipal(),
+                        img.getOrden(),
+                        img.getProcesadoIa(),
+                        img.getFechaSubida(),
+                        img.getTipoVista() != null ? img.getTipoVista().name() : null
+                ))
+                .toList();
+
         return new ElementoLienzoResponse(
                 el.getId(),
                 art.getId(),
@@ -316,7 +330,9 @@ public class ProyectoDisenoService {
                 el.getWidth(), el.getHeight(),
                 el.getScaleX(), el.getScaleY(),
                 el.getRotacionDeg(), el.getOpacity(),
-                el.getZIndex(), el.getLayer()
+                el.getZIndex(), el.getLayer(),
+                el.getVistaActual(),
+                imagenes
         );
     }
 

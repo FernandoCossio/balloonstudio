@@ -1,3 +1,5 @@
+import { ImagenArticuloResponse } from '../../articulo-inventario/service/articulo-inventario.service';
+
 export interface ArticuloInventarioDto {
   id: number;
   nombre: string;
@@ -10,4 +12,5 @@ export interface ArticuloInventarioDto {
   imagenUrl: string | null;
   imagenThumbnailUrl: string | null;
   categorias: string[];
+  imagenes?: ImagenArticuloResponse[];
 }

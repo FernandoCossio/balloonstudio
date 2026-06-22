@@ -75,6 +75,18 @@ public enum ErrorCode {
     ARTICULO_INVENTARIO_NO_ENCONTRADO("INV101", HttpStatus.NOT_FOUND, "Artículo de inventario no encontrado"),
     IMAGEN_NO_ENCONTRADA("INV102", HttpStatus.NOT_FOUND, "Imagen no encontrada"),
     IMAGEN_NO_PERTENECE_AL_ARTICULO("INV202", HttpStatus.BAD_REQUEST, "La imagen no pertenece al artículo especificado"),
+    STOCK_INSUFICIENTE("INV203", HttpStatus.CONFLICT, "Stock insuficiente para el artículo"),
+
+    // -------------------------------------------------------------------------
+    // RES — Reservas
+    // -------------------------------------------------------------------------
+    RESERVA_NO_ENCONTRADA("RES101", HttpStatus.NOT_FOUND, "Reserva no encontrada"),
+    ESTADO_RESERVA_INVALIDO("RES201", HttpStatus.BAD_REQUEST, "Estado de reserva inválido"),
+
+    // -------------------------------------------------------------------------
+    // INC — Incidencias
+    // -------------------------------------------------------------------------
+    INCIDENCIA_NO_ENCONTRADA("INC101", HttpStatus.NOT_FOUND, "Incidencia no encontrada"),
 
     // -------------------------------------------------------------------------
     // VAL — Validación de campos

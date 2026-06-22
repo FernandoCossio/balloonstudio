@@ -120,6 +120,9 @@
 
           @if (canvasState.selectedId()) {
             <div class="canvas-info-bar__actions">
+              <button class="canvas-chip-btn" (click)="rotarVistaSeleccionada()" title="Rotar 3D (Simulado)">
+                <i class="pi pi-refresh"></i> Rotar Vista ({{ canvasState.selectedItem()?.vistaActual || 'FRONTAL' }})
+              </button>
               <button class="canvas-chip-btn" (click)="canvasState.bringToFront(canvasState.selectedId()!)">
                 <i class="pi pi-arrow-up"></i> Frente
               </button>

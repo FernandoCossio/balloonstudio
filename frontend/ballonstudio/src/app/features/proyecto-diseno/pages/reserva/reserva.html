@@ -1,0 +1,159 @@
+<div class="reserva-page">
+  <!-- Header con botón de volver -->
+  <header class="reserva-header">
+    <button (click)="volverAlCanvas()" class="back-btn">
+      <i class="pi pi-arrow-left"></i>
+      <span>Volver al Lienzo</span>
+    </button>
+    <div class="secure-badge">
+      <i class="pi pi-shield"></i>
+      <span>Pago Seguro SSL</span>
+    </div>
+  </header>
+
+  <!-- Contenido principal -->
+  <main class="reserva-main">
+    
+    <div class="reserva-hero">
+      <h1 class="reserva-title">Finalizar Reserva</h1>
+      <p class="reserva-subtitle">Estás a un paso de asegurar el mobiliario para tu evento</p>
+
+      <!-- Contador de tiempo de bloqueo -->
+      <div class="timer-card">
+        <i class="pi pi-clock"></i>
+        <span>Mobiliario bloqueado por: <strong>{{ formattedTimeRemaining() }}</strong></span>
+      </div>
+    </div>
+
+    <!-- Layout en dos columnas -->
+    <div class="reserva-content-layout">
+      
+      <!-- Columna Izquierda: Resumen de Cotización -->
+      <section class="summary-section">
+        <div class="card-glass">
+          <h2 class="section-title">Resumen de Cotización</h2>
+
+          <div class="price-row">
+            <span class="price-label">Artículos (Todo el Proyecto)</span>
+            <span class="price-value">Bs. {{ costoArticulos() | number:'1.2-2' }}</span>
+          </div>
+          <div class="price-row">
+            <span class="price-label">Flete / Entrega</span>
+            <span class="price-value">Bs. {{ costoFlete() | number:'1.2-2' }}</span>
+          </div>
+          <div class="price-row">
+            <span class="price-label">Montaje / Armado</span>
+            <span class="price-value">Bs. {{ costoArmado() | number:'1.2-2' }}</span>
+          </div>
+          <div class="price-row">
+            <span class="price-label">Total Cotización</span>
+            <span class="price-value">Bs. {{ totalOriginal() | number:'1.2-2' }}</span>
+          </div>
+
+          <!-- Cuadro de información sobre el anticipo -->
+          <div class="info-banner">
+            <i class="pi pi-info-circle"></i>
+            <p>
+              Para asegurar la reserva del mobiliario seleccionado, se requiere un pago inicial del 20%. El saldo restante se cancelará el día del evento.
+            </p>
+          </div>
+
+          <hr class="divider"/>
+
+          <!-- Anticipo a pagar -->
+          <div class="price-highlight-box">
+            <span class="highlight-label">Anticipo a Pagar (20%)</span>
+            <span class="highlight-value">Bs. {{ montoAnticipo() | number:'1.2-2' }}</span>
+          </div>
+
+          <!-- Acordeón de artículos -->
+          <div class="accordion-container">
+            <button (click)="toggleArticulos()" class="accordion-header">
+              <span class="flex align-items-center gap-2">
+                <i class="pi pi-briefcase"></i>
+                <span>Ver {{ itemsCount() }} artículos incluidos</span>
+              </span>
+              <i class="pi" [class.pi-chevron-down]="!showArticulos()" [class.pi-chevron-up]="showArticulos()"></i>
+            </button>
+
+            @if (showArticulos()) {
+              <div class="accordion-body">
+                @for (item of canvasState.proyectoResumenItems(); track item.instanceId) {
+                  <div class="item-detail-row">
+                    <img [src]="item.imagenUrl" [alt]="item.nombre" class="item-thumb" />
+                    <div class="item-info">
+                      <span class="item-name">{{ item.nombre }}</span>
+                      <span class="item-qty">Cantidad: {{ item.cantidad }}</span>
+                    </div>
+                    <span class="item-price">Bs. {{ item.subtotal | number:'1.2-2' }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Columna Derecha: Selección del método de pago -->
+      <section class="method-section">
+        <div class="card-glass">
+          <h2 class="section-title">Método de Pago</h2>
+
+          <div class="payment-methods-list">
+            <!-- Tarjeta de Crédito -->
+            <div 
+              class="method-card"
+              [class.selected]="selectedMethod() === 'tarjeta'"
+              (click)="selectMethod('tarjeta')"
+            >
+              <div class="method-radio">
+                <span class="radio-dot" [class.selected]="selectedMethod() === 'tarjeta'"></span>
+              </div>
+              <div class="method-icon-container">
+                <i class="pi pi-credit-card"></i>
+              </div>
+              <div class="method-details">
+                <span class="method-name">Tarjeta de Crédito / Débito</span>
+                <span class="method-desc">Pago seguro procesado vía Stripe</span>
+              </div>
+            </div>
+
+            <!-- Pago QR -->
+            <div 
+              class="method-card disabled"
+              [class.selected]="selectedMethod() === 'qr'"
+            >
+              <div class="method-radio">
+                <span class="radio-dot" [class.selected]="selectedMethod() === 'qr'"></span>
+              </div>
+              <div class="method-icon-container">
+                <i class="pi pi-qrcode"></i>
+              </div>
+              <div class="method-details">
+                <span class="method-name">Pago por QR (Simple)</span>
+                <span class="method-desc">Transferencia bancaria · Próximamente</span>
+              </div>
+            </div>
+          </div>
+
+          <button 
+            (click)="procederAlPago()" 
+            [disabled]="isExpired() || !selectedMethod()"
+            class="pay-btn"
+          >
+            <span>Proceder al Pago</span>
+            <i class="pi pi-arrow-right"></i>
+          </button>
+
+          <footer class="secure-footer">
+            <i class="pi pi-lock"></i>
+            <span>PAGO 100% SEGURO Y ENCRIPTADO</span>
+          </footer>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+</div>

@@ -28,6 +28,7 @@ export class EscenarioTabsComponent {
 
   seleccionarEscenario(escenario: EscenarioBaseResponse): void {
     if (escenario.id === this.canvasState.escenarioActual()?.id) return;
+    this.canvasState.guardarEscenarioActualEnMemoria();
     this.canvasState.cargarEscenario(escenario);
     this.escenarioCambiado.emit(escenario);
   }

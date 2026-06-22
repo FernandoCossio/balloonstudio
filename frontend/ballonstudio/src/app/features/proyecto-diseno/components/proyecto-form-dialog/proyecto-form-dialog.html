@@ -17,7 +17,7 @@
   <div class="field">
     <label>Fecha del evento</label>
     <p-datepicker [ngModel]="fechaEvento()" (ngModelChange)="fechaEvento.set($event)"
-                  dateFormat="dd/mm/yy" [showIcon]="true" class="w-full"/>
+                  dateFormat="dd/mm/yy" [showIcon]="true" [minDate]="minFecha" appendTo="body" class="w-full"/>
   </div>
   <div class="proyecto-form__actions">
     <p-button label="Cancelar" severity="secondary" (onClick)="cancelar()"/>

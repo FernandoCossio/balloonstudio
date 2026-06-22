@@ -12,5 +12,6 @@ public record ElementoLienzoRequest(
         Double rotacionDeg,
         Double opacity,
         Integer zIndex,
-        String layer           // "mid" | "main"
+        String layer,           // "mid" | "main"
+        String vistaActual
 ) {}

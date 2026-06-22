@@ -95,7 +95,8 @@ public class ArticuloInventarioMapper {
         List<ImagenArticuloResponse> imgs = a.getImagenes() == null ? List.of() :
                 a.getImagenes().stream()
                         .map(i -> new ImagenArticuloResponse(
-                                i.getId(), i.getUrl(), i.getEsPrincipal(), i.getOrden(), i.getProcesadoIa(), i.getFechaSubida()
+                                i.getId(), i.getUrl(), i.getEsPrincipal(), i.getOrden(), i.getProcesadoIa(), i.getFechaSubida(),
+                                i.getTipoVista() != null ? i.getTipoVista().name() : null
                         ))
                         .toList();
         return new ArticuloInventarioResponse(

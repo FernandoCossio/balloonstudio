@@ -26,9 +26,10 @@ public class ImagenArticuloController {
     @PostMapping
     public ResponseEntity<ApiResponse<List<ImagenArticuloResponse>>> upload(
             @PathVariable Long articuloId,
-            @RequestParam("files") MultipartFile[] files) throws IOException {
+            @RequestParam("files") MultipartFile[] files,
+            @RequestParam(value = "tipoVista", required = false) String tipoVista) throws IOException {
         
-        List<ImagenArticulo> creadas = imagenService.uploadImagenes(articuloId, files);
+        List<ImagenArticulo> creadas = imagenService.uploadImagenes(articuloId, files, tipoVista);
         List<ImagenArticuloResponse> response = creadas.stream().map(this::toResponse).toList();
         
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -40,6 +41,16 @@ public class ImagenArticuloController {
         List<ImagenArticulo> imagenes = imagenRepository.findByArticuloInventarioIdOrderByOrdenAsc(articuloId);
         List<ImagenArticuloResponse> response = imagenes.stream().map(this::toResponse).toList();
         return ResponseEntity.ok(ApiResponse.success(response, "Imágenes del artículo obtenidas correctamente"));
+    }
+
+    @PatchMapping("/{imagenId}/tipo-vista")
+    public ResponseEntity<ApiResponse<Void>> setTipoVista(
+            @PathVariable Long articuloId,
+            @PathVariable Long imagenId,
+            @RequestParam("tipoVista") String tipoVista) {
+        
+        imagenService.setTipoVista(articuloId, imagenId, tipoVista);
+        return ResponseEntity.ok(ApiResponse.success(null, "Tipo de vista de la imagen actualizado correctamente"));
     }
 
     @PatchMapping("/{imagenId}/principal")
@@ -67,7 +78,8 @@ public class ImagenArticuloController {
                 i.getEsPrincipal(),
                 i.getOrden(),
                 i.getProcesadoIa(),
-                i.getFechaSubida()
+                i.getFechaSubida(),
+                i.getTipoVista() != null ? i.getTipoVista().name() : null
         );
     }
 }

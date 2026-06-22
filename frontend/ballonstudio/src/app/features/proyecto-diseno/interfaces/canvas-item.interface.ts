@@ -1,3 +1,4 @@
+import { ImagenArticuloResponse } from "../../articulo-inventario/service/articulo-inventario.service";
 import { CanvasItemConfig } from "./canvas-item-config.interface";
 
 export interface CanvasItem {
@@ -10,4 +11,6 @@ export interface CanvasItem {
   cantidad: number;
   layer: 'mid' | 'main';
   config: CanvasItemConfig;
+  imagenes?: ImagenArticuloResponse[];
+  vistaActual: string;
 }

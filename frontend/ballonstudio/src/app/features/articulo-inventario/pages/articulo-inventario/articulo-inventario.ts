@@ -258,12 +258,20 @@ export class ArticuloInventario implements OnInit {
         }
     }
 
+    tipoVistaOptions = [
+        { label: 'Frontal (Por Defecto)', value: 'FRONTAL' },
+        { label: 'Diagonal (Espejable)', value: 'DIAGONAL' },
+        { label: 'Trasero', value: 'TRASERO' },
+        { label: 'Lateral', value: 'LATERAL' }
+    ];
+    selectedUploadTipoVista = signal<string>('FRONTAL');
+
     uploadImages(files: File[]) {
         const art = this.selectedArticulo();
         if (!art) return;
 
         this.uploadingImages.set(true);
-        this.svc.uploadImagenes(art.id, files).subscribe({
+        this.svc.uploadImagenes(art.id, files, this.selectedUploadTipoVista()).subscribe({
             next: () => {
                 this.uploadingImages.set(false);
                 this.msgSvc.add({ severity: 'success', summary: 'Cargado', detail: 'Imágenes subidas correctamente' });
@@ -272,6 +280,21 @@ export class ArticuloInventario implements OnInit {
             error: (err) => {
                 this.uploadingImages.set(false);
                 this.msgSvc.add({ severity: 'error', summary: 'Error', detail: err?.error ?? 'Error al subir imágenes' });
+            }
+        });
+    }
+
+    changeTipoVista(imagenId: number, tipoVista: string) {
+        const art = this.selectedArticulo();
+        if (!art) return;
+
+        this.svc.setTipoVista(art.id, imagenId, tipoVista).subscribe({
+            next: () => {
+                this.msgSvc.add({ severity: 'success', summary: 'Vista Actualizada', detail: 'Tipo de vista actualizado correctamente' });
+                this.reloadImages();
+            },
+            error: (err) => {
+                this.msgSvc.add({ severity: 'error', summary: 'Error', detail: err?.error ?? 'Error al cambiar el tipo de vista' });
             }
         });
     }

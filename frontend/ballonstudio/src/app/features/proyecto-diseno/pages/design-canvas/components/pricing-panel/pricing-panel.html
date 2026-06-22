@@ -45,31 +45,17 @@
     }
   </div>
 
-  <!-- Ajustes: delivery, impuestos -->
-  @if (canvasState.resumenItems().length > 0) {
-    <div class="pricing-panel__adjustments">
-      <div class="cost-row">
-        <span class="cost-row__label">Delivery &amp; Setup</span>
-        <span class="cost-row__value">Bs. {{ deliverySetup() | number: '1.2-2' }}</span>
-      </div>
-      <div class="cost-row cost-row--tax">
-        <span class="cost-row__label">Tax ({{ taxRate() }}%)</span>
-        <span class="cost-row__value">Bs. {{ taxAmount() | number: '1.2-2' }}</span>
-      </div>
-    </div>
-  }
-
   <!-- Footer: total estimado -->
   <div class="pricing-panel__footer">
-    <span class="pricing-panel__footer-label">Estimated Total</span>
+    <span class="pricing-panel__footer-label">Total del Escenario</span>
     <strong class="pricing-panel__footer-total">
-      Bs. {{ grandTotal() | number: '1.2-2' }}
+      Bs. {{ canvasState.precioTotal() | number: '1.2-2' }}
     </strong>
   </div>
 
   <!-- Acciones principales -->
   <div class="pricing-panel__actions">
-    <button class="pricing-panel__btn-primary">
+    <button class="pricing-panel__btn-primary" (click)="realizarReserva()">
       <i class="pi pi-file-edit"></i>
       Realizar reserva
     </button>
@@ -82,4 +68,5 @@
     </button>
   </div>
 
+  <p-toast />
 </div>

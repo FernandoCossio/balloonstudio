@@ -34,15 +34,24 @@ public class ImagenArticuloService {
     private final ImagenArticuloRepository imagenRepository;
     private final ArticuloInventarioRepository articuloRepository;
     @Transactional
-    public List<ImagenArticulo> uploadImagenes(Long articuloId, MultipartFile[] files) throws IOException {
-        log.info("Iniciando la carga de {} archivos para el artículo ID: {}", files != null ? files.length : 0, articuloId);
+    public List<ImagenArticulo> uploadImagenes(Long articuloId, MultipartFile[] files, String tipoVistaStr) throws IOException {
+        log.info("Iniciando la carga de {} archivos para el artículo ID: {} con tipoVista: {}", files != null ? files.length : 0, articuloId, tipoVistaStr);
 
         ArticuloInventario articulo = articuloRepository.findById(articuloId)
-                .orElseThrow(ArticuloInventarioNoEncontradoException::new);
+                 .orElseThrow(ArticuloInventarioNoEncontradoException::new);
 
         if (files == null || files.length == 0) {
             log.info("No se proporcionaron archivos para cargar en artículo ID: {}", articuloId);
             return List.of();
+        }
+
+        com.decoraciones.domain.models.TipoVistaImagen tipoVista = null;
+        if (tipoVistaStr != null && !tipoVistaStr.isBlank()) {
+            try {
+                tipoVista = com.decoraciones.domain.models.TipoVistaImagen.valueOf(tipoVistaStr.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.warn("El tipo de vista recibido '{}' no es válido, se ignorará.", tipoVistaStr);
+            }
         }
 
         List<ImagenArticulo> imagenesExistentes = imagenRepository.findByArticuloInventarioIdOrderByOrdenAsc(articuloId);
@@ -74,6 +83,7 @@ public class ImagenArticuloService {
             imagen.setArticuloInventario(articulo);
             imagen.setUrl(relativeUrl);
             imagen.setEsPrincipal(!yaTienePrincipal && creadas.isEmpty()); 
+            imagen.setTipoVista(tipoVista);
             imagen.setOrden(nextOrden++);
             imagen.setProcesadoIa(false);
             imagen.setFechaSubida(LocalDateTime.now());
@@ -85,6 +95,33 @@ public class ImagenArticuloService {
 
         log.info("Carga completada. Se crearon {} nuevas imágenes para el artículo ID: {}", creadas.size(), articuloId);
         return creadas;
+    }
+
+    @Transactional
+    public void setTipoVista(Long articuloId, Long imagenId, String tipoVistaStr) {
+        log.info("Actualizando tipo de vista a '{}' para la imagen ID: {} del artículo ID: {}", tipoVistaStr, imagenId, articuloId);
+
+        ImagenArticulo imagen = imagenRepository.findById(imagenId)
+                .orElseThrow(ImagenNoEncontradaException::new);
+
+        if (!imagen.getArticuloInventario().getId().equals(articuloId)) {
+            log.warn("Conflicto al actualizar vista de imagen ID: {}. No pertenece al artículo ID: {}", imagenId, articuloId);
+            throw new ImagenNoPerteneceAlArticuloException();
+        }
+
+        com.decoraciones.domain.models.TipoVistaImagen tipoVista = null;
+        if (tipoVistaStr != null && !tipoVistaStr.isBlank()) {
+            try {
+                tipoVista = com.decoraciones.domain.models.TipoVistaImagen.valueOf(tipoVistaStr.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.warn("El tipo de vista recibido '{}' no es válido, se ignorará.", tipoVistaStr);
+                throw new IllegalArgumentException("Tipo de vista inválido");
+            }
+        }
+
+        imagen.setTipoVista(tipoVista);
+        imagenRepository.save(imagen);
+        log.info("Imagen ID: {} tipo de vista actualizado correctamente", imagenId);
     }
 
     @Transactional

@@ -1,3 +1,5 @@
+import { ImagenArticuloResponse } from '../../articulo-inventario/service/articulo-inventario.service';
+
 // features/proyecto-diseno/interfaces/proyecto-diseno.interface.ts
 
 export interface ProyectoDisenoRequest {
@@ -55,6 +57,7 @@ export interface ElementoLienzoRequest {
   opacity: number;
   zIndex: number;
   layer: 'mid' | 'main';
+  vistaActual?: string;
 }
 
 export interface ElementoLienzoResponse {
@@ -75,4 +78,17 @@ export interface ElementoLienzoResponse {
   opacity: number;
   zIndex: number;
   layer: 'mid' | 'main';
+  vistaActual?: string;
+  imagenes?: ImagenArticuloResponse[];
 }
+
+export interface ReservaResponse {
+  reservaId: number;
+  montoAnticipo: number;
+  stripeClientSecret: string;
+  expiraEnMinutos: number;
+  totalOriginal: number;
+  costoArticulos: number;
+  costoFlete: number;
+  costoArmado: number;
+}
