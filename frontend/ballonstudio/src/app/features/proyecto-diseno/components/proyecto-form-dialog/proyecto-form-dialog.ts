@@ -25,6 +25,11 @@ export class ProyectoFormDialogComponent implements OnInit {
   readonly descripcion  = signal('');
   readonly lugarEvento  = signal('');
   readonly fechaEvento  = signal<Date | null>(null);
+  readonly minFecha = (() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  })();
 
   protected get modoEdicion(): boolean {
     return !!this.config.data?.proyecto;

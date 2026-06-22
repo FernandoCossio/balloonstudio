@@ -65,4 +65,7 @@ public class ElementoLienzo extends BaseEntity {
     // 'mid' o 'main' — determina en qué ko-layer vive en el canvas
     @Column(name = "layer")
     private String layer = "main";
+
+    @Column(name = "vista_actual")
+    private String vistaActual = "FRONTAL";
 }

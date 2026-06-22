@@ -5,6 +5,7 @@ import com.decoraciones.domain.dtos.articuloinventario.ArticuloInventarioRespons
 import com.decoraciones.domain.dtos.articuloinventario.ImagenArticuloResponse;
 import com.decoraciones.domain.dtos.categoria.CategoriaResponse;
 import com.decoraciones.domain.dtos.proyectodiseno.ArticuloInventarioDto;
+import com.decoraciones.domain.dtos.proyectodiseno.ImagenArticuloDto;
 import com.decoraciones.domain.models.ArticuloInventario;
 import com.decoraciones.domain.models.Categoria;
 import com.decoraciones.domain.models.ImagenArticulo;
@@ -43,6 +44,18 @@ public class ArticuloInventarioMapper {
                 .map(url -> baseUrl + "/thumbnails?url=" + url)
                 .orElse(null);
 
+        // Mapear todas las imagenes a su DTO con tipoVista
+        List<ImagenArticuloDto> imagenesDto = imagenRepository
+                .findByArticuloInventarioIdOrderByOrdenAsc(articulo.getId())
+                .stream()
+                .map(img -> {
+                    String imgUrl = baseUrl + "/" + img.getUrl();
+                    String imgThumb = baseUrl + "/thumbnails?url=" + img.getUrl();
+                    String vistaStr = img.getTipoVista() != null ? img.getTipoVista().name() : null;
+                    return new ImagenArticuloDto(imgUrl, imgThumb, vistaStr);
+                })
+                .toList();
+
         return new ArticuloInventarioDto(
                 articulo.getId(),
                 articulo.getNombre(),
@@ -56,7 +69,8 @@ public class ArticuloInventarioMapper {
                 thumbnailUrl,
                 articulo.getCategorias().stream()
                         .map(Categoria::getNombre)
-                        .collect(Collectors.toSet())
+                        .collect(Collectors.toSet()),
+                imagenesDto
         );
     }
 
@@ -81,7 +95,8 @@ public class ArticuloInventarioMapper {
         List<ImagenArticuloResponse> imgs = a.getImagenes() == null ? List.of() :
                 a.getImagenes().stream()
                         .map(i -> new ImagenArticuloResponse(
-                                i.getId(), i.getUrl(), i.getEsPrincipal(), i.getOrden(), i.getProcesadoIa(), i.getFechaSubida()
+                                i.getId(), i.getUrl(), i.getEsPrincipal(), i.getOrden(), i.getProcesadoIa(), i.getFechaSubida(),
+                                i.getTipoVista() != null ? i.getTipoVista().name() : null
                         ))
                         .toList();
         return new ArticuloInventarioResponse(

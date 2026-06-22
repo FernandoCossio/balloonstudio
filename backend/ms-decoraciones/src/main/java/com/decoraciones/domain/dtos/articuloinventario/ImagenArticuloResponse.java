@@ -8,5 +8,6 @@ public record ImagenArticuloResponse(
         Boolean esPrincipal,
         Integer orden,
         Boolean procesadoIa,
-        LocalDateTime fechaSubida
+        LocalDateTime fechaSubida,
+        String tipoVista
 ) {}

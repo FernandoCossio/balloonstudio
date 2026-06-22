@@ -41,6 +41,7 @@ export interface ImagenArticuloResponse {
     orden: number;
     procesadoIa: boolean;
     fechaSubida: string;
+    tipoVista?: string;
 }
 
 export interface ArticuloInventarioResponse {
@@ -125,12 +126,16 @@ export class ArticuloInventarioService {
         );
     }
 
-    uploadImagenes(articuloId: number, files: File[]): Observable<ImagenArticuloResponse[]> {
+    uploadImagenes(articuloId: number, files: File[], tipoVista?: string): Observable<ImagenArticuloResponse[]> {
         const formData = new FormData();
         for (const file of files) {
             formData.append('files', file);
         }
-        return this.http.post<ApiResponse<ImagenArticuloResponse[]>>(`${API_BASE}/${articuloId}/imagenes`, formData).pipe(
+        let url = `${API_BASE}/${articuloId}/imagenes`;
+        if (tipoVista) {
+            url += `?tipoVista=${tipoVista}`;
+        }
+        return this.http.post<ApiResponse<ImagenArticuloResponse[]>>(url, formData).pipe(
             map(res => res.data),
             tap({
                 next: data => console.log('[ArticuloInventarioService] ✅ uploadImagenes OK', data),
@@ -145,6 +150,16 @@ export class ArticuloInventarioService {
             tap({
                 next: () => console.log('[ArticuloInventarioService] ✅ setPrincipal OK'),
                 error: err => console.error('[ArticuloInventarioService] ❌ setPrincipal ERROR', err)
+            })
+        );
+    }
+
+    setTipoVista(articuloId: number, imagenId: number, tipoVista: string): Observable<void> {
+        return this.http.patch<ApiResponse<void>>(`${API_BASE}/${articuloId}/imagenes/${imagenId}/tipo-vista?tipoVista=${tipoVista}`, {}).pipe(
+            map(() => void 0),
+            tap({
+                next: () => console.log('[ArticuloInventarioService] ✅ setTipoVista OK'),
+                error: err => console.error('[ArticuloInventarioService] ❌ setTipoVista ERROR', err)
             })
         );
     }

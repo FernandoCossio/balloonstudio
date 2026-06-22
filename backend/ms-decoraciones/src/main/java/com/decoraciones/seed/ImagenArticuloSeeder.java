@@ -57,6 +57,7 @@ public class ImagenArticuloSeeder implements CommandLineRunner {
             imagen.setArticuloInventario(articulo);
             imagen.setUrl(url);
             imagen.setEsPrincipal(true);
+            imagen.setTipoVista(com.decoraciones.domain.models.TipoVistaImagen.FRONTAL);
             imagen.setOrden(1);
             imagen.setProcesadoIa(false);
             imagen.setFechaSubida(LocalDateTime.now());

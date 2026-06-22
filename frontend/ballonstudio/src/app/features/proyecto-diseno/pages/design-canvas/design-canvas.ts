@@ -12,6 +12,7 @@ import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
 import Konva from 'konva';
+import { forkJoin } from 'rxjs';
 
 import { CanvasStateService } from '@/app/features/proyecto-diseno/services/canvas-state.service';
 import { ProyectoDisenoService } from '@/app/features/proyecto-diseno/services/proyecto-diseno.service';
@@ -21,6 +22,7 @@ import { EscenarioBaseResponse } from '@/app/features/proyecto-diseno/interfaces
 import { CatalogoSidebar } from './components/catalogo-sidebar/catalogo-sidebar';
 import { PricingPanel } from './components/pricing-panel/pricing-panel';
 import { Location } from '@angular/common';
+import { API_URL } from '@/enviroment/enviroment';
 
 const CANVAS_W = 1600;
 const CANVAS_H = 900;
@@ -97,6 +99,10 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   ngAfterViewInit(): void {
+    this.canvasState.reset();
+    this.imageElements.set(new Map());
+    this.limpiarFondo();
+
     const proyectoId = Number(this.route.snapshot.paramMap.get('proyectoId'));
     if (proyectoId) {
       this.proyectoService.getById(proyectoId).subscribe(proyecto => {
@@ -105,6 +111,9 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
         if (escenario?.imagenUrl) {
           this.precargarImagenesEscenario(escenario);
           this.cargarFondoYFitScreen(escenario.imagenUrl);
+        } else {
+          this.imageElements.set(new Map());
+          this.limpiarFondo();
         }
       });
     }
@@ -351,22 +360,83 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
     }
   }
 
+  private resolverUrlDeVista(item: any, vista: string): { url: string; mirror: boolean } {
+    let mirror = false;
+    let targetVista = vista;
+
+    if (vista === 'DIAGONAL_IZQ') {
+      targetVista = 'DIAGONAL';
+      mirror = true;
+    } else if (vista === 'LATERAL_IZQ') {
+      targetVista = 'LATERAL';
+      mirror = true;
+    }
+
+    const normalizeUrl = (url: string | null): string => {
+      if (!url) return '';
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+      }
+      return `${API_URL}/${url}`;
+    };
+
+    // Si tiene la lista de imágenes, buscamos por tipoVista
+    if (item.imagenes && item.imagenes.length > 0) {
+      const match = item.imagenes.find((img: any) => img.tipoVista === targetVista);
+      if (match) {
+        return { url: normalizeUrl(match.url), mirror };
+      }
+    }
+
+    // Fallback: usar la imagen principal (imagenUrl) del item
+    return { url: normalizeUrl(item.imagenUrl), mirror: false };
+  }
+
   private precargarImagenesEscenario(escenario: EscenarioBaseResponse): void {
     this.canvasState.items().forEach(item => {
-      if (!item.imagenUrl) return;
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        this.ngZone.run(() => {
-          this.imageElements.update(map => {
-            const updated = new Map(map);
-            updated.set(item.instanceId, img);
-            return updated;
-          });
-        });
-      };
-      img.src = item.imagenUrl;
+      this.cargarImagenDeVista(item, item.vistaActual);
     });
+  }
+
+  private cargarImagenDeVista(item: any, vista: string): void {
+    const res = this.resolverUrlDeVista(item, vista);
+    if (!res.url) return;
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      this.ngZone.run(() => {
+        this.imageElements.update(map => {
+          const updated = new Map(map);
+          updated.set(item.instanceId, img);
+          return updated;
+        });
+
+        // Aplicar efecto espejo en scaleX según corresponda
+        const scaleXAbs = Math.abs(item.config.scaleX || 1);
+        const newScaleX = res.mirror ? -scaleXAbs : scaleXAbs;
+        if (item.config.scaleX !== newScaleX) {
+          this.canvasState.updateConfig(item.instanceId, { scaleX: newScaleX });
+        }
+      });
+    };
+    img.src = res.url;
+  }
+
+  rotarVistaSeleccionada(): void {
+    const selected = this.canvasState.selectedItem();
+    if (!selected) return;
+
+    const vistasSecuencia = ['FRONTAL', 'DIAGONAL', 'LATERAL', 'TRASERO', 'LATERAL_IZQ', 'DIAGONAL_IZQ'];
+    const indexActual = vistasSecuencia.indexOf(selected.vistaActual);
+    const nextIndex = (indexActual + 1) % vistasSecuencia.length;
+    const nuevaVista = vistasSecuencia[nextIndex];
+
+    this.canvasState.updateConfig(selected.instanceId, { rotation: 0 }); // resetear rotación de Konva
+    this.canvasState.updateVistaActual(selected.instanceId, nuevaVista);
+    
+    const updatedSelected = { ...selected, vistaActual: nuevaVista };
+    this.cargarImagenDeVista(updatedSelected, nuevaVista);
   }
 
   // ── Guardar ───────────────────────────────────────────────────────────────
@@ -377,21 +447,48 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
     if (!proyecto || !escenario) return;
 
     this.guardando.set(true);
-    const elementos = this.canvasState.toElementoLienzoRequests();
+    
+    // Guardar el estado del canvas actual en memoria para tener los datos más recientes
+    this.canvasState.guardarEscenarioActualEnMemoria();
 
-    this.proyectoService.guardarElementos(proyecto.id, escenario.id, elementos).subscribe({
+    const requests = this.canvasState.escenarios().map(esc => {
+      const elRequests: any[] = esc.elementos.map(el => ({
+        articuloId: el.articuloId,
+        cantidad: el.cantidad,
+        posX: el.posX,
+        posY: el.posY,
+        width: el.width,
+        height: el.height,
+        scaleX: el.scaleX,
+        scaleY: el.scaleY,
+        rotacionDeg: el.rotacionDeg,
+        opacity: el.opacity,
+        zIndex: el.zIndex,
+        layer: el.layer,
+        vistaActual: el.vistaActual
+      }));
+      return this.proyectoService.guardarElementos(proyecto.id, esc.id, elRequests);
+    });
+
+    if (requests.length === 0) {
+      this.guardando.set(false);
+      return;
+    }
+
+    forkJoin(requests).subscribe({
       next: () => {
         this.guardando.set(false);
         this.messageService.add({
-          severity: 'success', summary: 'Guardado',
-          detail: `Escenario "${escenario.nombre}" guardado correctamente`
+          severity: 'success', summary: 'Guardado exitoso',
+          detail: 'Todos los escenarios del proyecto se guardaron correctamente'
         });
       },
-      error: () => {
+      error: (err) => {
         this.guardando.set(false);
+        const errMsg = err?.error?.message || 'Verifica tu conexión e intenta de nuevo';
         this.messageService.add({
           severity: 'error', summary: 'Error al guardar',
-          detail: 'Verifica tu conexión e intenta de nuevo'
+          detail: errMsg
         });
       }
     });
@@ -401,7 +498,9 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
 
   getImageConfig(item: any): ImageConfig {
     const el = this.imageElements().get(item.instanceId);
-    return { ...item.config, image: el ?? undefined, name: item.instanceId };
+    const scaleX = item.config.scaleX ?? 1;
+    const offsetX = scaleX < 0 ? (item.config.width ?? 120) : 0;
+    return { ...item.config, image: el ?? undefined, name: item.instanceId, offsetX };
   }
 
   // ── Drop desde el sidebar ─────────────────────────────────────────────────
@@ -435,10 +534,10 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
       const h = img.height * ratio;
       this.ngZone.run(() => {
         this.canvasState.addItem(articulo, dropX - w / 2, dropY - h / 2);
-        const instanceId = this.canvasState.items().at(-1)!.instanceId;
+        const itemCreado = this.canvasState.items().at(-1)!;
         this.imageElements.update(map => {
           const updated = new Map(map);
-          updated.set(instanceId, img);
+          updated.set(itemCreado.instanceId, img);
           return updated;
         });
       });

@@ -13,4 +13,16 @@ export default [
       import('./pages/design-canvas/design-canvas')
         .then(m => m.DesignCanvas)
   },
+  {
+    path: ':proyectoId/reserva',
+    loadComponent: () =>
+      import('./pages/reserva/reserva')
+        .then(m => m.Reserva)
+  },
+  {
+    path: ':proyectoId/reserva/pago',
+    loadComponent: () =>
+      import('./pages/metodo-tarjeta/metodo-tarjeta')
+        .then(m => m.MetodoTarjeta)
+  },
 ] as Routes;

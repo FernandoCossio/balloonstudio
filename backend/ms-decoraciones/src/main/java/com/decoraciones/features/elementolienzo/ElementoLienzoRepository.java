@@ -10,9 +10,11 @@ import java.util.List;
 
 public interface ElementoLienzoRepository extends JpaRepository<ElementoLienzo, Long> {
 
-    List<ElementoLienzo> findAllByEscenarioBaseIdOrderByZIndexAsc(Long escenarioId);
+    @Query("SELECT e FROM ElementoLienzo e WHERE e.escenarioBase.id = :escenarioId ORDER BY e.zIndex ASC")
+    List<ElementoLienzo> findAllByEscenarioBaseIdOrderByZIndexAsc(@Param("escenarioId") Long escenarioId);
 
-    List<ElementoLienzo> findAllByProyectoIdOrderByZIndexAsc(Long proyectoId);
+    @Query("SELECT e FROM ElementoLienzo e WHERE e.proyectoId = :proyectoId ORDER BY e.zIndex ASC")
+    List<ElementoLienzo> findAllByProyectoIdOrderByZIndexAsc(@Param("proyectoId") Long proyectoId);
 
     // Soft delete masivo — respeta el BaseEntity.isDeleted
     @Modifying
@@ -31,5 +33,19 @@ public interface ElementoLienzoRepository extends JpaRepository<ElementoLienzo, 
     Integer sumCantidadByArticuloAndProyecto(
             @Param("articuloId") Long articuloId,
             @Param("proyectoId") Long proyectoId
+    );
+
+    @Query("""
+        SELECT COALESCE(SUM(e.cantidad), 0)
+        FROM ElementoLienzo e
+        WHERE e.articuloInventario.id = :articuloId
+          AND e.proyectoId = :proyectoId
+          AND e.escenarioBase.id != :escenarioId
+          AND e.isDeleted = false
+        """)
+    Integer sumCantidadByArticuloAndProyectoExcludingEscenario(
+            @Param("articuloId") Long articuloId,
+            @Param("proyectoId") Long proyectoId,
+            @Param("escenarioId") Long escenarioId
     );
 }

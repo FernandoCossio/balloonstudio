@@ -1,0 +1,227 @@
+<div class="pago-page">
+  @if (!isConfirmed()) {
+    <!-- Header with back button -->
+    <header class="pago-header">
+      <button (click)="volverAReserva()" class="back-btn" [disabled]="processing()">
+        <i class="pi pi-arrow-left"></i>
+        <span>Volver a la reserva</span>
+      </button>
+      <div class="secure-badge">
+        <i class="pi pi-lock"></i>
+        <span>Conexión Encriptada SSL</span>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pago-main">
+
+      <div class="pago-hero">
+        <h1 class="pago-title">Método de Pago Tarjeta</h1>
+        <p class="pago-subtitle">Ingresa los datos de tu tarjeta para procesar el pago del anticipo.</p>
+
+        <!-- Block Timer -->
+        <div class="timer-card">
+          <i class="pi pi-clock"></i>
+          <span>Mobiliario bloqueado por: <strong>{{ formattedTimeRemaining() }}</strong></span>
+        </div>
+      </div>
+
+      <!-- Two-Column Layout -->
+      <div class="pago-content-layout">
+        
+        <!-- Left: Card Display and Form -->
+        <section class="form-section">
+          <div class="card-glass">
+            
+            <!-- Credit Card Visual -->
+            <div class="visual-card">
+              <div class="card-glass-glow"></div>
+              <div class="card-top">
+                <span class="card-brand">BALLOON STUDIO</span>
+                <i class="pi pi-credit-card"></i>
+              </div>
+              <div class="card-number">
+                {{ visualCardNumber() }}
+              </div>
+              <div class="card-bottom">
+                <div class="card-holder-group">
+                  <span class="card-label">Titular</span>
+                  <span class="card-value">{{ visualCardHolder() }}</span>
+                </div>
+                <div class="card-expiry-group">
+                  <span class="card-label">Vence</span>
+                  <span class="card-value">{{ visualCardExpiry() }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Inputs Form -->
+            <form (submit)="confirmarPago()" class="card-form">
+              
+              <!-- Card Holder -->
+              <div class="form-group">
+                <label for="holderName">Nombre del Titular</label>
+                <div class="input-container">
+                  <i class="pi pi-user"></i>
+                  <input 
+                    type="text" 
+                    id="holderName"
+                    name="holderName"
+                    placeholder="JUAN PEREZ"
+                    [(ngModel)]="cardHolder"
+                    [disabled]="processing() || isExpired()"
+                    required
+                  />
+                </div>
+              </div>
+
+              <!-- Card Number -->
+              <div class="form-group">
+                <label for="cardNumber">Número de Tarjeta</label>
+                <div class="input-container">
+                  <i class="pi pi-credit-card"></i>
+                  <input 
+                    type="text" 
+                    id="cardNumber"
+                    name="cardNumber"
+                    placeholder="0000 0000 0000 0000"
+                    maxlength="19"
+                    [(ngModel)]="cardNumber"
+                    (input)="onCardNumberInput($event)"
+                    [disabled]="processing() || isExpired()"
+                    required
+                  />
+                </div>
+              </div>
+
+              <!-- Expiry & CVV Row -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="expiry">Fecha Vencimiento</label>
+                  <input 
+                    type="text" 
+                    id="expiry"
+                    name="expiry"
+                    placeholder="MM/AA"
+                    maxlength="5"
+                    [(ngModel)]="cardExpiry"
+                    (input)="onCardExpiryInput($event)"
+                    [disabled]="processing() || isExpired()"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="cvv">CVV</label>
+                  <input 
+                    type="password" 
+                    id="cvv"
+                    name="cvv"
+                    placeholder="•••"
+                    maxlength="4"
+                    [(ngModel)]="cardCvv"
+                    (input)="onCardCvvInput($event)"
+                    [disabled]="processing() || isExpired()"
+                    required
+                  />
+                </div>
+              </div>
+
+              <!-- Stripe Elements Container (fallback/actual elements integration) -->
+              <div id="stripe-card-element" class="hidden"></div>
+
+              <!-- Action Submit Button -->
+              <button 
+                type="submit"
+                [disabled]="processing() || isExpired() || !isFormValid()"
+                class="confirm-btn"
+              >
+                @if (processing()) {
+                  <i class="pi pi-spin pi-spinner"></i>
+                  <span>Procesando pago...</span>
+                } @else {
+                  <i class="pi pi-check-circle"></i>
+                  <span>Confirmar Pago de Bs. {{ montoAnticipo() | number:'1.2-2' }}</span>
+                }
+              </button>
+
+            </form>
+
+          </div>
+        </section>
+
+        <!-- Right: Payment Summary Card -->
+        <section class="summary-section">
+          <div class="card-glass">
+            <h2 class="section-title">Resumen de Pago</h2>
+            
+            <div class="summary-row">
+              <span class="row-label">Concepto</span>
+              <span class="row-value font-semibold">Anticipo Reserva</span>
+            </div>
+            <div class="summary-row">
+              <span class="row-label">Mobiliario reservado</span>
+              <span class="row-value font-semibold">Escenario Actual</span>
+            </div>
+
+            <hr class="summary-divider"/>
+
+            <div class="total-row">
+              <span class="total-label">Total a Pagar</span>
+              <span class="total-value">Bs. {{ montoAnticipo() | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="pci-footer">
+              <i class="pi pi-shield"></i>
+              <span>Cumple con el estándar PCI-DSS de la industria financiera. Pago seguro cifrado.</span>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+    </main>
+  } @else {
+    <!-- ══ VISTA DE CONFIRMACIÓN EXITOSA ══ -->
+    <main class="success-main">
+      <div class="success-card">
+        <div class="success-glow"></div>
+        
+        <!-- Checkmark icon -->
+        <div class="checkmark-circle">
+          <i class="pi pi-check"></i>
+        </div>
+
+        <h1 class="success-title">¡Reserva Confirmada!</h1>
+        <p class="success-subtitle">
+          Tu evento está listo para despegar. Hemos asegurado todo tu mobiliario y decoraciones seleccionadas.
+        </p>
+
+        <!-- Details Grid -->
+        <div class="success-details-grid">
+          <div class="detail-card">
+            <span class="detail-label"><i class="pi pi-key"></i> Token de Reserva</span>
+            <span class="detail-value token">#BAL-{{ reservaId() }}</span>
+          </div>
+
+          <div class="detail-card">
+            <span class="detail-label"><i class="pi pi-box"></i> Estado del Inventario</span>
+            <span class="detail-value status">Bloqueado Definitivamente</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="success-actions">
+          <button (click)="volverAMisDisenos()" class="action-btn primary">
+            <i class="pi pi-home"></i>
+            <span>Volver a Mis Diseños</span>
+          </button>
+          
+          <button (click)="descargarComprobante()" class="action-btn secondary">
+            <i class="pi pi-download"></i>
+            <span>Comprobante</span>
+          </button>
+        </div>
+      </div>
+    </main>
+  }
+</div>

@@ -49,6 +49,60 @@ export class CanvasStateService {
     }))
   );
 
+  readonly proyectoPrecioTotal = computed(() => {
+    let total = 0;
+    this.escenarios().forEach(esc => {
+      if (esc.elementos) {
+        esc.elementos.forEach(el => {
+          const precioUnitario = Number(el.costoAdquisicion) * (1 + Number(el.porcentajeGanancia) / 100);
+          total += precioUnitario * el.cantidad;
+        });
+      }
+    });
+    return total;
+  });
+
+  readonly proyectoResumenItems = computed(() => {
+    const map = new Map<number, { instanceId: string; nombre: string; cantidad: number; imagenUrl: string; subtotal: number }>();
+    this.escenarios().forEach(esc => {
+      if (esc.elementos) {
+        esc.elementos.forEach(el => {
+          const precioUnitario = Number(el.costoAdquisicion) * (1 + Number(el.porcentajeGanancia) / 100);
+          const subtotal = precioUnitario * el.cantidad;
+          const existing = map.get(el.articuloId);
+          if (existing) {
+            existing.cantidad += el.cantidad;
+            existing.subtotal += subtotal;
+          } else {
+            map.set(el.articuloId, {
+              instanceId: String(el.id || el.articuloId),
+              nombre: el.nombreArticulo,
+              cantidad: el.cantidad,
+              imagenUrl: el.imagenUrl || '',
+              subtotal: subtotal
+            });
+          }
+        });
+      }
+    });
+    return Array.from(map.values());
+  });
+
+  readonly proyectoItemsCount = computed(() => {
+    return this.proyectoResumenItems().length;
+  });
+
+  // ── Resetear estado ───────────────────────────────────────────────────────
+  reset(): void {
+    this.items.set([]);
+    this.selectedId.set(null);
+    this.proyectoActual.set(null);
+    this.escenarioActual.set(null);
+    this.escenarios.set([]);
+    this.imagenEscenarioUrl.set(null);
+    this.guardando.set(false);
+  }
+
   // ── Cargar proyecto completo ──────────────────────────────────────────────
   cargarProyecto(proyecto: ProyectoDisenoResponse): void {
     this.proyectoActual.set(proyecto);
@@ -79,6 +133,8 @@ export class CanvasStateService {
       porcentajeGanancia: Number(el.porcentajeGanancia),
       cantidad:          el.cantidad,
       layer:             el.layer,
+      imagenes:          el.imagenes,
+      vistaActual:       el.vistaActual ?? 'FRONTAL',
       config: {
         x:         el.posX,
         y:         el.posY,
@@ -96,6 +152,45 @@ export class CanvasStateService {
     this.items.set(itemsReconstruidos);
   }
 
+  // Guarda los elementos del lienzo actual en el escenario correspondiente en memoria
+  guardarEscenarioActualEnMemoria(): void {
+    const escenario = this.escenarioActual();
+    if (!escenario) return;
+
+    const elementosActualizados: ElementoLienzoResponse[] = this.items().map((item, idx) => ({
+      id: 0,
+      articuloId: item.articuloId,
+      nombreArticulo: item.nombre,
+      imagenUrl: item.imagenUrl || null,
+      costoAdquisicion: item.costo,
+      porcentajeGanancia: item.porcentajeGanancia,
+      cantidad: item.cantidad,
+      posX: item.config.x,
+      posY: item.config.y,
+      width: item.config.width,
+      height: item.config.height,
+      scaleX: item.config.scaleX ?? 1.0,
+      scaleY: item.config.scaleY ?? 1.0,
+      rotacionDeg: item.config.rotation ?? 0.0,
+      opacity: item.config.opacity ?? 1.0,
+      zIndex: idx,
+      layer: item.layer as 'mid' | 'main',
+      vistaActual: item.vistaActual,
+      imagenes: item.imagenes ?? []
+    }));
+
+    const escenarioActualizado: EscenarioBaseResponse = {
+      ...escenario,
+      elementos: elementosActualizados
+    };
+
+    this.escenarioActual.set(escenarioActualizado);
+
+    this.escenarios.update(list =>
+      list.map(e => e.id === escenario.id ? escenarioActualizado : e)
+    );
+  }
+
   // Serializa el estado actual del canvas al formato que espera el backend
   toElementoLienzoRequests(): ElementoLienzoRequest[] {
     return this.items().map((item, idx) => ({
@@ -110,7 +205,8 @@ export class CanvasStateService {
       rotacionDeg: item.config.rotation,
       opacity:     item.config.opacity,
       zIndex:      idx,             // el índice en el array = z-index real
-      layer:       item.layer
+      layer:       item.layer,
+      vistaActual: item.vistaActual
     }));
   }
 
@@ -126,6 +222,8 @@ export class CanvasStateService {
       porcentajeGanancia: Number(articulo.porcentajeGanancia),
       cantidad:           1,
       layer:              'main',
+      imagenes:           articulo.imagenes,
+      vistaActual:        'FRONTAL',
       config: {
         x, y,
         width: 120, height: 120,
@@ -152,6 +250,12 @@ export class CanvasStateService {
   updateCantidad(instanceId: string, cantidad: number): void {
     this.items.update(prev => prev.map(i =>
       i.instanceId === instanceId ? { ...i, cantidad: Math.max(1, cantidad) } : i
+    ));
+  }
+
+  updateVistaActual(instanceId: string, vistaActual: string): void {
+    this.items.update(prev => prev.map(i =>
+      i.instanceId === instanceId ? { ...i, vistaActual } : i
     ));
   }
 
