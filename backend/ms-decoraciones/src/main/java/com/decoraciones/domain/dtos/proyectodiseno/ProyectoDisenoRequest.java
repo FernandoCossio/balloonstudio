@@ -8,5 +8,6 @@ public record ProyectoDisenoRequest(
         String estado,
         LocalDate fechaEvento,
         String lugarEvento,
-        String numeroMetadato
+        String numeroMetadato,
+        Double distanciaKm
 ) {}
