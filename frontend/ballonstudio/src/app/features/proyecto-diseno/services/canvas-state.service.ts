@@ -1,5 +1,4 @@
-// features/proyecto-diseno/services/canvas-state.service.ts
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, signal, effect, inject } from '@angular/core';
 import { CanvasItem } from '../interfaces/canvas-item.interface';
 import { CanvasItemConfig } from '../interfaces/canvas-item-config.interface';
 import { ArticuloInventarioDto } from '../interfaces/articulo-inventario-dto.interface';
@@ -9,10 +8,13 @@ import {
   ElementoLienzoRequest,
   ElementoLienzoResponse
 } from '../interfaces/proyecto-diseno.interface';
+import { ReservaService } from './reserva.service';
 
 @Injectable({ providedIn: 'root' })
 export class CanvasStateService {
 
+  private http = inject(ReservaService); // using ReservaService directly
+  
   // ── Estado principal ──────────────────────────────────────────────────────
   readonly items      = signal<CanvasItem[]>([]);
   readonly selectedId = signal<string | null>(null);
@@ -24,6 +26,68 @@ export class CanvasStateService {
   readonly imagenEscenarioUrl = signal<string | null>(null);
   readonly guardando          = signal<boolean>(false);
 
+  // ── Costos logísticos reactivos ──────────────────────────────────────────
+  readonly costoFlete = signal<number>(0);
+  readonly costoArmado = signal<number>(0);
+  readonly totalConLogistica = signal<number>(0);
+  readonly tasaOverhead = signal<number>(0);
+  readonly factorEstacional = signal<number>(1.0);
+  readonly cargandoCotizacion = signal<boolean>(false);
+  readonly base64Canvas = signal<string>('');
+  readonly preciosCalculados = signal<Map<number, number>>(new Map());
+
+  private debounceTimer: any = null;
+
+  constructor() {
+    effect(() => {
+      const items = this.items();
+      const proyecto = this.proyectoActual();
+      if (!proyecto) return;
+
+      if (this.debounceTimer) {
+        clearTimeout(this.debounceTimer);
+      }
+
+      this.debounceTimer = setTimeout(() => {
+        const reqItems = this.toElementoLienzoRequests();
+        if (reqItems.length === 0) {
+          this.costoFlete.set(0);
+          this.costoArmado.set(0);
+          this.totalConLogistica.set(0);
+          this.tasaOverhead.set(0);
+          this.factorEstacional.set(1.0);
+          this.preciosCalculados.set(new Map());
+          return;
+        }
+
+        this.cargandoCotizacion.set(true);
+        this.http.previsualizarCotizacion(proyecto.id, reqItems, proyecto.distanciaKm ?? undefined)
+          .subscribe({
+            next: (data) => {
+              this.costoFlete.set(data.costoFlete);
+              this.costoArmado.set(data.costoArmado);
+              this.totalConLogistica.set(data.total);
+              this.tasaOverhead.set(data.tasaOverheadAplicada);
+              this.factorEstacional.set(data.factorEstacionalAplicado);
+              
+              const mapPrecios = new Map<number, number>();
+              if (data.desgloseArticulos) {
+                data.desgloseArticulos.forEach((d: any) => {
+                  mapPrecios.set(d.articuloId, d.precioUnitario);
+                });
+              }
+              this.preciosCalculados.set(mapPrecios);
+              this.cargandoCotizacion.set(false);
+            },
+            error: (err) => {
+              console.error('Error previsualizando cotización:', err);
+              this.cargandoCotizacion.set(false);
+            }
+          });
+      }, 500); // 500ms debounce
+    });
+  }
+
   // ── Selectores computados ─────────────────────────────────────────────────
   readonly midItems  = computed(() => this.items().filter(i => i.layer === 'mid'));
   readonly mainItems = computed(() => this.items().filter(i => i.layer === 'main'));
@@ -34,19 +98,24 @@ export class CanvasStateService {
 
   readonly precioTotal = computed(() =>
     this.items().reduce((acc, item) => {
-      const precioUnitario = item.costo * (1 + item.porcentajeGanancia / 100);
+      const precioCalculado = this.preciosCalculados().get(item.articuloId);
+      const precioUnitario = precioCalculado !== undefined ? precioCalculado : (item.costo * (1 + item.porcentajeGanancia / 100));
       return acc + precioUnitario * item.cantidad;
     }, 0)
   );
 
   readonly resumenItems = computed(() =>
-    this.items().map(item => ({
-      instanceId: item.instanceId,
-      nombre:     item.nombre,
-      cantidad:   item.cantidad,
-      imagenUrl:  item.imagenUrl,
-      subtotal:   item.costo * (1 + item.porcentajeGanancia / 100) * item.cantidad
-    }))
+    this.items().map(item => {
+      const precioCalculado = this.preciosCalculados().get(item.articuloId);
+      const precioUnitario = precioCalculado !== undefined ? precioCalculado : (item.costo * (1 + item.porcentajeGanancia / 100));
+      return {
+        instanceId: item.instanceId,
+        nombre:     item.nombre,
+        cantidad:   item.cantidad,
+        imagenUrl:  item.imagenUrl,
+        subtotal:   precioUnitario * item.cantidad
+      };
+    })
   );
 
   readonly proyectoPrecioTotal = computed(() => {
@@ -54,7 +123,8 @@ export class CanvasStateService {
     this.escenarios().forEach(esc => {
       if (esc.elementos) {
         esc.elementos.forEach(el => {
-          const precioUnitario = Number(el.costoAdquisicion) * (1 + Number(el.porcentajeGanancia) / 100);
+          const precioCalculado = this.preciosCalculados().get(el.articuloId);
+          const precioUnitario = precioCalculado !== undefined ? precioCalculado : (Number(el.costoAdquisicion) * (1 + Number(el.porcentajeGanancia) / 100));
           total += precioUnitario * el.cantidad;
         });
       }
@@ -67,7 +137,8 @@ export class CanvasStateService {
     this.escenarios().forEach(esc => {
       if (esc.elementos) {
         esc.elementos.forEach(el => {
-          const precioUnitario = Number(el.costoAdquisicion) * (1 + Number(el.porcentajeGanancia) / 100);
+          const precioCalculado = this.preciosCalculados().get(el.articuloId);
+          const precioUnitario = precioCalculado !== undefined ? precioCalculado : (Number(el.costoAdquisicion) * (1 + Number(el.porcentajeGanancia) / 100));
           const subtotal = precioUnitario * el.cantidad;
           const existing = map.get(el.articuloId);
           if (existing) {

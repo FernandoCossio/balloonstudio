@@ -53,4 +53,22 @@ export class ReservaService {
     const elapsedSeconds = Math.floor((Date.now() - start) / 1000);
     return Math.max(0, totalSeconds - elapsedSeconds);
   }
+
+  previsualizarCotizacion(proyectoId: number, elementos: any[], distanciaKm?: number): Observable<any> {
+    return this.http
+      .post<ApiResponse<any>>(`${this.apiUrl}/${proyectoId}/cotizacion/previsualizar`, {
+        elementos,
+        distanciaKm
+      })
+      .pipe(map(r => r.data));
+  }
+
+  exportarPropuestaPdf(proyectoId: number, base64Canvas: string, elementos: any[]): Observable<Blob> {
+    return this.http.post(`${this.apiUrl}/${proyectoId}/exportar-pdf`, {
+      base64Canvas,
+      elementos
+    }, {
+      responseType: 'blob'
+    });
+  }
 }

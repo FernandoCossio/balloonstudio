@@ -1,9 +1,6 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, Output, EventEmitter } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { CanvasStateService } from '../../../../services/canvas-state.service';
-import { Router } from '@angular/router';
-import { AuthService } from '@/app/features/auth/service/auth.service';
-import { ReservaService } from '../../../../services/reserva.service';
 import { MessageService } from 'primeng/api';
 
 import { ToastModule } from 'primeng/toast';
@@ -18,10 +15,9 @@ import { ToastModule } from 'primeng/toast';
 export class PricingPanel {
 
   readonly canvasState   = inject(CanvasStateService);
-  private router         = inject(Router);
-  private authService    = inject(AuthService);
-  private reservaService = inject(ReservaService);
   private messageService = inject(MessageService);
+
+  @Output() onReservar = new EventEmitter<void>();
 
   // ── Acciones ─────────────────────────────────────────────────────────────
 
@@ -45,20 +41,6 @@ export class PricingPanel {
       return;
     }
 
-    const payload = this.authService.getAccessTokenPayload();
-    const uid = payload?.uid || 1; // Fallback a 1 para desarrollo/pruebas locales
-
-    this.reservaService.iniciarReserva(proyecto.id, uid).subscribe({
-      next: () => {
-        this.router.navigate(['/proyectos', proyecto.id, 'reserva']);
-      },
-      error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error al reservar',
-          detail: err?.error?.message || 'No se pudo iniciar el proceso de reserva. Revisa el stock.'
-        });
-      }
-    });
+    this.onReservar.emit();
   }
 }
