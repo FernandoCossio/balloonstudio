@@ -7,6 +7,7 @@ import com.decoraciones.features.elementolienzo.ElementoLienzoRepository;
 import com.decoraciones.features.inventario.BloqueoInventarioRepository;
 import com.decoraciones.features.pago.PagoRepository;
 import com.decoraciones.features.pago.StripeService;
+import com.decoraciones.features.pago.PagoFacilService;
 import com.decoraciones.features.proyectodiseno.ProyectoDisenoRepository;
 import com.decoraciones.features.usuario.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,13 +37,11 @@ public class ReservaService {
     private final StripeService stripeService;
     private final UsuarioRepository usuarioRepository;
     private final CotizacionService cotizacionService;
+    private final PagoFacilService pagoFacilService;
 
     @org.springframework.beans.factory.annotation.Value("${app.reserva.lock-ttl-minutes:15}")
     private int lockTtlMinutes;
-
-    /**
-     * Inicia el flujo de reserva: genera cotización, reserva en PENDIENTE, bloquea temporalmente en Redis y crea PaymentIntent en Stripe.
-     */
+// ... (iniciarReserva stays exactly same) ...
     @Transactional
     public Map<String, Object> iniciarReserva(Long proyectoId, ReservaRequest request) {
         ProyectoDiseno proyecto = proyectoRepository.findById(proyectoId)
@@ -155,10 +154,23 @@ public class ReservaService {
      */
     @Transactional
     public void confirmarPago(Long reservaId, String referenciaPago) {
+        confirmarPago(reservaId, referenciaPago, "STRIPE");
+    }
+
+    /**
+     * Webhook de Stripe o Pago Fácil que confirma la transacción.
+     * Consolida la reserva en PostgreSQL y elimina los bloqueos de Redis.
+     */
+    @Transactional
+    public void confirmarPago(Long reservaId, String referenciaPago, String metodoPago) {
         Reserva reserva = reservaRepository.findById(reservaId)
                 .orElseThrow(ReservaNoEncontradaException::new);
 
         if (!"PENDIENTE_PAGO".equals(reserva.getEstado())) {
+            if ("CONFIRMADA".equals(reserva.getEstado())) {
+                log.info("La reserva ID: {} ya está CONFIRMADA previamente.", reservaId);
+                return;
+            }
             throw new EstadoReservaInvalidoException("La reserva no está en estado pendiente de pago");
         }
 
@@ -171,7 +183,7 @@ public class ReservaService {
         Pago pago = new Pago();
         pago.setReserva(reserva);
         pago.setMonto(reserva.getMontoAnticipo());
-        pago.setMetodo("STRIPE");
+        pago.setMetodo(metodoPago != null ? metodoPago.toUpperCase() : "STRIPE");
         pago.setEstado("COMPLETADO");
         pago.setFechaPago(LocalDateTime.now());
         pago.setReferenciaExterna(referenciaPago);
@@ -197,6 +209,73 @@ public class ReservaService {
         // 4. Liberar llaves temporales de Redis
         lockService.liberarBloqueosTemporales(proyecto.getId());
 
-        log.info("Pago confirmado exitosamente para la reserva ID: {}. Bloqueos permanentes consolidados.", reservaId);
+        log.info("Pago confirmado exitosamente para la reserva ID: {} con el método {}. Bloqueos permanentes consolidados.", reservaId, metodoPago);
+    }
+
+    /**
+     * Genera un QR de PagoFácil para el anticipo de una reserva.
+     */
+    @Transactional
+    public PagoFacilService.PagoFacilQrResponse generarQrPago(
+            Long reservaId,
+            String clientName,
+            String clientCi,
+            String email,
+            String phone
+    ) {
+        Reserva reserva = reservaRepository.findById(reservaId)
+                .orElseThrow(ReservaNoEncontradaException::new);
+
+        if (!"PENDIENTE_PAGO".equals(reserva.getEstado())) {
+            throw new EstadoReservaInvalidoException("La reserva no está en estado pendiente de pago");
+        }
+
+        String token = pagoFacilService.login();
+        double amount = reserva.getMontoAnticipo().doubleValue();
+
+        String safeName = (clientName != null && !clientName.trim().isEmpty()) ? clientName.trim() : reserva.getUsuario().getNombreCompleto();
+        if (safeName == null || safeName.trim().isEmpty()) {
+            safeName = "Cliente";
+        }
+
+        String rawEmail = (email != null && !email.trim().isEmpty()) ? email.trim() : reserva.getUsuario().getEmail();
+        String safeEmail = "";
+        if (rawEmail != null && !rawEmail.trim().isEmpty() && rawEmail.contains("@")) {
+            safeEmail = rawEmail.trim();
+        }
+
+        String rawPhone = (phone != null && !phone.trim().isEmpty()) ? phone.trim() : reserva.getUsuario().getTelefono();
+        String safePhone = "75540850"; // default fallback phone
+        if (rawPhone != null && !rawPhone.trim().isEmpty()) {
+            String digits = rawPhone.replaceAll("[^0-9]", "");
+            if (digits.length() >= 7) {
+                safePhone = digits;
+            }
+        }
+
+        String safeCi = (clientCi != null && !clientCi.trim().isEmpty()) ? clientCi.trim() : "1234567";
+
+        return pagoFacilService.generarQR(
+                token,
+                reservaId + "-" + System.currentTimeMillis(),
+                amount,
+                safeName,
+                safeCi,
+                safeEmail,
+                safePhone
+        );
+    }
+
+    @Transactional
+    public boolean verificarEstadoPagoQr(Long reservaId, String transactionId) {
+        String token = pagoFacilService.login();
+        boolean pagado = pagoFacilService.consultarTransaccion(token, transactionId);
+
+        if (pagado) {
+            log.info("PagoFacil confirmó el pago para reserva ID: {}, transactionId: {}. Confirmando reserva...", reservaId, transactionId);
+            confirmarPago(reservaId, transactionId, "PAGO_FACIL");
+        }
+
+        return pagado;
     }
 }
