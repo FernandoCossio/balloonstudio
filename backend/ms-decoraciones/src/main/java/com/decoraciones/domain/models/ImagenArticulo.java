@@ -44,6 +44,7 @@ public class ImagenArticulo extends BaseEntity{
     private Boolean procesadoIa = false;
 
     @Column(name = "estado_ia")
+    @Enumerated(EnumType.STRING)
     private EstadoIa estadoIa;
 
     @Column(name = "fecha_subida")
