@@ -45,8 +45,13 @@ export class MetodoQr implements OnInit, OnDestroy {
 
   // Montos y desgloses
   readonly totalOriginal = computed(() => {
+    if (this.isConfirmed() && this.totalPagadoLocal > 0) {
+      return this.totalPagadoLocal;
+    }
     return this.reservaService.activeReserva()?.totalOriginal ?? 0;
   });
+
+  private totalPagadoLocal = 0;
 
   readonly montoAnticipo = computed(() => {
     return this.reservaService.activeReserva()?.montoAnticipo ?? 0;
@@ -209,6 +214,8 @@ export class MetodoQr implements OnInit, OnDestroy {
   private confirmarExitoPago(): void {
     this.clearAllIntervals();
     this.isConfirmed.set(true);
+    // Guardamos el total antes de limpiar la reserva de sesión
+    this.totalPagadoLocal = this.reservaService.activeReserva()?.totalOriginal ?? 0;
     this.reservaService.clearActiveReserva(); // Limpia la sesión de reserva
     this.messageService.add({
       severity: 'success',
