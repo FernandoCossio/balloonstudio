@@ -1,0 +1,229 @@
+<div class="qr-payment-page">
+  <p-toast></p-toast>
+
+  <!-- Header -->
+  <header class="qr-header">
+    <button *ngIf="!isConfirmed()" (click)="volverAReserva()" class="back-btn" [disabled]="loadingQr()">
+      <i class="pi pi-arrow-left"></i>
+      <span>Volver</span>
+    </button>
+    <div class="secure-badge">
+      <i class="pi pi-shield"></i>
+      <span>Pago Seguro PagoFácil</span>
+    </div>
+  </header>
+
+  <!-- Contenido principal -->
+  <main class="qr-main">
+
+    <!-- 1. Pantalla de Éxito -->
+    <div *ngIf="isConfirmed()" class="success-container animate-fade-in">
+      <div class="success-card">
+        <div class="success-icon-wrapper">
+          <i class="pi pi-check-circle success-icon"></i>
+        </div>
+        <h1 class="success-title">¡Reserva Confirmada!</h1>
+        <p class="success-desc">
+          El pago de tu anticipo por <strong>Bs. {{ montoAnticipo() | number:'1.2-2' }}</strong> fue verificado con éxito.
+        </p>
+
+        <div class="receipt-details">
+          <div class="receipt-row">
+            <span>ID Reserva:</span>
+            <strong>#{{ reservaId() }}</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Método de Pago:</span>
+            <strong>Código QR (PagoFácil)</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Total del Proyecto:</span>
+            <strong>Bs. {{ totalOriginal() | number:'1.2-2' }}</strong>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button (click)="descargarComprobante()" class="btn-download">
+            <i class="pi pi-file-pdf"></i>
+            <span>Descargar Comprobante PDF</span>
+          </button>
+          <button (click)="volverAMisDisenos()" class="btn-primary">
+            <span>Mis Diseños</span>
+            <i class="pi pi-home"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Pantalla Expirada -->
+    <div *ngIf="isExpired() && !isConfirmed()" class="expired-container animate-fade-in">
+      <div class="expired-card">
+        <i class="pi pi-exclamation-triangle expired-icon"></i>
+        <h1 class="expired-title">Sesión Expirada</h1>
+        <p class="expired-desc">
+          El tiempo límite de 15 minutos para asegurar los artículos de tu reserva ha terminado y los bloqueos de stock han sido liberados.
+        </p>
+        <button (click)="volverAReserva()" class="btn-primary">
+          <i class="pi pi-refresh"></i>
+          <span>Volver a Intentar</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. Pantalla de Proceso de Pago Activa -->
+    <div *ngIf="!isConfirmed() && !isExpired()" class="process-container">
+      
+      <div class="qr-hero">
+        <h1 class="qr-title">Pago por Código QR</h1>
+        <p class="qr-subtitle">Genera tu código QR para realizar el pago del anticipo de tu evento.</p>
+        
+        <!-- Timer -->
+        <div class="timer-badge" [class.danger]="timeRemainingSeconds() < 120">
+          <i class="pi pi-clock"></i>
+          <span>Tiempo restante: <strong>{{ formattedTimeRemaining() }}</strong></span>
+        </div>
+      </div>
+
+      <div class="qr-grid">
+        
+        <!-- Columna Izquierda: Formulario de Datos / Resumen de Facturación -->
+        <div class="form-column">
+          <div class="card-glass billing-card">
+            <h2 class="card-title">Resumen de Pago</h2>
+            
+            <div class="monto-box">
+              <span class="monto-label">Anticipo Requerido (20%)</span>
+              <span class="monto-value">Bs. {{ montoAnticipo() | number:'1.2-2' }}</span>
+            </div>
+
+            <!-- Formulario si no se ha generado el QR -->
+            <div *ngIf="!qrBase64()" class="form-fields">
+              <h3 class="field-section-title">Datos de Facturación / Pago</h3>
+              
+              <div class="input-group">
+                <label for="nombre">Nombre del Titular <span class="required">*</span></label>
+                <input 
+                  type="text" 
+                  id="nombre" 
+                  [(ngModel)]="nombreCliente" 
+                  placeholder="Ej. Juan Pérez" 
+                  [disabled]="loadingQr()"
+                />
+              </div>
+
+              <div class="input-group">
+                <label for="ci">CI / NIT <span class="required">*</span></label>
+                <input 
+                  type="text" 
+                  id="ci" 
+                  [(ngModel)]="ciCliente" 
+                  placeholder="Ej. 1234567" 
+                  [disabled]="loadingQr()"
+                />
+              </div>
+
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="telefono">Teléfono (Opcional)</label>
+                  <input 
+                    type="tel" 
+                    id="telefono" 
+                    [(ngModel)]="telefonoCliente" 
+                    placeholder="Ej. 77777777" 
+                    [disabled]="loadingQr()"
+                  />
+                </div>
+                <div class="input-group">
+                  <label for="correo">Correo (Opcional)</label>
+                  <input 
+                    type="email" 
+                    id="correo" 
+                    [(ngModel)]="correoCliente" 
+                    placeholder="Ej. juan@correo.com" 
+                    [disabled]="loadingQr()"
+                  />
+                </div>
+              </div>
+
+              <button 
+                (click)="generarQr()" 
+                [disabled]="!isFormValid() || loadingQr()" 
+                class="btn-generate"
+              >
+                <i *ngIf="loadingQr()" class="pi pi-spin pi-spinner"></i>
+                <span>{{ loadingQr() ? 'Generando QR...' : 'Generar Código QR' }}</span>
+                <i *ngIf="!loadingQr()" class="pi pi-qrcode"></i>
+              </button>
+            </div>
+
+            <!-- Datos Fijos si el QR ya está generado -->
+            <div *ngIf="qrBase64()" class="billing-details animate-fade-in">
+              <h3 class="details-title">Datos del Pagador</h3>
+              <div class="details-row">
+                <span>Nombre:</span>
+                <strong>{{ nombreCliente }}</strong>
+              </div>
+              <div class="details-row">
+                <span>CI / NIT:</span>
+                <strong>{{ ciCliente }}</strong>
+              </div>
+              
+              <div class="instructions-card">
+                <h4 class="inst-title"><i class="pi pi-info-circle"></i> Instrucciones de Pago:</h4>
+                <ol class="inst-list">
+                  <li>Ingresa a la aplicación móvil de tu banco.</li>
+                  <li>Selecciona la opción de **Pago Simple QR** o Escanear.</li>
+                  <li>Escanea el código QR que se visualiza a la derecha.</li>
+                  <li>Confirma la transferencia por el monto exacto.</li>
+                </ol>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Tarjeta del QR -->
+        <div class="qr-column">
+          <div class="card-glass qr-display-card">
+            
+            <!-- Estado Inicial: QR no generado -->
+            <div *ngIf="!qrBase64()" class="qr-placeholder">
+              <i class="pi pi-qrcode placeholder-icon"></i>
+              <p>Completa tus datos de facturación para generar el código QR dinámico.</p>
+            </div>
+
+            <!-- QR Generado -->
+            <div *ngIf="qrBase64()" class="qr-wrapper animate-fade-in">
+              <div class="qr-container">
+                <img [src]="'data:image/png;base64,' + qrBase64()" alt="Código QR de Pago" class="qr-image" />
+                <div class="qr-border-corners"></div>
+              </div>
+              
+              <!-- Indicador de polling automático -->
+              <div class="polling-indicator">
+                <span class="pulse-dot"></span>
+                <span>Esperando confirmación de pago del banco...</span>
+              </div>
+
+              <div class="manual-check">
+                <p class="manual-desc">¿Ya realizaste la transferencia? Si no se actualiza automáticamente, puedes verificar aquí:</p>
+                <button 
+                  (click)="verificarPagoManual()" 
+                  [disabled]="verifying()" 
+                  class="btn-verify"
+                >
+                  <i [class]="verifying() ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"></i>
+                  <span>{{ verifying() ? 'Verificando...' : 'Verificar Pago Ahora' }}</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+</div>

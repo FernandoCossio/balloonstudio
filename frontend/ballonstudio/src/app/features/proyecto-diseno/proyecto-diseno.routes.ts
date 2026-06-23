@@ -25,4 +25,10 @@ export default [
       import('./pages/metodo-tarjeta/metodo-tarjeta')
         .then(m => m.MetodoTarjeta)
   },
-] as Routes;
+  {
+    path: ':proyectoId/reserva/qr',
+    loadComponent: () =>
+      import('./pages/metodo-qr/metodo-qr')
+        .then(m => m.MetodoQr)
+  },
+] as Routes;
