@@ -61,6 +61,16 @@
                                   optionLabel="label" optionValue="value"
                                   styleClass="form-select" />
                     </div>
+
+                    <!-- Categoría -->
+                    <div class="form-field">
+                        <label class="form-label" for="categoriaId">Categoría</label>
+                        <p-select id="categoriaId" formControlName="categoriaId" [options]="categorias()"
+                                  optionLabel="nombre" optionValue="id"
+                                  placeholder="Todas las categorías"
+                                  [showClear]="true"
+                                  styleClass="form-select" />
+                    </div>
                 </div>
 
                 <!-- Descripción -->

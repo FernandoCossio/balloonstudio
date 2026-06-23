@@ -54,9 +54,10 @@ public class ArticuloInventarioController {
     @GetMapping("/catalogo")
     public ResponseEntity<ApiResponse<List<ArticuloInventarioDto>>> getCatalogo(
             @RequestParam(required = false) String tipo,
-            @RequestParam(required = false) String estado) {
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) Long categoriaId) {
 
-        List<ArticuloInventarioDto> response = articuloService.getCatalogo(tipo, estado);
+        List<ArticuloInventarioDto> response = articuloService.getCatalogo(tipo, estado, categoriaId);
         return ResponseEntity.ok(ApiResponse.success(response, "Catálogo de artículos de inventario obtenido correctamente"));
     }
 }

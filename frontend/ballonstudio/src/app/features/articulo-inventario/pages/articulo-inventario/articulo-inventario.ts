@@ -233,6 +233,31 @@ export class ArticuloInventario implements OnInit {
         });
     }
 
+    confirmReprocesar(articulo: ArticuloInventarioResponse) {
+        this.confirmSvc.confirm({
+            message: `¿Está seguro de que desea realizar el procesamiento de la imagen del artículo "${articulo.nombre}" con la IA?`,
+            header: 'Confirmar Procesamiento de Imagen con IA',
+            icon: 'pi pi-sparkles',
+            acceptLabel: 'Procesar',
+            rejectLabel: 'Cancelar',
+            accept: () => this.doReprocesar(articulo.id)
+        });
+    }
+
+    private doReprocesar(id: number) {
+        this.msgSvc.add({ severity: 'info', summary: 'Procesando', detail: 'Iniciando el procesamiento de la imagen con la IA...' });
+        this.svc.reprocesarArticulo(id).subscribe({
+            next: () => {
+                this.msgSvc.add({ severity: 'success', summary: 'Procesado', detail: 'Embedding visual e imagen procesados con la IA exitosamente' });
+                this.loadArticulos();
+            },
+            error: (err) => {
+                const errorMsg = err?.error?.message || 'No se pudo iniciar el procesamiento con la IA';
+                this.msgSvc.add({ severity: 'error', summary: 'Error', detail: errorMsg });
+            }
+        });
+    }
+
     // ─── UI helpers ──────────────────────────────────────────────────────────
     estadoSeverity(estado: string): 'success' | 'warn' | 'danger' | 'secondary' {
         switch (estado) {

@@ -198,6 +198,12 @@
                                             (click)="openIncidenciaDialog(art)">
                                         <i class="pi pi-exclamation-circle"></i>
                                     </button>
+                                    @if (art.imagenes && art.imagenes.length > 0) {
+                                        <button class="inv-icon-btn inv-icon-btn--ia" pTooltip="Reprocesar IA" tooltipPosition="top"
+                                                (click)="confirmReprocesar(art)">
+                                            <i class="pi pi-sparkles"></i>
+                                        </button>
+                                    }
                                     @if (isAdmin()) {
                                         <button class="inv-icon-btn" pTooltip="Editar" tooltipPosition="top"
                                                 (click)="editArticulo(art)">

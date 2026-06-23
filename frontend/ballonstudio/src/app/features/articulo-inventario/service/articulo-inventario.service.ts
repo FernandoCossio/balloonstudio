@@ -175,6 +175,26 @@ export class ArticuloInventarioService {
         );
     }
 
+    getCategorias(): Observable<CategoriaResponse[]> {
+        return this.http.get<ApiResponse<CategoriaResponse[]>>(`${API_URL}/categorias`).pipe(
+            map(res => res.data),
+            tap({
+                next: data => console.log('[ArticuloInventarioService] ✅ getCategorias OK – registros:', data.length),
+                error: err => console.error('[ArticuloInventarioService] ❌ getCategorias ERROR', err)
+            })
+        );
+    }
+
+    reprocesarArticulo(id: number): Observable<any> {
+        return this.http.post<ApiResponse<any>>(`${API_URL}/recomendaciones/articulos/${id}/reprocesar`, {}).pipe(
+            map(res => res.data),
+            tap({
+                next: data => console.log('[ArticuloInventarioService] ✅ reprocesarArticulo OK', data),
+                error: err => console.error('[ArticuloInventarioService] ❌ reprocesarArticulo ERROR', err)
+            })
+        );
+    }
+
     // ─── Helpers de UI ───────────────────────────────────────────────────────
 
     /** Precio sugerido basado en costo + porcentaje de ganancia */
