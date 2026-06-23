@@ -98,16 +98,19 @@ export class Reserva implements OnInit, OnDestroy {
   }
 
   selectMethod(method: string): void {
-    if (method === 'tarjeta') {
-      this.selectedMethod.set(method);
-    }
+    this.selectedMethod.set(method);
   }
 
   procederAlPago(): void {
     if (this.isExpired()) return;
     const proyectoId = this.route.snapshot.paramMap.get('proyectoId');
-    this.router.navigate(['/proyectos', proyectoId, 'reserva', 'pago']);
+    if (this.selectedMethod() === 'qr') {
+      this.router.navigate(['/proyectos', proyectoId, 'reserva', 'qr']);
+    } else {
+      this.router.navigate(['/proyectos', proyectoId, 'reserva', 'pago']);
+    }
   }
+
 
   volverAlCanvas(): void {
     const proyectoId = this.route.snapshot.paramMap.get('proyectoId');

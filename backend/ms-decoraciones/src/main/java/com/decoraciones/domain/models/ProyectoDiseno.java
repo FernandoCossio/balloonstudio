@@ -41,6 +41,9 @@ public class ProyectoDiseno extends BaseEntity {
     @Column(name = "numero_metadato")
     private String numeroMetadato;
 
+    @Column(name = "distancia_km")
+    private Double distanciaKm;
+
     @Column(name = "costo_real_total", precision = 12, scale = 2)
     private BigDecimal costoRealTotal;
 

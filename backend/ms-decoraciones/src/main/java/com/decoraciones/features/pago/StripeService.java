@@ -4,10 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -36,10 +37,10 @@ public class StripeService {
         long centavos = montoAnticipo.multiply(BigDecimal.valueOf(100)).longValue();
 
         try {
-            Map<String, String> body = new HashMap<>();
-            body.put("amount", String.valueOf(centavos));
-            body.put("currency", moneda.toLowerCase());
-            body.put("payment_method_types[0]", "card");
+            MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+            body.add("amount", String.valueOf(centavos));
+            body.add("currency", moneda.toLowerCase());
+            body.add("payment_method_types[0]", "card");
 
             // Realizamos la llamada a Stripe usando RestClient
             Map response = restClient.post()
@@ -49,6 +50,7 @@ public class StripeService {
                     .body(body)
                     .retrieve()
                     .body(Map.class);
+
 
             if (response != null && response.containsKey("client_secret")) {
                 return (String) response.get("client_secret");

@@ -3,7 +3,7 @@ import {
   Component, inject, signal, computed, ViewChild,
   ElementRef, AfterViewInit, OnDestroy, NgZone
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CdkDropList, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { StageComponent, CoreShapeComponent, NgKonvaEventObject } from 'ng2-konva';
 import { StageConfig } from 'konva/lib/Stage';
@@ -26,6 +26,8 @@ import { CatalogoSidebar } from './components/catalogo-sidebar/catalogo-sidebar'
 import { PricingPanel } from './components/pricing-panel/pricing-panel';
 import { Location } from '@angular/common';
 import { API_URL } from '@/enviroment/enviroment';
+import { AuthService } from '@/app/features/auth/service/auth.service';
+import { ReservaService } from '../../services/reserva.service';
 
 const CANVAS_W = 1600;
 const CANVAS_H = 900;
@@ -58,6 +60,9 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
   private route           = inject(ActivatedRoute);
   private proyectoService = inject(ProyectoDisenoService);
   private messageService  = inject(MessageService);
+  private router          = inject(Router);
+  private authService     = inject(AuthService);
+  private reservaService  = inject(ReservaService);
 
   @ViewChild('stageRef')         stageRef!: any;
   @ViewChild('transformerRef')   transformerRef!: any;
@@ -626,6 +631,81 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
       return updated;
     });
     this.canvasState.removeItem(instanceId);
+  }
+
+  guardarYReservar(): void {
+    const proyecto  = this.canvasState.proyectoActual();
+    const escenario = this.canvasState.escenarioActual();
+    if (!proyecto || !escenario) return;
+
+    this.guardando.set(true);
+    this.canvasState.guardarEscenarioActualEnMemoria();
+
+    if (this.stage) {
+      const dataUrl = this.stage.toDataURL({
+        pixelRatio: CANVAS_W / this.stage.width(),
+        x: 0, y: 0, width: CANVAS_W, height: CANVAS_H
+      });
+      this.canvasState.base64Canvas.set(dataUrl);
+    }
+
+    const requests = this.canvasState.escenarios().map(esc => {
+      const elRequests: any[] = esc.elementos.map(el => ({
+        articuloId: el.articuloId,
+        cantidad: el.cantidad,
+        posX: el.posX,
+        posY: el.posY,
+        width: el.width,
+        height: el.height,
+        scaleX: el.scaleX,
+        scaleY: el.scaleY,
+        rotacionDeg: el.rotacionDeg,
+        opacity: el.opacity,
+        zIndex: el.zIndex,
+        layer: el.layer,
+        vistaActual: el.vistaActual
+      }));
+      return this.proyectoService.guardarElementos(proyecto.id, esc.id, elRequests);
+    });
+
+    if (requests.length === 0) {
+      this.guardando.set(false);
+      this.iniciarFlujoReserva(proyecto.id);
+      return;
+    }
+
+    forkJoin(requests).subscribe({
+      next: () => {
+        this.guardando.set(false);
+        this.iniciarFlujoReserva(proyecto.id);
+      },
+      error: (err) => {
+        this.guardando.set(false);
+        const errMsg = err?.error?.message || 'Error al guardar los cambios antes de reservar.';
+        this.messageService.add({
+          severity: 'error', summary: 'Error al guardar',
+          detail: errMsg
+        });
+      }
+    });
+  }
+
+  private iniciarFlujoReserva(proyectoId: number): void {
+    const payload = this.authService.getAccessTokenPayload();
+    const uid = payload?.uid || 1;
+
+    this.reservaService.iniciarReserva(proyectoId, uid).subscribe({
+      next: () => {
+        this.router.navigate(['/proyectos', proyectoId, 'reserva']);
+      },
+      error: (err) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error al reservar',
+          detail: err?.error?.message || 'No se pudo iniciar el proceso de reserva. Revisa el stock.'
+        });
+      }
+    });
   }
 
   goBack(): void {

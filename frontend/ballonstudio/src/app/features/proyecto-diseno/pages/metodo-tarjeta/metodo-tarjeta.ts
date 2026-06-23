@@ -222,10 +222,43 @@ export class MetodoTarjeta implements OnInit, OnDestroy {
   }
 
   descargarComprobante(): void {
+    const proyectoId = Number(this.route.snapshot.paramMap.get('proyectoId'));
+    if (!proyectoId) return;
+
     this.messageService.add({
       severity: 'info',
       summary: 'Descargando',
-      detail: 'Tu comprobante de pago está siendo generado...'
+      detail: 'Generando comprobante y propuesta PDF...'
+    });
+
+    const base64Canvas = this.canvasState.base64Canvas() || '';
+    const elementos = this.canvasState.toElementoLienzoRequests();
+
+    this.reservaService.exportarPropuestaPdf(proyectoId, base64Canvas, elementos).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `comprobante-propuesta-proyecto-${proyectoId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Descarga completa',
+          detail: 'El PDF fue descargado exitosamente.'
+        });
+      },
+      error: (err) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error al descargar',
+          detail: 'No se pudo generar el documento PDF de la propuesta.'
+        });
+        console.error('Error al exportar PDF:', err);
+      }
     });
   }
 }

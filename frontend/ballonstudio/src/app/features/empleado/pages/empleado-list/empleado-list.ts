@@ -14,6 +14,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 
 import { EmpleadoResponse, EmpleadoService } from '../../service/empleado.service';
 import { AuthService } from '@/app/features/auth/service/auth.service';
+import { ReportesService } from '@/app/features/reportes/service/reportes.service';
 
 @Component({
     selector: 'app-empleado-list',
@@ -41,6 +42,7 @@ export class EmpleadoList implements OnInit {
     private confirmSvc = inject(ConfirmationService);
     private msgSvc = inject(MessageService);
     private router = inject(Router);
+    private reportesService = inject(ReportesService);
 
     // ─── Signals for State ───────────────────────────────────────────────
     empleados = signal<EmpleadoResponse[]>([]);
@@ -48,6 +50,7 @@ export class EmpleadoList implements OnInit {
     loading = signal(true);
     searchQuery = signal('');
     selectedRolFilter = signal<string>(''); // '', 'ADMINISTRADOR', 'EMPLEADO'
+    selectedActivoFilter = signal<boolean | null>(null);
     rowsPerPage = signal(10);
     currentPage = signal(0);
     currentSort = signal('nombreCompleto,asc');
@@ -66,7 +69,7 @@ export class EmpleadoList implements OnInit {
 
     // Load full metrics in background (unfiltered count)
     loadMetrics() {
-        this.svc.findEmpleados(undefined, undefined, 0, 1000).subscribe({
+        this.svc.findEmpleados(undefined, undefined, undefined, 0, 1000).subscribe({
             next: (page) => {
                 const list = page?.content || [];
                 this.totalCount.set(list.length);
@@ -98,6 +101,7 @@ export class EmpleadoList implements OnInit {
         this.svc.findEmpleados(
             this.searchQuery(),
             this.selectedRolFilter() || undefined,
+            this.selectedActivoFilter() !== null ? (this.selectedActivoFilter() as boolean) : undefined,
             page,
             size,
             sortStr
@@ -126,6 +130,7 @@ export class EmpleadoList implements OnInit {
         this.svc.findEmpleados(
             this.searchQuery(),
             this.selectedRolFilter() || undefined,
+            this.selectedActivoFilter() !== null ? (this.selectedActivoFilter() as boolean) : undefined,
             this.currentPage(),
             this.rowsPerPage(),
             this.currentSort()
@@ -153,6 +158,58 @@ export class EmpleadoList implements OnInit {
         this.selectedRolFilter.set(rol);
         this.currentPage.set(0);
         this.reloadTable();
+    }
+
+    onFiltroChange(): void {
+        this.currentPage.set(0);
+        this.reloadTable();
+    }
+
+    limpiarFiltros(): void {
+        this.searchQuery.set('');
+        this.selectedRolFilter.set('');
+        this.selectedActivoFilter.set(null);
+        this.currentPage.set(0);
+        this.reloadTable();
+    }
+
+    exportar(formato: 'pdf' | 'excel'): void {
+        this.msgSvc.add({
+            severity: 'info',
+            summary: 'Exportando',
+            detail: `Generando reporte de usuarios en ${formato.toUpperCase()}...`
+        });
+
+        this.reportesService.descargarUsuarios(
+            formato,
+            this.selectedRolFilter() || undefined,
+            this.selectedActivoFilter() !== null ? (this.selectedActivoFilter() as boolean) : undefined
+        ).subscribe({
+            next: (blob: Blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `reporte-usuarios-${new Date().toISOString().substring(0,10)}.${formato === 'excel' ? 'xlsx' : 'pdf'}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                this.msgSvc.add({
+                    severity: 'success',
+                    summary: 'Exportación Exitosa',
+                    detail: `El reporte en ${formato.toUpperCase()} fue descargado.`
+                });
+            },
+            error: (err) => {
+                this.msgSvc.add({
+                    severity: 'error',
+                    summary: 'Error al exportar',
+                    detail: `No se pudo generar el reporte de usuarios en ${formato.toUpperCase()}.`
+                });
+                console.error(err);
+            }
+        });
     }
 
     openNew() {

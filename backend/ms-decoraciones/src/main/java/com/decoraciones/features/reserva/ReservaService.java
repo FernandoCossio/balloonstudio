@@ -7,6 +7,7 @@ import com.decoraciones.features.elementolienzo.ElementoLienzoRepository;
 import com.decoraciones.features.inventario.BloqueoInventarioRepository;
 import com.decoraciones.features.pago.PagoRepository;
 import com.decoraciones.features.pago.StripeService;
+import com.decoraciones.features.pago.PagoFacilService;
 import com.decoraciones.features.proyectodiseno.ProyectoDisenoRepository;
 import com.decoraciones.features.usuario.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,13 +36,18 @@ public class ReservaService {
     private final InventarioLockService lockService;
     private final StripeService stripeService;
     private final UsuarioRepository usuarioRepository;
+    private final CotizacionService cotizacionService;
+    private final PagoFacilService pagoFacilService;
 
     @org.springframework.beans.factory.annotation.Value("${app.reserva.lock-ttl-minutes:15}")
     private int lockTtlMinutes;
 
-    /**
-     * Inicia el flujo de reserva: genera cotización, reserva en PENDIENTE, bloquea temporalmente en Redis y crea PaymentIntent en Stripe.
-     */
+    @org.springframework.beans.factory.annotation.Value("${pagofacil.test-mode.enabled:false}")
+    private boolean testModeEnabled;
+
+    @org.springframework.beans.factory.annotation.Value("${pagofacil.test-mode.monto-simulado:0.10}")
+    private double testModeMontoSimulado;
+// ... (iniciarReserva stays exactly same) ...
     @Transactional
     public Map<String, Object> iniciarReserva(Long proyectoId, ReservaRequest request) {
         ProyectoDiseno proyecto = proyectoRepository.findById(proyectoId)
@@ -60,19 +66,24 @@ public class ReservaService {
             log.info("Cancelada reserva pendiente previa ID: {} para el proyecto ID: {}", r.getId(), proyectoId);
         }
 
-        // 2. Calcular costos de los artículos en el canvas para todos los escenarios del proyecto
+        // 2. Calcular costos utilizando el motor de cotización real
         List<ElementoLienzo> elementos = elementoRepository.findAllByProyectoIdOrderByZIndexAsc(proyectoId);
-        BigDecimal costoArticulos = BigDecimal.ZERO;
-        for (ElementoLienzo el : elementos) {
-            BigDecimal precioUnitario = el.getArticuloInventario().getCostoAdquisicion()
-                    .multiply(BigDecimal.ONE.add(el.getArticuloInventario().getPorcentajeGanancia().divide(BigDecimal.valueOf(100))));
-            costoArticulos = costoArticulos.add(precioUnitario.multiply(BigDecimal.valueOf(el.getCantidad())));
-        }
+        List<com.decoraciones.domain.dtos.proyectodiseno.ElementoLienzoRequest> requests = elementos.stream().map(el -> new com.decoraciones.domain.dtos.proyectodiseno.ElementoLienzoRequest(
+                el.getArticuloInventario().getId(),
+                el.getCantidad(),
+                el.getPosX(), el.getPosY(),
+                el.getWidth(), el.getHeight(),
+                el.getScaleX(), el.getScaleY(),
+                el.getRotacionDeg(), el.getOpacity(),
+                el.getZIndex(), el.getLayer(),
+                el.getVistaActual()
+        )).toList();
 
-        // Simulación de cotización simple (puedes expandir fletes y armado)
-        BigDecimal costoFlete = BigDecimal.valueOf(50.00);
-        BigDecimal costoArmado = BigDecimal.valueOf(100.00);
-        BigDecimal total = costoArticulos.add(costoFlete).add(costoArmado);
+        com.decoraciones.domain.dtos.cotizacion.CotizacionDetalleResponse detail = cotizacionService.calcularCotizacion(proyectoId, requests, null);
+        BigDecimal costoArticulos = detail.costoArticulos();
+        BigDecimal costoFlete = detail.costoFlete();
+        BigDecimal costoArmado = detail.costoArmado();
+        BigDecimal total = detail.total();
 
         // 3. Bloqueo temporal en Redis (Estricto - falla si Redis está caído)
         lockService.liberarBloqueosTemporales(proyectoId, true);
@@ -94,11 +105,11 @@ public class ReservaService {
                     fechaEvento,
                     fechaEvento.plusDays(1),
                     proyectoId,
-                    true // strict = true
+                    false // strict = false
             );
             if (!lockAdquirido) {
                 // Si falla un bloqueo, liberamos los bloqueos de este proyecto en Redis
-                lockService.liberarBloqueosTemporales(proyectoId, true);
+                lockService.liberarBloqueosTemporales(proyectoId, false);
                 throw new StockInsuficienteException("Stock insuficiente para realizar la reserva temporal del artículo: " + articulos.get(artId).getNombre());
             }
         }
@@ -111,7 +122,7 @@ public class ReservaService {
         cotizacion.setCostoArmado(costoArmado);
         cotizacion.setTotal(total);
         cotizacion.setFechaGeneracion(LocalDateTime.now());
-        cotizacion.setTasaOverheadAplicada(BigDecimal.valueOf(10.00));
+        cotizacion.setTasaOverheadAplicada(detail.tasaOverheadAplicada());
         cotizacion = cotizacionRepository.save(cotizacion);
 
         // 5. Crear Reserva en estado PENDIENTE_PAGO
@@ -149,10 +160,23 @@ public class ReservaService {
      */
     @Transactional
     public void confirmarPago(Long reservaId, String referenciaPago) {
+        confirmarPago(reservaId, referenciaPago, "STRIPE");
+    }
+
+    /**
+     * Webhook de Stripe o Pago Fácil que confirma la transacción.
+     * Consolida la reserva en PostgreSQL y elimina los bloqueos de Redis.
+     */
+    @Transactional
+    public void confirmarPago(Long reservaId, String referenciaPago, String metodoPago) {
         Reserva reserva = reservaRepository.findById(reservaId)
                 .orElseThrow(ReservaNoEncontradaException::new);
 
         if (!"PENDIENTE_PAGO".equals(reserva.getEstado())) {
+            if ("CONFIRMADA".equals(reserva.getEstado())) {
+                log.info("La reserva ID: {} ya está CONFIRMADA previamente.", reservaId);
+                return;
+            }
             throw new EstadoReservaInvalidoException("La reserva no está en estado pendiente de pago");
         }
 
@@ -165,7 +189,7 @@ public class ReservaService {
         Pago pago = new Pago();
         pago.setReserva(reserva);
         pago.setMonto(reserva.getMontoAnticipo());
-        pago.setMetodo("STRIPE");
+        pago.setMetodo(metodoPago != null ? metodoPago.toUpperCase() : "STRIPE");
         pago.setEstado("COMPLETADO");
         pago.setFechaPago(LocalDateTime.now());
         pago.setReferenciaExterna(referenciaPago);
@@ -191,6 +215,77 @@ public class ReservaService {
         // 4. Liberar llaves temporales de Redis
         lockService.liberarBloqueosTemporales(proyecto.getId());
 
-        log.info("Pago confirmado exitosamente para la reserva ID: {}. Bloqueos permanentes consolidados.", reservaId);
+        log.info("Pago confirmado exitosamente para la reserva ID: {} con el método {}. Bloqueos permanentes consolidados.", reservaId, metodoPago);
+    }
+
+    /**
+     * Genera un QR de PagoFácil para el anticipo de una reserva.
+     */
+    @Transactional
+    public PagoFacilService.PagoFacilQrResponse generarQrPago(
+            Long reservaId,
+            String clientName,
+            String clientCi,
+            String email,
+            String phone
+    ) {
+        Reserva reserva = reservaRepository.findById(reservaId)
+                .orElseThrow(ReservaNoEncontradaException::new);
+
+        if (!"PENDIENTE_PAGO".equals(reserva.getEstado())) {
+            throw new EstadoReservaInvalidoException("La reserva no está en estado pendiente de pago");
+        }
+
+        String token = pagoFacilService.login();
+        double amount = reserva.getMontoAnticipo().doubleValue();
+        if (testModeEnabled) {
+            log.info("[PagoFacil TEST MODE] Forzando monto del QR a: {} (Monto original: {})", testModeMontoSimulado, amount);
+            amount = testModeMontoSimulado;
+        }
+
+        String safeName = (clientName != null && !clientName.trim().isEmpty()) ? clientName.trim() : reserva.getUsuario().getNombreCompleto();
+        if (safeName == null || safeName.trim().isEmpty()) {
+            safeName = "Cliente";
+        }
+
+        String rawEmail = (email != null && !email.trim().isEmpty()) ? email.trim() : reserva.getUsuario().getEmail();
+        String safeEmail = "";
+        if (rawEmail != null && !rawEmail.trim().isEmpty() && rawEmail.contains("@")) {
+            safeEmail = rawEmail.trim();
+        }
+
+        String rawPhone = (phone != null && !phone.trim().isEmpty()) ? phone.trim() : reserva.getUsuario().getTelefono();
+        String safePhone = "75540850"; // default fallback phone
+        if (rawPhone != null && !rawPhone.trim().isEmpty()) {
+            String digits = rawPhone.replaceAll("[^0-9]", "");
+            if (digits.length() >= 7) {
+                safePhone = digits;
+            }
+        }
+
+        String safeCi = (clientCi != null && !clientCi.trim().isEmpty()) ? clientCi.trim() : "1234567";
+
+        return pagoFacilService.generarQR(
+                token,
+                reservaId + "-" + System.currentTimeMillis(),
+                amount,
+                safeName,
+                safeCi,
+                safeEmail,
+                safePhone
+        );
+    }
+
+    @Transactional
+    public boolean verificarEstadoPagoQr(Long reservaId, String transactionId) {
+        String token = pagoFacilService.login();
+        boolean pagado = pagoFacilService.consultarTransaccion(token, transactionId);
+
+        if (pagado) {
+            log.info("PagoFacil confirmó el pago para reserva ID: {}, transactionId: {}. Confirmando reserva...", reservaId, transactionId);
+            confirmarPago(reservaId, transactionId, "PAGO_FACIL");
+        }
+
+        return pagado;
     }
 }
