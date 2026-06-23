@@ -80,6 +80,11 @@ export class AppMenu {
                         label: 'Artículos',
                         icon: 'pi pi-fw pi-box',
                         routerLink: ['/inventario']
+                    },
+                    {
+                        label: 'Incidencias',
+                        icon: 'pi pi-fw pi-exclamation-triangle',
+                        routerLink: ['/inventario/incidencias']
                     }
                 ]
             }
@@ -100,6 +105,11 @@ export class AppMenu {
                         label: 'Artículos',
                         icon: 'pi pi-fw pi-box',
                         routerLink: ['/inventario']
+                    },
+                    {
+                        label: 'Incidencias',
+                        icon: 'pi pi-fw pi-exclamation-triangle',
+                        routerLink: ['/inventario/incidencias']
                     }
                 ]
             }

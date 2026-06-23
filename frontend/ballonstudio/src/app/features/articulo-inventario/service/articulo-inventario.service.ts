@@ -56,6 +56,7 @@ export interface ArticuloInventarioResponse {
     vidaUtilAnos?: number;
     vidaUtilUsos?: number;
     stockTotal?: number;
+    stockDisponible?: number;
     pesoKg?: number;
     volumenM3?: number;
     tiempoArmadoMin?: number;

@@ -11,6 +11,7 @@
             <p class="inv-header__sub">Administra tus artículos, stock y costos con control en tiempo real.</p>
         </div>
         <div class="inv-header__actions">
+            <button pButton class="p-button-outlined p-button-secondary" icon="pi pi-exclamation-triangle" label="Ver Incidencias" (click)="goToIncidencias()"></button>
             <button pButton class="p-button-outlined inv-btn-filter" icon="pi pi-filter" label="Filtros Avanzados"></button>
             @if (isAdmin()) {
                 <button pButton class="inv-btn-primary" icon="pi pi-plus" label="Nuevo Artículo" (click)="openNew()"></button>
@@ -44,7 +45,7 @@
             <div class="inv-alert-card__body">
                 <h3>En Mantenimiento</h3>
                 <p>{{ mantenimientoCount() }} artículo(s) en proceso de mantenimiento</p>
-                <button class="inv-alert-card__link inv-alert-card__link--blue">REVISAR ESTADO &rsaquo;</button>
+                <button class="inv-alert-card__link inv-alert-card__link--blue" (click)="goToIncidencias()">REVISAR ESTADO &rsaquo;</button>
             </div>
         </div>
 
@@ -185,7 +186,6 @@
                                 </td>
 
                                 <!-- Actions -->
-                                 
                                 <td class="inv-table__actions">
                                     <button class="inv-icon-btn" 
                                             [class.inv-icon-btn--has-images]="art.imagenes && art.imagenes.length > 0"
@@ -193,6 +193,10 @@
                                             tooltipPosition="top"
                                             (click)="openImageDialog(art)">
                                         <i [class]="art.imagenes && art.imagenes.length > 0 ? 'pi pi-images' : 'pi pi-upload'"></i>
+                                    </button>
+                                    <button class="inv-icon-btn inv-icon-btn--warn" pTooltip="Reportar Incidencia" tooltipPosition="top"
+                                            (click)="openIncidenciaDialog(art)">
+                                        <i class="pi pi-exclamation-circle"></i>
                                     </button>
                                     @if (isAdmin()) {
                                         <button class="inv-icon-btn" pTooltip="Editar" tooltipPosition="top"
@@ -355,5 +359,133 @@
                 </p>
             </div>
         }
+    </div>
+</p-dialog>
+
+<p-dialog [(visible)]="showIncidenciaDialog" 
+          [modal]="true" 
+          [header]="'Registrar Incidencia'"
+          [style]="{ width: '750px', maxWidth: '95vw' }"
+          [draggable]="false"
+          [resizable]="false">
+    
+    <div class="incidencia-dialog-layout">
+        <!-- Panel Izquierdo: Artículo Afectado -->
+        <div class="incidencia-panel-left">
+            <div class="incidencia-alert-icon">
+                <i class="pi pi-exclamation-triangle"></i>
+            </div>
+            <h3 class="incidencia-heading">Reportar Incidencia</h3>
+            <p class="incidencia-sub">Reporta problemas de inventario para mantener el catálogo actualizado.</p>
+            
+            <div class="affected-item-card">
+                <span class="affected-label">ARTÍCULO AFECTADO</span>
+                <div class="affected-details">
+                    @if (incidenciaArticulo() && getPrincipalImageUrl(incidenciaArticulo()!)) {
+                        <img [src]="getPrincipalImageUrl(incidenciaArticulo()!)" class="affected-thumb" />
+                    } @else if (incidenciaArticulo()) {
+                        <div class="affected-avatar" [style.background-color]="getAvatarColor(incidenciaArticulo()?.nombre || '')">
+                            {{ getAvatarLetter(incidenciaArticulo()?.nombre || '') }}
+                        </div>
+                    }
+                    <div class="affected-info">
+                        <span class="affected-name">{{ incidenciaArticulo()?.nombre }}</span>
+                        <span class="affected-sku">ID: #{{ incidenciaArticulo()?.id }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Derecho: Formulario -->
+        <div class="incidencia-panel-right">
+            <div class="incidencia-form-grid">
+                <!-- Tipo de Incidencia -->
+                <div class="form-field">
+                    <label>Tipo de Incidencia</label>
+                    <p-select [options]="incidenciaTipoOptions" 
+                              [ngModel]="incidenciaTipo()" 
+                              (ngModelChange)="incidenciaTipo.set($event)"
+                              optionLabel="label" 
+                              optionValue="value"
+                              appendTo="body"
+                              styleClass="w-full" />
+                </div>
+
+                <!-- Cantidad Afectada -->
+                <div class="form-field">
+                    <label>Cantidad Afectada</label>
+                    <p-inputnumber [ngModel]="incidenciaCantidad()"
+                                  (ngModelChange)="incidenciaCantidad.set($event || 1)"
+                                  [min]="1"
+                                  [max]="incidenciaArticulo()?.stockDisponible || 1"
+                                  showButtons="true"
+                                  buttonLayout="horizontal"
+                                  decrementButtonClass="p-button-secondary"
+                                  incrementButtonClass="p-button-secondary"
+                                  incrementButtonIcon="pi pi-plus"
+                                  decrementButtonIcon="pi pi-minus"
+                                  inputStyleClass="text-center"
+                                  styleClass="w-full" />
+                </div>
+            </div>
+
+            <!-- Badge de Stock Informativo -->
+            <div class="stock-impact-badge">
+                <i class="pi pi-info-circle"></i>
+                <span>Stock Total: <strong>{{ incidenciaArticulo()?.stockTotal }}</strong> | Disponible Actual: <strong>{{ incidenciaArticulo()?.stockDisponible }}</strong> &rarr; Nuevo Disponible: <strong>{{ nuevoDisponible() }}</strong></span>
+            </div>
+
+            <!-- Descripción / Motivo -->
+            <div class="form-field" style="margin-top: 1rem;">
+                <label>Descripción / Motivo</label>
+                <textarea pTextarea 
+                          rows="3" 
+                          [ngModel]="incidenciaDescripcion()" 
+                          (ngModelChange)="incidenciaDescripcion.set($event)"
+                          placeholder="Describe brevemente el daño o motivo de la incidencia..."
+                          class="w-full"></textarea>
+            </div>
+
+            <div class="incidencia-form-grid" style="margin-top: 1rem;">
+                <!-- Reserva Asociada -->
+                <div class="form-field">
+                    <label>ID de Reserva Asociada (Opcional)</label>
+                    <p-inputnumber [ngModel]="incidenciaReservaId()"
+                                  (ngModelChange)="incidenciaReservaId.set($event)"
+                                  placeholder="Ej. 124"
+                                  [useGrouping]="false"
+                                  styleClass="w-full" />
+                </div>
+
+                <!-- Fecha Estimada de Retorno (Solo para Reparación) -->
+                @if (incidenciaTipo() === 'REPARACION') {
+                    <div class="form-field">
+                        <label>Retorno Estimado (Opcional)</label>
+                        <p-datepicker [ngModel]="incidenciaFechaRetorno()" 
+                                     (ngModelChange)="incidenciaFechaRetorno.set($event)"
+                                     [showIcon]="true"
+                                     [minDate]="minFecha"
+                                     appendTo="body"
+                                     placeholder="mm/dd/yyyy"
+                                     styleClass="w-full" />
+                    </div>
+                }
+            </div>
+
+            <!-- Acciones -->
+            <div class="incidencia-actions">
+                <button pButton 
+                        class="p-button-text p-button-secondary" 
+                        label="Cancelar" 
+                        (click)="showIncidenciaDialog.set(false)" 
+                        [disabled]="submittingIncidencia()"></button>
+                <button pButton 
+                        class="inv-btn-primary" 
+                        label="Confirmar Registro" 
+                        icon="pi pi-check"
+                        (click)="registrarIncidencia()"
+                        [loading]="submittingIncidencia()"></button>
+            </div>
+        </div>
     </div>
 </p-dialog>

@@ -2,8 +2,8 @@ package com.decoraciones.features.inventario;
 
 import com.decoraciones.common.response.ApiResponse;
 import com.decoraciones.domain.dtos.incidencia.IncidenciaRequest;
+import com.decoraciones.domain.dtos.incidencia.IncidenciaResponse;
 import com.decoraciones.domain.dtos.incidencia.SolucionarIncidenciaRequest;
-import com.decoraciones.domain.models.IncidenciaArticulo;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,10 +23,10 @@ public class IncidenciaController {
      * Reportar una nueva incidencia (REPARACION o MERMA_PERDIDA).
      */
     @PostMapping
-    public ResponseEntity<ApiResponse<IncidenciaArticulo>> reportarIncidencia(
+    public ResponseEntity<ApiResponse<IncidenciaResponse>> reportarIncidencia(
             @RequestBody @Valid IncidenciaRequest request) {
 
-        IncidenciaArticulo guardada = incidenciaService.reportarIncidencia(request);
+        IncidenciaResponse guardada = incidenciaService.reportarIncidencia(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(guardada, "Incidencia reportada correctamente."));
     }
@@ -35,11 +35,11 @@ public class IncidenciaController {
      * Solucionar una incidencia (libera el stock bloqueado por reparación).
      */
     @PatchMapping("/{id}/solucionar")
-    public ResponseEntity<ApiResponse<IncidenciaArticulo>> solucionarIncidencia(
+    public ResponseEntity<ApiResponse<IncidenciaResponse>> solucionarIncidencia(
             @PathVariable Long id,
             @RequestBody(required = false) SolucionarIncidenciaRequest request) {
 
-        IncidenciaArticulo guardada = incidenciaService.solucionarIncidencia(id, request);
+        IncidenciaResponse guardada = incidenciaService.solucionarIncidencia(id, request);
         return ResponseEntity.ok(ApiResponse.success(guardada, "Incidencia solucionada. El stock vuelve a estar disponible."));
     }
 
@@ -47,8 +47,8 @@ public class IncidenciaController {
      * Listar todas las incidencias.
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<IncidenciaArticulo>>> listarIncidencias() {
-        List<IncidenciaArticulo> lista = incidenciaService.listarIncidencias();
+    public ResponseEntity<ApiResponse<List<IncidenciaResponse>>> listarIncidencias() {
+        List<IncidenciaResponse> lista = incidenciaService.listarIncidencias();
         return ResponseEntity.ok(ApiResponse.success(lista, "Listado de incidencias obtenido."));
     }
 }
