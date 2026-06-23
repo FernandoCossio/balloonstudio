@@ -37,8 +37,8 @@ public class EmpleadoService {
     private String frontendUrl;
 
     @Transactional(readOnly = true)
-    public Page<Usuario> findEmpleados(String nombre, String rol, Pageable pageable) {
-        return usuarioRepository.findEmpleados(nombre, rol, pageable);
+    public Page<Usuario> findEmpleados(String nombre, String rol, Boolean activo, Pageable pageable) {
+        return usuarioRepository.findEmpleados(nombre, rol, activo, pageable);
     }
 
     @Transactional(readOnly = true)

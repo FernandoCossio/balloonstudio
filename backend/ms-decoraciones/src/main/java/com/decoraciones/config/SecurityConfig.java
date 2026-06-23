@@ -48,7 +48,8 @@ public class SecurityConfig {
 					"/v3/api-docs/**",
 					"/swagger-ui/**",
 					"/swagger-ui.html",
-					"/uploads/**"
+					"/uploads/**",
+					"/reportes/**"
 				).permitAll()
 				.requestMatchers("/empleados/**").hasAuthority("role_administrador")
 				.requestMatchers(HttpMethod.POST, "/inventario").hasAuthority("role_administrador")

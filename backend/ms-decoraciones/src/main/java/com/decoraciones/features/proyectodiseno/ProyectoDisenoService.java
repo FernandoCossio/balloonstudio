@@ -73,6 +73,7 @@ public class ProyectoDisenoService {
         proyecto.setFechaEvento(request.fechaEvento());
         proyecto.setLugarEvento(request.lugarEvento());
         proyecto.setNumeroMetadato(request.numeroMetadato());
+        proyecto.setDistanciaKm(request.distanciaKm());
         proyecto.setUsuario(usuario);
         return toProyectoResponse(proyectoRepository.save(proyecto));
     }
@@ -88,6 +89,7 @@ public class ProyectoDisenoService {
         proyecto.setFechaEvento(request.fechaEvento());
         proyecto.setLugarEvento(request.lugarEvento());
         proyecto.setNumeroMetadato(request.numeroMetadato());
+        proyecto.setDistanciaKm(request.distanciaKm());
 
         return toProyectoResponse(proyectoRepository.save(proyecto));
     }
@@ -261,7 +263,7 @@ public class ProyectoDisenoService {
         return new ProyectoDisenoResponse(
                 p.getId(), p.getNombre(), p.getDescripcion(), p.getEstado(),
                 p.getFechaEvento(), p.getLugarEvento(), p.getNumeroMetadato(),
-                p.getCostoRealTotal(), p.getEscenarioBaseId(),
+                p.getDistanciaKm(), p.getCostoRealTotal(), p.getEscenarioBaseId(),
                 p.getFechaCreacion(), p.getFechaUltimaModificacion(),
                 List.of()   // sin escenarios en listado general — evita N+1
         );
@@ -275,7 +277,7 @@ public class ProyectoDisenoService {
         return new ProyectoDisenoResponse(
                 p.getId(), p.getNombre(), p.getDescripcion(), p.getEstado(),
                 p.getFechaEvento(), p.getLugarEvento(), p.getNumeroMetadato(),
-                p.getCostoRealTotal(), p.getEscenarioBaseId(),
+                p.getDistanciaKm(), p.getCostoRealTotal(), p.getEscenarioBaseId(),
                 p.getFechaCreacion(), p.getFechaUltimaModificacion(),
                 escenarios
         );

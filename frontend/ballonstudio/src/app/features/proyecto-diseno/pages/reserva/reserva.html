@@ -121,8 +121,9 @@
 
             <!-- Pago QR -->
             <div 
-              class="method-card disabled"
+              class="method-card"
               [class.selected]="selectedMethod() === 'qr'"
+              (click)="selectMethod('qr')"
             >
               <div class="method-radio">
                 <span class="radio-dot" [class.selected]="selectedMethod() === 'qr'"></span>
@@ -132,9 +133,10 @@
               </div>
               <div class="method-details">
                 <span class="method-name">Pago por QR (Simple)</span>
-                <span class="method-desc">Transferencia bancaria · Próximamente</span>
+                <span class="method-desc">Transferencia bancaria · Pago inmediato</span>
               </div>
             </div>
+
           </div>
 
           <button 

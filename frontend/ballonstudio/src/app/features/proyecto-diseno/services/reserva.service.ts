@@ -38,11 +38,30 @@ export class ReservaService {
       .pipe(
         map(() => {
           // Limpiar sesión al finalizar exitosamente
-          this.activeReserva.set(null);
-          this.sessionStartTime.set(null);
+          this.clearActiveReserva();
         })
       );
   }
+
+  generarQrPago(reservaId: number, datosCliente: { nombreCliente: string; ciCliente: string; telefonoCliente?: string; correoCliente?: string }): Observable<any> {
+    return this.http
+      .post<ApiResponse<any>>(`${this.apiUrl}/reservas/${reservaId}/qr`, datosCliente)
+      .pipe(map(r => r.data));
+  }
+
+  verificarEstadoPago(reservaId: number, transactionId: string): Observable<any> {
+    return this.http
+      .get<ApiResponse<any>>(`${this.apiUrl}/reservas/${reservaId}/pago-estado`, {
+        params: { transactionId }
+      })
+      .pipe(map(r => r.data));
+  }
+
+  clearActiveReserva(): void {
+    this.activeReserva.set(null);
+    this.sessionStartTime.set(null);
+  }
+
 
   getTiempoRestanteSegundos(): number {
     const start = this.sessionStartTime();
@@ -52,5 +71,23 @@ export class ReservaService {
     const totalSeconds = reserva.expiraEnMinutos * 60;
     const elapsedSeconds = Math.floor((Date.now() - start) / 1000);
     return Math.max(0, totalSeconds - elapsedSeconds);
+  }
+
+  previsualizarCotizacion(proyectoId: number, elementos: any[], distanciaKm?: number): Observable<any> {
+    return this.http
+      .post<ApiResponse<any>>(`${this.apiUrl}/${proyectoId}/cotizacion/previsualizar`, {
+        elementos,
+        distanciaKm
+      })
+      .pipe(map(r => r.data));
+  }
+
+  exportarPropuestaPdf(proyectoId: number, base64Canvas: string, elementos: any[]): Observable<Blob> {
+    return this.http.post(`${this.apiUrl}/${proyectoId}/exportar-pdf`, {
+      base64Canvas,
+      elementos
+    }, {
+      responseType: 'blob'
+    });
   }
 }

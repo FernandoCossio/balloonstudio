@@ -45,17 +45,51 @@
     }
   </div>
 
+  <!-- Ajustes de costos (Desglose) -->
+  <div class="pricing-panel__adjustments">
+    <div class="cost-row">
+      <span class="cost-row__label">Subtotal Mobiliario:</span>
+      <span class="cost-row__value">Bs. {{ canvasState.precioTotal() | number: '1.2-2' }}</span>
+    </div>
+    <div class="cost-row">
+      <span class="cost-row__label">Envío (Flete):</span>
+      <span class="cost-row__value">Bs. {{ canvasState.costoFlete() | number: '1.2-2' }}</span>
+    </div>
+    <div class="cost-row">
+      <span class="cost-row__label">Instalación (Armado):</span>
+      <span class="cost-row__value">Bs. {{ canvasState.costoArmado() | number: '1.2-2' }}</span>
+    </div>
+    <div class="cost-row cost-row--tax">
+      <span class="cost-row__label">Tasa Overhead:</span>
+      <span class="cost-row__value">{{ canvasState.tasaOverhead() }}%</span>
+    </div>
+    <div class="cost-row cost-row--tax">
+      <span class="cost-row__label">Factor Estacional:</span>
+      <span class="cost-row__value">{{ canvasState.factorEstacional() }}x</span>
+    </div>
+    @if (canvasState.cargandoCotizacion()) {
+      <div class="cost-row" style="justify-content: center; color: var(--p-primary-color); padding-top: 0.25rem;">
+        <i class="pi pi-spin pi-spinner" style="margin-right: 0.25rem;"></i>
+        <span style="font-size: 0.72rem; font-weight: 500;">Recalculando...</span>
+      </div>
+    }
+  </div>
+
   <!-- Footer: total estimado -->
   <div class="pricing-panel__footer">
-    <span class="pricing-panel__footer-label">Total del Escenario</span>
+    <span class="pricing-panel__footer-label">Total Estimado</span>
     <strong class="pricing-panel__footer-total">
-      Bs. {{ canvasState.precioTotal() | number: '1.2-2' }}
+      Bs. {{ canvasState.totalConLogistica() | number: '1.2-2' }}
     </strong>
   </div>
 
   <!-- Acciones principales -->
   <div class="pricing-panel__actions">
-    <button class="pricing-panel__btn-primary" (click)="realizarReserva()">
+    <button
+      class="pricing-panel__btn-primary"
+      (click)="realizarReserva()"
+      [disabled]="canvasState.items().length === 0 || canvasState.totalConLogistica() === 0 || canvasState.cargandoCotizacion()"
+    >
       <i class="pi pi-file-edit"></i>
       Realizar reserva
     </button>

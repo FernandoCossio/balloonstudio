@@ -19,6 +19,7 @@ export interface ProyectoDisenoResponse {
   fechaEvento: string | null;
   lugarEvento: string | null;
   numeroMetadato: string | null;
+  distanciaKm: number | null;
   costoRealTotal: number | null;
   escenarioBaseId: number | null;   // escenario activo por defecto
   fechaCreacion: string;
