@@ -14,6 +14,9 @@ import { ButtonModule } from 'primeng/button';
 import Konva from 'konva';
 import { forkJoin } from 'rxjs';
 
+import { DialogModule } from 'primeng/dialog';
+import { IaForm } from './components/ia-form/ia-form';
+
 import { CanvasStateService } from '@/app/features/proyecto-diseno/services/canvas-state.service';
 import { ProyectoDisenoService } from '@/app/features/proyecto-diseno/services/proyecto-diseno.service';
 import { EscenarioTabsComponent } from '../../components/escenario-tabs/escenario-tabs';
@@ -39,7 +42,9 @@ const ZOOM_MAX = 3;
     PricingPanel,
     EscenarioTabsComponent,
     ToastModule,
-    ButtonModule
+    ButtonModule,
+    DialogModule,
+    IaForm
   ],
   providers: [MessageService],
   templateUrl: './design-canvas.html',
@@ -57,6 +62,21 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
   @ViewChild('stageRef')         stageRef!: any;
   @ViewChild('transformerRef')   transformerRef!: any;
   @ViewChild('canvasWrapperRef') canvasWrapperRef!: ElementRef<HTMLElement>;
+  @ViewChild('catalogoSidebarRef') catalogoSidebar!: CatalogoSidebar;
+
+  readonly mostrarIaDialog = signal(false);
+
+  onIaConsultada(articulos: ArticuloInventarioDto[]): void {
+    if (this.catalogoSidebar) {
+      this.catalogoSidebar.setRecomendacionesIa(articulos);
+    }
+    this.mostrarIaDialog.set(false);
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Recomendaciones cargadas',
+      detail: `Se obtuvieron ${articulos.length} artículos sugeridos por la IA.`
+    });
+  }
 
   // El stage adopta el tamaño del wrapper — se inicializa con valores temporales
   // y se actualiza en initKonvaListeners() una vez que el DOM está listo.

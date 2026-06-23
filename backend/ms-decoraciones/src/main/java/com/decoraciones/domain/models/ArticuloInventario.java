@@ -74,7 +74,7 @@ public class ArticuloInventario extends BaseEntity {
     @Column(name = "nivel_complejidad")
     private String nivelComplejidad;
 
-    @Column(name = "embedding_visual", columnDefinition = "TEXT")
+    @Column(name = "embedding_visual", columnDefinition = "vector(512)", insertable = false, updatable = false)
     private String embeddingVisual;
 
     @ManyToMany(fetch = FetchType.LAZY)

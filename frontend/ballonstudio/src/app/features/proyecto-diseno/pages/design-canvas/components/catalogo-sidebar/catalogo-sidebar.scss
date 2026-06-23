@@ -109,7 +109,39 @@
     padding: 2rem 1rem;
     font-style: italic;
   }
+
+  &__empty-ia {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    text-align: center;
+  }
+
+  &__empty-ia-icon {
+    font-size: 2.2rem;
+    color: var(--p-primary-color);
+    opacity: 0.6;
+    margin-bottom: 0.75rem;
+    animation: pulse-sparkle 2s infinite ease-in-out;
+  }
+
+  &__empty-hint {
+    font-size: 0.73rem;
+    color: var(--text-color-secondary);
+    max-width: 180px;
+    margin-top: 0.25rem;
+    line-height: 1.4;
+  }
 }
+
+@keyframes pulse-sparkle {
+  0% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.15); opacity: 0.85; }
+  100% { transform: scale(1); opacity: 0.5; }
+}
+
 
 // ── Card de artículo ──────────────────────────────────────────────────────
 

@@ -1,0 +1,42 @@
+services:
+  redis-ia:
+    image: redis/redis-stack-server:latest
+    container_name: redis-stack-ia
+    restart: always
+    ports:
+      - "${REDIS_IA_PORT}:6379"
+    volumes:
+      - redis_data_ia:/data
+    environment:
+      - REDIS_ARGS=--requirepass ${REDIS_IA_PASSWORD} --appendonly yes --appendfsync everysec --dir /data
+    healthcheck:
+      test: ["CMD", "redis-cli", "${REDIS_IA_PASSWORD:-}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ia-match:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ia-cv-match-vacante
+    restart: always
+    ports:
+      - "${PORT}:8000"
+    environment:
+      - REDIS_IA_HOST=redis-ia
+      - REDIS_IA_PORT=6379
+      - REDIS_IA_DB=${REDIS_IA_DB}
+      - REDIS_IA_PASSWORD=${REDIS_IA_PASSWORD}
+      - BGE_MODEL_NAME=${BGE_MODEL_NAME}
+      - BGE_USE_FP16=${BGE_USE_FP16}
+      - VACANTE_TTL_DAYS=${VACANTE_TTL_DAYS}
+    depends_on:
+      redis-ia:
+        condition: service_healthy
+    volumes:
+      - huggingface_cache:/root/.cache/huggingface
+
+volumes:
+  redis_data_ia:
+  huggingface_cache:

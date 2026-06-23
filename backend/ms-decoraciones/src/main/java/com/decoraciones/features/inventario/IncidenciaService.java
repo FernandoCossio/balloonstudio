@@ -23,12 +23,28 @@ public class IncidenciaService {
     private final IncidenciaArticuloRepository incidenciaRepository;
     private final ArticuloInventarioRepository articuloRepository;
     private final ReservaRepository reservaRepository;
+    private final ArticuloInventarioMapper articuloMapper;
+
+    private com.decoraciones.domain.dtos.incidencia.IncidenciaResponse mapToResponse(IncidenciaArticulo entity) {
+        return new com.decoraciones.domain.dtos.incidencia.IncidenciaResponse(
+            entity.getId(),
+            articuloMapper.toResponse(entity.getArticuloInventario()),
+            entity.getReserva() != null ? entity.getReserva().getId() : null,
+            entity.getDescripcion(),
+            entity.getTipo(),
+            entity.getEstado(),
+            entity.getCantidadAfectada(),
+            entity.getFechaIncidencia(),
+            entity.getFechaResolucionEstimada(),
+            entity.getCostoReparacion()
+        );
+    }
 
     /**
      * Reportar una nueva incidencia (REPARACION o MERMA_PERDIDA).
      */
     @Transactional
-    public IncidenciaArticulo reportarIncidencia(IncidenciaRequest request) {
+    public com.decoraciones.domain.dtos.incidencia.IncidenciaResponse reportarIncidencia(IncidenciaRequest request) {
         ArticuloInventario articulo = articuloRepository.findById(request.articuloId())
                 .orElseThrow(ArticuloInventarioNoEncontradoException::new);
 
@@ -50,14 +66,15 @@ public class IncidenciaService {
             incidencia.setFechaResolucionEstimada(LocalDate.parse(request.fechaResolucionEstimada()));
         }
 
-        return incidenciaRepository.save(incidencia);
+        IncidenciaArticulo saved = incidenciaRepository.save(incidencia);
+        return mapToResponse(saved);
     }
 
     /**
      * Solucionar una incidencia (libera el stock bloqueado por reparación).
      */
     @Transactional
-    public IncidenciaArticulo solucionarIncidencia(Long id, SolucionarIncidenciaRequest request) {
+    public com.decoraciones.domain.dtos.incidencia.IncidenciaResponse solucionarIncidencia(Long id, SolucionarIncidenciaRequest request) {
         IncidenciaArticulo incidencia = incidenciaRepository.findById(id)
                 .orElseThrow(IncidenciaNoEncontradaException::new);
 
@@ -68,13 +85,17 @@ public class IncidenciaService {
             incidencia.setCostoReparacion(request.costoReparacion());
         }
 
-        return incidenciaRepository.save(incidencia);
+        IncidenciaArticulo saved = incidenciaRepository.save(incidencia);
+        return mapToResponse(saved);
     }
 
     /**
      * Listar todas las incidencias.
      */
-    public List<IncidenciaArticulo> listarIncidencias() {
-        return incidenciaRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<com.decoraciones.domain.dtos.incidencia.IncidenciaResponse> listarIncidencias() {
+        return incidenciaRepository.findAll().stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 }

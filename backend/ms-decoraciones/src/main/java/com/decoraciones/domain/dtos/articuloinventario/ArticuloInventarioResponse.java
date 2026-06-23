@@ -17,6 +17,7 @@ public record ArticuloInventarioResponse(
         Integer vidaUtilAnos,
         Integer vidaUtilUsos,
         Integer stockTotal,
+        Integer stockDisponible,
         BigDecimal pesoKg,
         BigDecimal volumenM3,
         Integer tiempoArmadoMin,
