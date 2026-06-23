@@ -31,6 +31,7 @@ public class EmpleadoController {
     public ResponseEntity<ApiResponse<Page<EmpleadoResponse>>> findEmpleados(
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String rol,
+            @RequestParam(required = false) Boolean activo,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "nombreCompleto,asc") String[] sort
@@ -47,7 +48,7 @@ public class EmpleadoController {
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, property));
-        Page<EmpleadoResponse> response = empleadoService.findEmpleados(nombre, rol, pageable)
+        Page<EmpleadoResponse> response = empleadoService.findEmpleados(nombre, rol, activo, pageable)
                 .map(this::toResponse);
 
         return ResponseEntity.ok(ApiResponse.success(response, "Empleados obtenidos correctamente"));
