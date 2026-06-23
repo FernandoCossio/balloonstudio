@@ -38,6 +38,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -97,8 +98,20 @@ public class ReportesService {
 
             Paragraph subtitle = new Paragraph("Propuesta Comercial y Cotización de Diseño", new Font(Font.HELVETICA, 12, Font.ITALIC, java.awt.Color.GRAY));
             subtitle.setAlignment(Element.ALIGN_CENTER);
-            subtitle.setSpacingAfter(20);
+            subtitle.setSpacingAfter(6);
             document.add(subtitle);
+
+            // Fecha de emisión y validez (CA-02)
+            LocalDate hoy = LocalDate.now();
+            LocalDate validezHasta = hoy.plusDays(15);
+            Font metaFont = new Font(Font.HELVETICA, 9, Font.NORMAL, java.awt.Color.GRAY);
+            Paragraph emision = new Paragraph(
+                    "Fecha de emisión: " + hoy.format(DATE_FORMATTER) +
+                    "     |     Válida hasta: " + validezHasta.format(DATE_FORMATTER) +
+                    "  (15 días)", metaFont);
+            emision.setAlignment(Element.ALIGN_CENTER);
+            emision.setSpacingAfter(20);
+            document.add(emision);
 
             // Información del Proyecto
             PdfPTable infoTable = new PdfPTable(2);
@@ -137,23 +150,25 @@ public class ReportesService {
             document.add(new Paragraph("Desglose de Artículos", sectionFont));
             document.add(new Paragraph(" ", textFont));
 
-            PdfPTable itemsTable = new PdfPTable(5);
+            // Tabla de artículos con 6 columnas (CA-03: incluye Complejidad)
+            PdfPTable itemsTable = new PdfPTable(6);
             itemsTable.setWidthPercentage(100);
-            itemsTable.setWidths(new float[]{40, 15, 15, 15, 15});
+            itemsTable.setWidths(new float[]{32, 13, 12, 13, 15, 15});
             itemsTable.setSpacingAfter(15);
 
-            // Headers
             java.awt.Color primaryColor = new java.awt.Color(138, 43, 226);
             addCellWithBackground(itemsTable, "Artículo", headerFont, primaryColor);
             addCellWithBackground(itemsTable, "Tipo", headerFont, primaryColor);
             addCellWithBackground(itemsTable, "Cant.", headerFont, primaryColor);
+            addCellWithBackground(itemsTable, "Complejidad", headerFont, primaryColor);
             addCellWithBackground(itemsTable, "P. Unit (Bs.)", headerFont, primaryColor);
             addCellWithBackground(itemsTable, "Total (Bs.)", headerFont, primaryColor);
 
             for (CotizacionArticuloDetalle item : cot.desgloseArticulos()) {
                 addCell(itemsTable, item.nombre(), textFont);
-                addCell(itemsTable, item.tipoArticulo(), textFont);
+                addCell(itemsTable, item.tipoArticulo() != null ? item.tipoArticulo() : "-", textFont);
                 addCell(itemsTable, String.valueOf(item.cantidad()), textFont);
+                addCell(itemsTable, item.nivelComplejidad() != null ? item.nivelComplejidad() : "-", textFont);
                 addCell(itemsTable, item.precioUnitario().toString() + " Bs.", textFont);
                 addCell(itemsTable, item.precioTotal().toString() + " Bs.", textFont);
             }
@@ -466,7 +481,17 @@ public class ReportesService {
         return usuarioRepository.buscarReporte(rol, activo);
     }
 
-    // ── Helpers para Tablas de OpenPDF ────────────────────────────────────────
+    // ── Generar Propuesta PDF por ID de Reserva (CA-01: acceso admin/empleado) ─
+    public byte[] generarPropuestaPdfPorReserva(Long reservaId) {
+        Reserva reserva = reservaRepository.findByIdWithCotizacion(reservaId)
+                .orElseThrow(() -> new RuntimeException("Reserva no encontrada: " + reservaId));
+
+        Long proyectoId = reserva.getCotizacion().getProyectoDiseno().getId();
+        // Se genera sin canvas (null) ya que se invoca desde el panel admin, no desde el lienzo
+        return generarPropuestaPdf(proyectoId, null, null);
+    }
+
+
 
     private void addCell(PdfPTable table, String text, Font font) {
         PdfPCell cell = new PdfPCell(new Phrase(text, font));

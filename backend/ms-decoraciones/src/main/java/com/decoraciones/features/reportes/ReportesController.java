@@ -125,4 +125,14 @@ public class ReportesController {
                     .body(pdfBytes);
         }
     }
+
+    @GetMapping("/ventas/{reservaId}/propuesta-pdf")
+    public ResponseEntity<byte[]> exportarPropuestaPorReserva(@PathVariable Long reservaId) {
+        byte[] pdfBytes = reportesService.generarPropuestaPdfPorReserva(reservaId);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"propuesta-reserva-" + reservaId + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
+    }
 }
+
