@@ -1,0 +1,215 @@
+<p-toast />
+
+<div class="rep-page">
+
+    <!-- Header Section -->
+    <div class="rep-header">
+        <div class="rep-header__text">
+            <h1 class="rep-header__title">Reporte de Ventas</h1>
+            <p class="rep-header__sub">Resumen financiero y rendimiento de eventos.</p>
+        </div>
+        <div class="rep-header__actions">
+            <button 
+                type="button" 
+                class="rep-btn rep-btn-secondary" 
+                (click)="exportar('pdf')"
+                [disabled]="loading()"
+            >
+                <i class="pi pi-file-pdf"></i>
+                <span>Exportar PDF</span>
+            </button>
+            <button 
+                type="button" 
+                class="rep-btn rep-btn-primary" 
+                (click)="exportar('excel')"
+                [disabled]="loading()"
+            >
+                <i class="pi pi-file-excel"></i>
+                <span>Exportar Excel</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="rep-metrics">
+        <!-- KPI: Total Ventas -->
+        <div class="rep-card rep-card--pink">
+            <div class="rep-card__icon">
+                <i class="pi pi-dollar"></i>
+            </div>
+            <div class="rep-card__body">
+                <div class="rep-card__header">
+                    <h3>Total Ventas (Mes)</h3>
+                    <span class="rep-card__badge rep-card__badge--up">+12.5%</span>
+                </div>
+                <span class="rep-card__value">
+                    Bs. {{ kpiTotalVentasMes() | number:'1.2-2' }}
+                </span>
+            </div>
+        </div>
+
+        <!-- KPI: Eventos este mes -->
+        <div class="rep-card rep-card--blue">
+            <div class="rep-card__icon">
+                <i class="pi pi-calendar"></i>
+            </div>
+            <div class="rep-card__body">
+                <div class="rep-card__header">
+                    <h3>Eventos este mes</h3>
+                    <span class="rep-card__badge rep-card__badge--up">+4%</span>
+                </div>
+                <span class="rep-card__value">
+                    {{ kpiEventosMes() }}
+                </span>
+            </div>
+        </div>
+
+        <!-- KPI: Pendientes de Cobro -->
+        <div class="rep-card rep-card--yellow">
+            <div class="rep-card__icon">
+                <i class="pi pi-clock"></i>
+            </div>
+            <div class="rep-card__body">
+                <div class="rep-card__header">
+                    <h3>Pendientes de Cobro</h3>
+                    <span class="rep-card__badge rep-card__badge--down">-2%</span>
+                </div>
+                <span class="rep-card__value">
+                    Bs. {{ kpiPendientesCobro() | number:'1.2-2' }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table & Filters Section -->
+    <div class="rep-table-section">
+        
+        <!-- Filters Bar -->
+        <div class="rep-filters-bar">
+            <!-- Date Filters Group -->
+            <div class="rep-date-group">
+                <div class="rep-input-wrapper">
+                    <label>Desde:</label>
+                    <input 
+                        type="date" 
+                        [(ngModel)]="fechaInicio" 
+                        (change)="onFiltrosChange()" 
+                        class="rep-filter-input" 
+                    />
+                </div>
+                <div class="rep-input-wrapper">
+                    <label>Hasta:</label>
+                    <input 
+                        type="date" 
+                        [(ngModel)]="fechaFin" 
+                        (change)="onFiltrosChange()" 
+                        class="rep-filter-input" 
+                    />
+                </div>
+            </div>
+
+            <!-- Status Dropdown -->
+            <div class="rep-input-wrapper">
+                <label>Estado del Evento:</label>
+                <select 
+                    [ngModel]="selectedEstado()" 
+                    (ngModelChange)="selectedEstado.set($event); onFiltrosChange()"
+                    class="rep-filter-select"
+                >
+                    <option value="">Todos los estados</option>
+                    <option value="CONFIRMADA">Completado / Confirmado</option>
+                    <option value="PENDIENTE_PAGO">Pendiente de Pago</option>
+                    <option value="CANCELADA">Cancelado</option>
+                    <option value="EXPIRADA">Expirado</option>
+                </select>
+            </div>
+
+            <!-- Search Client Input -->
+            <div class="rep-search">
+                <label>Búsqueda:</label>
+                <div class="rep-search__box">
+                    <i class="pi pi-search rep-search__icon"></i>
+                    <input
+                        type="text"
+                        class="rep-search__input"
+                        placeholder="Buscar cliente o ID..."
+                        [ngModel]="searchQuery()"
+                        (ngModelChange)="searchQuery.set($event)"
+                    />
+                </div>
+            </div>
+
+            <!-- Reset Filters Button -->
+            <div class="rep-reset-wrapper">
+                <button type="button" class="rep-btn-clear" (click)="limpiarFiltros()" pTooltip="Limpiar Filtros" tooltipPosition="top">
+                    <i class="pi pi-refresh"></i>
+                    <span>Limpiar</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="rep-table-container">
+            <p-table
+                [value]="ventasFiltradas()"
+                [paginator]="true"
+                [rows]="10"
+                [loading]="loading()"
+                [rowsPerPageOptions]="[5, 10, 20]"
+                responsiveLayout="scroll"
+                styleClass="p-datatable-striped rep-table-custom"
+            >
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 140px;">ID Venta</th>
+                        <th>Cliente</th>
+                        <th>Fecha Reserva</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-v>
+                    <tr class="rep-row">
+                        <!-- ID Venta -->
+                        <td>
+                            <strong class="rep-text-id">#BS-2026-{{ v.id }}</strong>
+                        </td>
+                        <!-- Cliente -->
+                        <td>
+                            <span class="rep-text-main">{{ v.clienteNombre }}</span>
+                        </td>
+                        <!-- Fecha Reserva -->
+                        <td>
+                            <span class="rep-text-sub">{{ v.fechaReserva | date:'dd MMM yyyy, HH:mm' }}</span>
+                        </td>
+                        <!-- Total -->
+                        <td>
+                            <strong class="rep-text-price">Bs. {{ v.total | number:'1.2-2' }}</strong>
+                        </td>
+                        <!-- Estado -->
+                        <td>
+                            <p-tag 
+                                [severity]="getEstadoSeverity(v.estado)" 
+                                [value]="getEstadoLabel(v.estado)" 
+                                styleClass="rep-status-tag"
+                            ></p-tag>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="5">
+                            <div class="rep-empty-state">
+                                <i class="pi pi-chart-line rep-empty-state__icon"></i>
+                                <h3>Sin Ventas Registradas</h3>
+                                <p>No se encontraron registros de ventas para los filtros seleccionados.</p>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>
