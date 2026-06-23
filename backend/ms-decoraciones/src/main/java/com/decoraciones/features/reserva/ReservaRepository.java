@@ -17,7 +17,7 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     @org.springframework.data.jpa.repository.Query("SELECT r FROM Reserva r JOIN FETCH r.cotizacion JOIN FETCH r.usuario JOIN FETCH r.cotizacion.proyectoDiseno " +
             "WHERE (CAST(:startDate AS timestamp) IS NULL OR r.fechaReserva >= :startDate) " +
             "  AND (CAST(:endDate AS timestamp) IS NULL OR r.fechaReserva <= :endDate) " +
-            "  AND (:estado IS NULL OR LOWER(r.estado) = LOWER(:estado)) " +
+            "  AND (CAST(:estado AS string) IS NULL OR LOWER(r.estado) = LOWER(CAST(:estado AS string))) " +
             "ORDER BY r.fechaReserva DESC")
     List<Reserva> buscarReporte(
             @org.springframework.data.repository.query.Param("startDate") LocalDateTime startDate,

@@ -456,6 +456,16 @@ public class ReportesService {
         }
     }
 
+    // ── Consultas para Previsualización JSON ──────────────────────────────────
+
+    public List<Reserva> buscarReservas(LocalDateTime inicio, LocalDateTime fin, String estado) {
+        return reservaRepository.buscarReporte(inicio, fin, estado);
+    }
+
+    public List<Usuario> buscarUsuarios(String rol, Boolean activo) {
+        return usuarioRepository.buscarReporte(rol, activo);
+    }
+
     // ── Helpers para Tablas de OpenPDF ────────────────────────────────────────
 
     private void addCell(PdfPTable table, String text, Font font) {
