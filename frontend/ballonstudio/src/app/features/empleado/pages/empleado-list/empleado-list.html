@@ -10,6 +10,24 @@
             <p class="emp-header__sub">Administra las cuentas, roles y acceso del equipo de Balloon Studio.</p>
         </div>
         <div class="emp-header__actions">
+            <button 
+                type="button" 
+                class="emp-btn-export emp-btn-export--secondary" 
+                (click)="exportar('pdf')"
+                [disabled]="loading()"
+            >
+                <i class="pi pi-file-pdf"></i>
+                <span>Exportar PDF</span>
+            </button>
+            <button 
+                type="button" 
+                class="emp-btn-export emp-btn-export--primary" 
+                (click)="exportar('excel')"
+                [disabled]="loading()"
+            >
+                <i class="pi pi-file-excel"></i>
+                <span>Exportar Excel</span>
+            </button>
             <p-button 
                 label="Nuevo Empleado" 
                 icon="pi pi-plus" 
@@ -70,27 +88,53 @@
         <!-- Filters Bar -->
         <div class="emp-filters-bar">
             <!-- Search Input -->
-            <div class="emp-search">
-                <i class="pi pi-search emp-search__icon"></i>
-                <input
-                    type="text"
-                    class="emp-search__input"
-                    placeholder="Buscar por nombre..."
-                    [ngModel]="searchQuery()"
-                    (ngModelChange)="onSearchChange($event)"
-                />
+            <div class="emp-input-wrapper flex-grow">
+                <label>Búsqueda:</label>
+                <div class="emp-search">
+                    <i class="pi pi-search emp-search__icon"></i>
+                    <input
+                        type="text"
+                        class="emp-search__input"
+                        placeholder="Buscar por nombre..."
+                        [ngModel]="searchQuery()"
+                        (ngModelChange)="onSearchChange($event)"
+                    />
+                </div>
             </div>
 
-            <!-- Role filter tabs -->
-            <div class="emp-tabs">
-                <button class="emp-tab" [class.emp-tab--active]="selectedRolFilter() === ''" (click)="setRolFilter('')">
-                    Todos
-                </button>
-                <button class="emp-tab" [class.emp-tab--active]="selectedRolFilter() === 'ADMIN'" (click)="setRolFilter('ADMIN')">
-                    Administradores
-                </button>
-                <button class="emp-tab" [class.emp-tab--active]="selectedRolFilter() === 'EMPLEADO'" (click)="setRolFilter('EMPLEADO')">
-                    Empleados
+            <!-- Role Selector -->
+            <div class="emp-input-wrapper">
+                <label>Rol de Usuario:</label>
+                <select 
+                    [ngModel]="selectedRolFilter()" 
+                    (ngModelChange)="setRolFilter($event)"
+                    class="emp-filter-select"
+                >
+                    <option value="">Todos los roles</option>
+                    <option value="ADMIN">Administrador</option>
+                    <option value="EMPLEADO">Empleado</option>
+                </select>
+            </div>
+
+            <!-- Status Selector -->
+            <div class="emp-input-wrapper">
+                <label>Estado de Cuenta:</label>
+                <select 
+                    [ngModel]="selectedActivoFilter()" 
+                    (ngModelChange)="selectedActivoFilter.set($event === 'null' ? null : $event === 'true'); onFiltroChange()"
+                    class="emp-filter-select"
+                >
+                    <option value="null">Todos los estados</option>
+                    <option value="true">Activo</option>
+                    <option value="false">Inactivo</option>
+                </select>
+            </div>
+
+            <!-- Clear button -->
+            <div class="emp-reset-wrapper">
+                <button type="button" (click)="limpiarFiltros()" class="emp-btn-clear">
+                    <i class="pi pi-refresh"></i>
+                    <span>Limpiar</span>
                 </button>
             </div>
         </div>

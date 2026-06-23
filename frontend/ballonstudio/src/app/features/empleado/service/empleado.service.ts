@@ -44,6 +44,7 @@ export class EmpleadoService {
     findEmpleados(
         nombre?: string,
         rol?: string,
+        activo?: boolean,
         page: number = 0,
         size: number = 10,
         sort: string = 'nombreCompleto,asc'
@@ -57,6 +58,9 @@ export class EmpleadoService {
         }
         if (rol && rol !== '') {
             params = params.set('rol', rol);
+        }
+        if (activo !== undefined && activo !== null) {
+            params = params.set('activo', activo.toString());
         }
         if (sort) {
             params = params.set('sort', sort);
