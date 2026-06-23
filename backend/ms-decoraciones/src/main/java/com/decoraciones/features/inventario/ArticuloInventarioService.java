@@ -95,12 +95,14 @@ public class ArticuloInventarioService {
     }
 
     @Transactional(readOnly = true)
-    public List<ArticuloInventarioDto> getCatalogo(String tipoArticulo, String estado) {
+    public List<ArticuloInventarioDto> getCatalogo(String tipoArticulo, String estado, Long categoriaId) {
         return articuloRepository.findAll().stream()
                 .filter(a -> tipoArticulo == null || tipoArticulo.isBlank()
                         || tipoArticulo.equalsIgnoreCase(a.getTipoArticulo()))
                 .filter(a -> estado == null || estado.isBlank()
                         || estado.equalsIgnoreCase(a.getEstado()))
+                .filter(a -> categoriaId == null 
+                        || (a.getCategorias() != null && a.getCategorias().stream().anyMatch(c -> c.getId().equals(categoriaId))))
                 .map(mapper::toDto)
                 .toList();
     }

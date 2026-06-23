@@ -1,0 +1,273 @@
+// ia-form.scss
+
+.ia-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  background-color: var(--surface-card);
+  color: var(--text-color);
+
+  // ── Tabs/Selector de modo ──
+  &__tabs {
+    display: flex;
+    border-bottom: 2px solid var(--surface-border);
+    gap: 0.5rem;
+  }
+
+  &__tab-btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-color-secondary);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-duration) ease;
+    margin-bottom: -2px;
+
+    i {
+      font-size: 0.95rem;
+    }
+
+    &:hover {
+      color: var(--text-color);
+      background-color: var(--surface-hover);
+    }
+
+    &--active {
+      color: var(--p-primary-color);
+      border-bottom-color: var(--p-primary-color);
+      
+      &:hover {
+        background-color: transparent;
+      }
+    }
+  }
+
+  // ── Body/Formulario ──
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__error-alert {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem 0.85rem;
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: var(--content-border-radius);
+    color: #f87171;
+    font-size: 0.78rem;
+
+    i {
+      font-size: 0.9rem;
+    }
+  }
+
+  &__group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+
+    &--half {
+      flex: 1;
+    }
+  }
+
+  &__row {
+    display: flex;
+    gap: 1rem;
+  }
+
+  &__label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-color-secondary);
+  }
+
+  &__textarea {
+    width: 100%;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.82rem;
+    color: var(--text-color);
+    background-color: var(--surface-ground);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--content-border-radius);
+    outline: none;
+    resize: none;
+    box-sizing: border-box;
+    font-family: inherit;
+    transition: border-color var(--transition-duration),
+                box-shadow var(--transition-duration);
+
+    &:focus {
+      border-color: var(--p-primary-color);
+      box-shadow: 0 0 0 var(--focus-ring-width) var(--focus-ring-color);
+    }
+  }
+
+  &__select,
+  &__number-input {
+    width: 100%;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.82rem;
+    color: var(--text-color);
+    background-color: var(--surface-ground);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--content-border-radius);
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color var(--transition-duration);
+
+    &:focus {
+      border-color: var(--p-primary-color);
+    }
+  }
+
+  &__select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.65rem center;
+    padding-right: 1.8rem;
+  }
+
+  // ── Upload zone ──
+  &__upload-zone {
+    border: 2px dashed var(--surface-border);
+    border-radius: var(--content-border-radius);
+    padding: 2.2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-duration) ease;
+    background-color: var(--surface-ground);
+    position: relative;
+
+    &:hover {
+      border-color: var(--p-primary-color);
+      background-color: var(--surface-hover);
+
+      .ia-form__upload-icon {
+        color: var(--p-primary-color);
+        transform: translateY(-2px);
+      }
+    }
+  }
+
+  &__file-input {
+    display: none;
+  }
+
+  &__upload-icon {
+    font-size: 2rem;
+    color: var(--text-color-secondary);
+    margin-bottom: 0.6rem;
+    transition: transform var(--transition-duration) ease,
+                color var(--transition-duration) ease;
+  }
+
+  &__upload-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 0.2rem;
+  }
+
+  &__upload-subtitle {
+    font-size: 0.72rem;
+    color: var(--text-color-secondary);
+  }
+
+  // ── Preview de imagen ──
+  &__preview-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem;
+    border: 1px solid var(--surface-border);
+    border-radius: var(--content-border-radius);
+    background-color: var(--surface-ground);
+  }
+
+  &__preview-img {
+    max-width: 100%;
+    max-height: 180px;
+    object-fit: contain;
+    border-radius: var(--content-border-radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &__remove-img-btn {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #f87171;
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: var(--content-border-radius);
+    cursor: pointer;
+    transition: all var(--transition-duration) ease;
+    display: flex;
+    align-items: center;
+
+    &:hover {
+      background-color: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+  }
+
+  // ── Acciones / Submit ──
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+  }
+
+  &__submit-btn {
+    width: 100%;
+    padding: 0.65rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #ffffff;
+    background: linear-gradient(135deg, var(--p-primary-color) 0%, #ad1457 100%);
+    border: none;
+    border-radius: var(--content-border-radius);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-duration) ease;
+    box-shadow: 0 3px 10px rgba(194, 24, 91, 0.25);
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 14px rgba(194, 24, 91, 0.35);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background: var(--p-surface-400);
+      box-shadow: none;
+    }
+  }
+}
+.mr-2 { margin-right: 0.5rem; }
+.mr-1 { margin-right: 0.25rem; }

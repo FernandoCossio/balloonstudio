@@ -11,6 +11,7 @@ import { RippleModule } from 'primeng/ripple';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { AuthService } from '../../service/auth.service';
+import { ROLES } from '@/app/features/core/constants/role.constant';
 
 @Component({
     selector: 'app-login',
@@ -66,7 +67,13 @@ export class Login {
                     detail: 'Sesión iniciada correctamente'
                 });
                 setTimeout(() => {
-                    this.router.navigate(['/']);
+                    if (this.authService.hasRole(ROLES.ADMINISTRADOR) || this.authService.hasRole(ROLES.EMPLEADO)) {
+                        this.router.navigate(['/inventario']);
+                    } else if (this.authService.hasRole(ROLES.CLIENTE)) {
+                        this.router.navigate(['/proyectos']);
+                    } else {
+                        this.router.navigate(['/']);
+                    }
                 }, 1000);
             },
             error: (err) => {

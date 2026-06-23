@@ -13,7 +13,7 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { MessageService } from 'primeng/api';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { ArticuloInventarioRequest, ArticuloInventarioResponse, ArticuloInventarioService, ImagenArticuloResponse } from '../../service/articulo-inventario.service';
+import { ArticuloInventarioRequest, ArticuloInventarioResponse, ArticuloInventarioService, ImagenArticuloResponse, CategoriaResponse } from '../../service/articulo-inventario.service';
 import { API_URL } from '@/enviroment/enviroment';
 
 // ─── Moneda configurable ─────────────────────────────────────────────────────
@@ -56,6 +56,7 @@ export class ArticuloInventarioForm implements OnInit {
     tipoSeleccionado = signal<TipoArticulo>('CONSUMIBLE');
     complejidadSeleccionada = signal<NivelComplejidad>('MEDIO');
     esReutilizable = signal(false);
+    categorias = signal<CategoriaResponse[]>([]);
     // ─── Moneda (accesible desde el template) ────────────────────────────────
     readonly currencySymbol = CURRENCY_SYMBOL;
     readonly currencyCode   = CURRENCY_CODE;
@@ -102,6 +103,7 @@ export class ArticuloInventarioForm implements OnInit {
 
     ngOnInit() {
         this.buildForm();
+        this.loadCategorias();
         const id = this.route.snapshot.paramMap.get('id');
         if (id) {
             this.isEdit.set(true);
@@ -110,12 +112,20 @@ export class ArticuloInventarioForm implements OnInit {
         }
     }
 
+    private loadCategorias() {
+        this.svc.getCategorias().subscribe({
+            next: (cats) => this.categorias.set(cats),
+            error: (err) => console.error('Error al cargar categorías', err)
+        });
+    }
+
     private buildForm() {
         this.form = this.fb.group({
             step1: this.fb.group({
                 nombre:      ['', [Validators.required, Validators.minLength(3)]],
                 descripcion: [''],
-                estado:      ['DISPONIBLE', Validators.required]
+                estado:      ['DISPONIBLE', Validators.required],
+                categoriaId: [null]
             }),
             step2: this.fb.group({
                 stockTotal:             [null, [Validators.min(0)]],
@@ -148,8 +158,15 @@ export class ArticuloInventarioForm implements OnInit {
         this.complejidadSeleccionada.set(a.nivelComplejidad ?? 'MEDIO');
         this.esReutilizable.set(a.tipoArticulo === 'REUTILIZABLE');
 
+        const catId = a.categorias && a.categorias.length > 0 ? a.categorias[0].id : null;
+
         this.form.patchValue({
-            step1: { nombre: a.nombre, descripcion: a.descripcion ?? '', estado: a.estado },
+            step1: { 
+                nombre: a.nombre, 
+                descripcion: a.descripcion ?? '', 
+                estado: a.estado,
+                categoriaId: catId
+            },
             step2: {
                 stockTotal:             a.stockTotal             ?? null,
                 pesoKg:                 a.pesoKg                 ?? null,
@@ -224,7 +241,8 @@ export class ArticuloInventarioForm implements OnInit {
             porcentajeGanancia:      s3.porcentajeGanancia,
             valorResidual:           s3.valorResidual,
             vidaUtilAnos:            s3.vidaUtilAnos,
-            vidaUtilUsos:            s3.vidaUtilUsos
+            vidaUtilUsos:            s3.vidaUtilUsos,
+            categoriaIds:            s1.categoriaId ? [s1.categoriaId] : []
         };
 
         const op$ = this.isEdit()

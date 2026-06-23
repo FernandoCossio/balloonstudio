@@ -10,11 +10,16 @@
       (input)="busqueda.set($any($event.target).value)"
       class="sidebar__search"
     />
-    <select (change)="tipoFiltro.set($any($event.target).value)" class="sidebar__select">
-      <option value="">Todos los tipos</option>
-      @for (tipo of tiposUnicos(); track tipo) {
-        <option [value]="tipo">{{ tipo }}</option>
+    <select
+      [value]="categoriaSeleccionada()"
+      (change)="categoriaSeleccionada.set($any($event.target).value)"
+      class="sidebar__select"
+    >
+      <option value="">Todas las categorías</option>
+      @for (cat of categorias(); track cat.id) {
+        <option [value]="cat.id">{{ cat.nombre }}</option>
       }
+      <option value="IA_RECOMMENDATIONS">✨ Recomendaciones IA</option>
     </select>
   </div>
 
@@ -65,7 +70,15 @@
     }
 
     @empty {
-      <p class="sidebar__empty">No se encontraron artículos</p>
+      @if (categoriaSeleccionada() === 'IA_RECOMMENDATIONS') {
+        <div class="sidebar__empty-ia">
+          <i class="pi pi-sparkles sidebar__empty-ia-icon"></i>
+          <p class="sidebar__empty">Sin recomendaciones</p>
+          <span class="sidebar__empty-hint">Usa el botón ✨ en la barra flotante para buscar por texto o imagen.</span>
+        </div>
+      } @else {
+        <p class="sidebar__empty">No se encontraron artículos</p>
+      }
     }
   </div>
 

@@ -13,7 +13,13 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
 import { SkeletonModule } from 'primeng/skeleton';
 import { DialogModule } from 'primeng/dialog';
+import { SelectModule } from 'primeng/select';
+import { DatePickerModule } from 'primeng/datepicker';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
 import { ArticuloInventarioResponse, ArticuloInventarioService, ImagenArticuloResponse } from '../../service/articulo-inventario.service';
+import { IncidenciaService, IncidenciaRequest } from '../../service/incidencia.service';
 import { API_URL } from '@/enviroment/enviroment';
 import { AuthService } from '@/app/features/auth/service/auth.service';
 import { ROLES } from '@/app/features/core/constants/role.constant';
@@ -28,7 +34,8 @@ type ComplejidadLevel = 'FACIL' | 'MEDIO' | 'PROFESIONAL';
         CommonModule, RouterModule, FormsModule,
         ButtonModule, TableModule, TagModule, BadgeModule,
         TooltipModule, ConfirmDialogModule, ToastModule,
-        MenuModule, SkeletonModule, DialogModule
+        MenuModule, SkeletonModule, DialogModule, SelectModule,
+        DatePickerModule, InputNumberModule, InputTextModule, TextareaModule
     ],
     providers: [ConfirmationService, MessageService],
     templateUrl: './articulo-inventario.html',
@@ -36,6 +43,7 @@ type ComplejidadLevel = 'FACIL' | 'MEDIO' | 'PROFESIONAL';
 })
 export class ArticuloInventario implements OnInit {
     private svc = inject(ArticuloInventarioService);
+    private incidenciaSvc = inject(IncidenciaService);
     private confirmSvc = inject(ConfirmationService);
     private msgSvc = inject(MessageService);
     private router = inject(Router);
@@ -56,7 +64,35 @@ export class ArticuloInventario implements OnInit {
     isDragging = signal(false);
     uploadingImages = signal(false);
 
+    // Incidencias State
+    showIncidenciaDialog = signal(false);
+    incidenciaArticulo = signal<ArticuloInventarioResponse | null>(null);
+    incidenciaTipo = signal<'REPARACION' | 'MERMA_PERDIDA'>('REPARACION');
+    incidenciaCantidad = signal<number>(1);
+    incidenciaDescripcion = signal<string>('');
+    incidenciaReservaId = signal<number | null>(null);
+    incidenciaFechaRetorno = signal<Date | null>(null);
+    submittingIncidencia = signal(false);
+
+    incidenciaTipoOptions = [
+        { label: 'Reparación / Mantenimiento', value: 'REPARACION' },
+        { label: 'Merma / Pérdida', value: 'MERMA_PERDIDA' }
+    ];
+
     // ─── Computed ────────────────────────────────────────────────────────────
+    nuevoDisponible = computed(() => {
+        const art = this.incidenciaArticulo();
+        if (!art) return 0;
+        const total = art.stockDisponible ?? 0;
+        const cant = this.incidenciaCantidad();
+        return Math.max(0, total - cant);
+    });
+
+    readonly minFecha = (() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return today;
+    })();
     articulosFiltrados = computed(() => {
         let list = this.articulos();
         const q = this.searchQuery().toLowerCase();
@@ -106,6 +142,69 @@ export class ArticuloInventario implements OnInit {
         this.router.navigate(['/inventario/nuevo']);
     }
 
+    goToIncidencias() {
+        this.router.navigate(['/inventario/incidencias']);
+    }
+
+    openIncidenciaDialog(art: ArticuloInventarioResponse) {
+        this.incidenciaArticulo.set(art);
+        this.incidenciaTipo.set('REPARACION');
+        this.incidenciaCantidad.set(1);
+        this.incidenciaDescripcion.set('');
+        this.incidenciaReservaId.set(null);
+        this.incidenciaFechaRetorno.set(null);
+        this.submittingIncidencia.set(false);
+        this.showIncidenciaDialog.set(true);
+    }
+
+    registrarIncidencia() {
+        const art = this.incidenciaArticulo();
+        if (!art) return;
+
+        if (!this.incidenciaDescripcion().trim()) {
+            this.msgSvc.add({ severity: 'error', summary: 'Error', detail: 'La descripción es obligatoria' });
+            return;
+        }
+
+        const qty = this.incidenciaCantidad();
+        if (qty <= 0 || qty > (art.stockDisponible ?? 0)) {
+            this.msgSvc.add({ severity: 'error', summary: 'Error', detail: `La cantidad debe ser mayor a 0 y no superar el stock disponible (${art.stockDisponible})` });
+            return;
+        }
+
+        this.submittingIncidencia.set(true);
+
+        let fechaRetornoStr: string | null = null;
+        if (this.incidenciaTipo() === 'REPARACION' && this.incidenciaFechaRetorno()) {
+            const date = this.incidenciaFechaRetorno()!;
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            fechaRetornoStr = `${year}-${month}-${day}`;
+        }
+
+        const request: IncidenciaRequest = {
+            articuloId: art.id,
+            reservaId: this.incidenciaReservaId(),
+            descripcion: this.incidenciaDescripcion().trim(),
+            tipo: this.incidenciaTipo(),
+            cantidad: qty,
+            fechaResolucionEstimada: fechaRetornoStr
+        };
+
+        this.incidenciaSvc.reportarIncidencia(request).subscribe({
+            next: () => {
+                this.msgSvc.add({ severity: 'success', summary: 'Reportada', detail: 'Incidencia reportada correctamente' });
+                this.showIncidenciaDialog.set(false);
+                this.loadArticulos();
+            },
+            error: (err) => {
+                this.submittingIncidencia.set(false);
+                this.msgSvc.add({ severity: 'error', summary: 'Error', detail: err?.error?.message || 'No se pudo reportar la incidencia' });
+            }
+        });
+    }
+
     editArticulo(articulo: ArticuloInventarioResponse) {
         this.router.navigate(['/inventario/editar', articulo.id]);
     }
@@ -130,6 +229,31 @@ export class ArticuloInventario implements OnInit {
             },
             error: () => {
                 this.msgSvc.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar el artículo' });
+            }
+        });
+    }
+
+    confirmReprocesar(articulo: ArticuloInventarioResponse) {
+        this.confirmSvc.confirm({
+            message: `¿Está seguro de que desea realizar el procesamiento de la imagen del artículo "${articulo.nombre}" con la IA?`,
+            header: 'Confirmar Procesamiento de Imagen con IA',
+            icon: 'pi pi-sparkles',
+            acceptLabel: 'Procesar',
+            rejectLabel: 'Cancelar',
+            accept: () => this.doReprocesar(articulo.id)
+        });
+    }
+
+    private doReprocesar(id: number) {
+        this.msgSvc.add({ severity: 'info', summary: 'Procesando', detail: 'Iniciando el procesamiento de la imagen con la IA...' });
+        this.svc.reprocesarArticulo(id).subscribe({
+            next: () => {
+                this.msgSvc.add({ severity: 'success', summary: 'Procesado', detail: 'Embedding visual e imagen procesados con la IA exitosamente' });
+                this.loadArticulos();
+            },
+            error: (err) => {
+                const errorMsg = err?.error?.message || 'No se pudo iniciar el procesamiento con la IA';
+                this.msgSvc.add({ severity: 'error', summary: 'Error', detail: errorMsg });
             }
         });
     }

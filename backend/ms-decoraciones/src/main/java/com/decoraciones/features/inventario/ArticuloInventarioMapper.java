@@ -10,6 +10,7 @@ import com.decoraciones.domain.models.ArticuloInventario;
 import com.decoraciones.domain.models.Categoria;
 import com.decoraciones.domain.models.ImagenArticulo;
 import com.decoraciones.features.imagenarticulo.ImagenArticuloRepository;
+import com.decoraciones.features.reserva.InventarioLockService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -24,9 +25,11 @@ public class ArticuloInventarioMapper {
     private String baseUrl;
 
     private final ImagenArticuloRepository imagenRepository;
+    private final InventarioLockService lockService;
 
-    public ArticuloInventarioMapper(ImagenArticuloRepository imagenRepository) {
+    public ArticuloInventarioMapper(ImagenArticuloRepository imagenRepository, InventarioLockService lockService) {
         this.imagenRepository = imagenRepository;
+        this.lockService = lockService;
     }
 
     public ArticuloInventarioDto toDto(ArticuloInventario articulo) {
@@ -88,6 +91,7 @@ public class ArticuloInventarioMapper {
     }
 
     public ArticuloInventarioResponse toResponse(ArticuloInventario a) {
+        int stockDisp = lockService.getStockDisponible(a.getId(), java.time.LocalDate.now(), java.time.LocalDate.now());
         List<CategoriaResponse> cats = a.getCategorias() == null ? List.of() :
                 a.getCategorias().stream()
                         .map(c -> new CategoriaResponse(c.getId(), c.getNombre(), c.getDescripcion()))
@@ -102,7 +106,7 @@ public class ArticuloInventarioMapper {
         return new ArticuloInventarioResponse(
                 a.getId(), a.getNombre(), a.getDescripcion(), a.getTipoArticulo(), a.getEstado(),
                 a.getCostoAdquisicion(), a.getPorcentajeGanancia(), a.getValorResidual(),
-                a.getVidaUtilAnos(), a.getVidaUtilUsos(), a.getStockTotal(),
+                a.getVidaUtilAnos(), a.getVidaUtilUsos(), a.getStockTotal(), stockDisp,
                 a.getPesoKg(), a.getVolumenM3(), a.getTiempoArmadoMin(),
                 a.getDiasPreparacionPrevios(), a.getDiasLimpiezaPosteriores(),
                 a.getMantenimientoPromedioBs(), a.getNivelComplejidad(), a.getEmbeddingVisual(),

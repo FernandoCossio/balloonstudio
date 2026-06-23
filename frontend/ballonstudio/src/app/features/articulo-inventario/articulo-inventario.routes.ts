@@ -20,5 +20,11 @@ export default [
         canActivate: [roleGuard(ROLE_ADMINISTRADOR)],
         loadComponent: () =>
             import('./pages/articulo-inventario-form/articulo-inventario-form').then(m => m.ArticuloInventarioForm)
+    },
+    {
+        path: 'incidencias',
+        canActivate: [roleGuard([ROLE_ADMINISTRADOR, ROLE_EMPLEADO])],
+        loadComponent: () =>
+            import('./pages/incidencias-list/incidencias-list').then(m => m.IncidenciasList)
     }
 ] as Routes;

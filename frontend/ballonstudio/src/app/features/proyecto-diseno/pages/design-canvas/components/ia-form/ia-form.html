@@ -1,0 +1,130 @@
+<!-- ia-form.html -->
+<div class="ia-form">
+
+  <!-- Modal Tabs/Mode Selector -->
+  <div class="ia-form__tabs">
+    <button
+      type="button"
+      class="ia-form__tab-btn"
+      [class.ia-form__tab-btn--active]="searchMode() === 'TEXT'"
+      (click)="setSearchMode('TEXT')"
+    >
+      <i class="pi pi-align-left mr-2"></i>
+      Buscar por Texto
+    </button>
+    <button
+      type="button"
+      class="ia-form__tab-btn"
+      [class.ia-form__tab-btn--active]="searchMode() === 'IMAGE'"
+      (click)="setSearchMode('IMAGE')"
+    >
+      <i class="pi pi-image mr-2"></i>
+      Buscar por Imagen
+    </button>
+  </div>
+
+  <form (submit)="onSubmit(); $event.preventDefault();" class="ia-form__body">
+
+    <!-- Error Message -->
+    @if (errorMessage()) {
+      <div class="ia-form__error-alert">
+        <i class="pi pi-exclamation-triangle"></i>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <!-- ── Mode: TEXT ── -->
+    @if (searchMode() === 'TEXT') {
+      <div class="ia-form__group">
+        <label class="ia-form__label">Descripción del espacio o idea</label>
+        <textarea
+          class="ia-form__textarea"
+          placeholder="Escribe lo que imaginas (ej. 'Mesa de madera rústica con flores blancas y estilo vintage')"
+          [ngModel]="textPrompt()"
+          (ngModelChange)="textPrompt.set($event)"
+          name="prompt"
+          rows="4"
+          required
+        ></textarea>
+      </div>
+    }
+
+    <!-- ── Mode: IMAGE ── -->
+    @if (searchMode() === 'IMAGE') {
+      <div class="ia-form__group">
+        <label class="ia-form__label">Imagen de referencia</label>
+        
+        @if (!imagePreviewUrl()) {
+          <div class="ia-form__upload-zone" (click)="fileInput.click()">
+            <input
+              #fileInput
+              type="file"
+              accept="image/*"
+              class="ia-form__file-input"
+              (change)="onFileSelected($event)"
+            />
+            <i class="pi pi-cloud-upload ia-form__upload-icon"></i>
+            <span class="ia-form__upload-title">Haz click para seleccionar una imagen</span>
+            <span class="ia-form__upload-subtitle">Soporta PNG, JPG, JPEG o WEBP</span>
+          </div>
+        } @else {
+          <div class="ia-form__preview-container">
+            <img [src]="imagePreviewUrl()" class="ia-form__preview-img" alt="Vista previa de referencia" />
+            <button type="button" class="ia-form__remove-img-btn" (click)="imageFile.set(null); imagePreviewUrl.set(null)">
+              <i class="pi pi-trash mr-1"></i> Quitar imagen
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ── Common parameters: Category & Limit ── -->
+    <div class="ia-form__row">
+      <div class="ia-form__group ia-form__group--half">
+        <label class="ia-form__label">Filtrar por Categoría (Opcional)</label>
+        <select
+          class="ia-form__select"
+          [ngModel]="selectedCategoriaId()"
+          (ngModelChange)="selectedCategoriaId.set($event)"
+          name="categoriaId"
+        >
+          <option value="">Buscar en todo el catálogo</option>
+          @for (cat of categorias(); track cat.id) {
+            <option [value]="cat.id">{{ cat.nombre }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="ia-form__group ia-form__group--half">
+        <label class="ia-form__label">Cantidad de resultados</label>
+        <input
+          type="number"
+          class="ia-form__number-input"
+          min="1"
+          max="20"
+          [ngModel]="limit()"
+          (ngModelChange)="limit.set($event)"
+          name="limit"
+        />
+      </div>
+    </div>
+
+    <!-- Submit Action Button -->
+    <div class="ia-form__actions">
+      <button
+        type="submit"
+        class="ia-form__submit-btn"
+        [disabled]="loading()"
+      >
+        @if (loading()) {
+          <i class="pi pi-spin pi-spinner mr-2"></i>
+          Buscando similitudes...
+        } @else {
+          <i class="pi pi-sparkles mr-2"></i>
+          Generar Recomendaciones
+        }
+      </button>
+    </div>
+
+  </form>
+</div>

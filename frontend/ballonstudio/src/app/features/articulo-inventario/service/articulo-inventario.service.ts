@@ -56,6 +56,7 @@ export interface ArticuloInventarioResponse {
     vidaUtilAnos?: number;
     vidaUtilUsos?: number;
     stockTotal?: number;
+    stockDisponible?: number;
     pesoKg?: number;
     volumenM3?: number;
     tiempoArmadoMin?: number;
@@ -170,6 +171,26 @@ export class ArticuloInventarioService {
             tap({
                 next: () => console.log('[ArticuloInventarioService] ✅ deleteImagen OK'),
                 error: err => console.error('[ArticuloInventarioService] ❌ deleteImagen ERROR', err)
+            })
+        );
+    }
+
+    getCategorias(): Observable<CategoriaResponse[]> {
+        return this.http.get<ApiResponse<CategoriaResponse[]>>(`${API_URL}/categorias`).pipe(
+            map(res => res.data),
+            tap({
+                next: data => console.log('[ArticuloInventarioService] ✅ getCategorias OK – registros:', data.length),
+                error: err => console.error('[ArticuloInventarioService] ❌ getCategorias ERROR', err)
+            })
+        );
+    }
+
+    reprocesarArticulo(id: number): Observable<any> {
+        return this.http.post<ApiResponse<any>>(`${API_URL}/recomendaciones/articulos/${id}/reprocesar`, {}).pipe(
+            map(res => res.data),
+            tap({
+                next: data => console.log('[ArticuloInventarioService] ✅ reprocesarArticulo OK', data),
+                error: err => console.error('[ArticuloInventarioService] ❌ reprocesarArticulo ERROR', err)
             })
         );
     }

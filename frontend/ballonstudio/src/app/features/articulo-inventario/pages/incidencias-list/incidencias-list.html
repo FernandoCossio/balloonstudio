@@ -1,0 +1,232 @@
+<p-toast />
+
+<!-- ─── Page Header ─────────────────────────────────────────────────────── -->
+<div class="inc-page">
+
+    <!-- Header -->
+    <div class="inc-header">
+        <div class="inc-header__text">
+            <button (click)="volverAlInventario()" class="back-btn">
+                <i class="pi pi-arrow-left"></i>
+                <span>Volver al Inventario</span>
+            </button>
+            <h1 class="inc-header__title">Registro de Incidencias</h1>
+            <p class="inc-header__sub">Trazabilidad de mermas, pérdidas, reparaciones y mantenimiento de mobiliario.</p>
+        </div>
+    </div>
+
+    <!-- ─── Alert Cards / Stats ───────────────────────────────────────────── -->
+    <div class="inc-alerts">
+        <!-- Activas -->
+        <div class="inc-alert-card inc-alert-card--danger">
+            <div class="inc-alert-card__icon">
+                <i class="pi pi-exclamation-triangle"></i>
+            </div>
+            <div class="inc-alert-card__body">
+                <h3>Incidencias Activas</h3>
+                <p>Mobiliario actualmente no disponible</p>
+                <span class="inc-alert-card__value">{{ totalActivas() }}</span>
+            </div>
+        </div>
+
+        <!-- Reparaciones -->
+        <div class="inc-alert-card inc-alert-card--warn">
+            <div class="inc-alert-card__icon">
+                <i class="pi pi-wrench"></i>
+            </div>
+            <div class="inc-alert-card__body">
+                <h3>En Mantenimiento</h3>
+                <p>Reparaciones y mantenimientos activos</p>
+                <span class="inc-alert-card__value">{{ totalReparaciones() }}</span>
+            </div>
+        </div>
+
+        <!-- Mermas -->
+        <div class="inc-alert-card inc-alert-card--neutral">
+            <div class="inc-alert-card__icon">
+                <i class="pi pi-trash"></i>
+            </div>
+            <div class="inc-alert-card__body">
+                <h3>Mermas / Pérdidas</h3>
+                <p>Pérdidas definitivas registradas</p>
+                <span class="inc-alert-card__value">{{ totalMermas() }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Grid / Control Section ────────────────────────────────────────── -->
+    <div class="inc-table-section">
+
+        <!-- Filters Bar -->
+        <div class="inc-filters">
+            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                <!-- Estado Tabs -->
+                <div class="inc-tabs">
+                    <button class="inc-tab" [class.inc-tab--active]="filterEstado() === 'TODOS'" (click)="setFilterEstado('TODOS')">Todos los Estados</button>
+                    <button class="inc-tab" [class.inc-tab--active]="filterEstado() === 'ACTIVA'" (click)="setFilterEstado('ACTIVA')">Activas</button>
+                    <button class="inc-tab" [class.inc-tab--active]="filterEstado() === 'SOLUCIONADA'" (click)="setFilterEstado('SOLUCIONADA')">Solucionadas</button>
+                </div>
+
+                <!-- Tipo Tabs -->
+                <div class="inc-tabs">
+                    <button class="inc-tab" [class.inc-tab--active]="filterTipo() === 'TODOS'" (click)="setFilterTipo('TODOS')">Todos los Tipos</button>
+                    <button class="inc-tab" [class.inc-tab--active]="filterTipo() === 'REPARACION'" (click)="setFilterTipo('REPARACION')">Reparaciones</button>
+                    <button class="inc-tab" [class.inc-tab--active]="filterTipo() === 'MERMA_PERDIDA'" (click)="setFilterTipo('MERMA_PERDIDA')">Mermas</button>
+                </div>
+            </div>
+
+            <span class="inc-count">Mostrando {{ incidenciasFiltradas().length }} incidencia(s)</span>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="inc-search">
+            <i class="pi pi-search inc-search__icon"></i>
+            <input
+                type="text"
+                class="inc-search__input"
+                placeholder="Buscar por artículo..."
+                [ngModel]="searchQuery()"
+                (ngModelChange)="searchQuery.set($event)"
+            />
+        </div>
+
+        <!-- Incident Cards Grid -->
+        @if (loading()) {
+            <div class="inc-loading-state">
+                <i class="pi pi-spin pi-spinner" style="font-size: 2rem; color: var(--p-primary-color);"></i>
+                <p>Cargando incidencias...</p>
+            </div>
+        } @else {
+            @if (incidenciasFiltradas().length > 0) {
+                <div class="inc-grid">
+                    @for (inc of incidenciasFiltradas(); track inc.id) {
+                        <div class="inc-card" [class.inc-card--solucionada]="inc.estado === 'SOLUCIONADA'">
+                            <!-- Header: Item Info -->
+                            <div class="inc-card__header">
+                                @if (getPrincipalImageUrl(inc)) {
+                                    <img [src]="getPrincipalImageUrl(inc)" class="inc-card__thumb" />
+                                } @else {
+                                    <div class="inc-card__avatar" [style.background-color]="getAvatarColor(inc.articuloInventario.nombre)">
+                                        {{ getAvatarLetter(inc.articuloInventario.nombre) }}
+                                    </div>
+                                }
+                                <div class="inc-card__header-info">
+                                    <span class="inc-card__item-name">{{ inc.articuloInventario.nombre }}</span>
+                                    <span class="inc-card__item-id">ID Artículo: #{{ inc.articuloInventario.id }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Badges -->
+                            <div class="inc-card__badges">
+                                <p-tag [value]="tipoLabel(inc.tipo)" [severity]="tipoSeverity(inc.tipo)" />
+                                <p-tag [value]="estadoLabel(inc.estado)" [severity]="estadoSeverity(inc.estado)" />
+                            </div>
+
+                            <hr class="inc-card__divider" />
+
+                            <!-- Details list -->
+                            <div class="inc-card__details">
+                                <div class="detail-row">
+                                    <span class="detail-label"><i class="pi pi-info-circle"></i> Cantidad:</span>
+                                    <span class="detail-value"><strong>{{ inc.cantidadAfectada }}</strong> ud(s)</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label"><i class="pi pi-calendar"></i> Fecha Reporte:</span>
+                                    <span class="detail-value">{{ inc.fechaIncidencia | date:'mediumDate' }}</span>
+                                </div>
+
+                                @if (inc.tipo === 'REPARACION') {
+                                    @if (inc.estado === 'ACTIVA') {
+                                        <div class="detail-row">
+                                            <span class="detail-label"><i class="pi pi-calendar-plus"></i> Retorno Est.:</span>
+                                            <span class="detail-value text-warn">
+                                                {{ inc.fechaResolucionEstimada ? (inc.fechaResolucionEstimada | date:'mediumDate') : 'Sin definir' }}
+                                            </span>
+                                        </div>
+                                    } @else {
+                                        <div class="detail-row">
+                                            <span class="detail-label"><i class="pi pi-dollar"></i> Costo Rep.:</span>
+                                            <span class="detail-value text-success font-semibold">
+                                                {{ inc.costoReparacion ? (inc.costoReparacion | currency:'Bs. ':'symbol':'1.2-2') : 'Bs. 0.00' }}
+                                            </span>
+                                        </div>
+                                    }
+                                }
+
+                                @if (inc.reserva) {
+                                    <div class="detail-row detail-row--reserva">
+                                        <span class="detail-label"><i class="pi pi-bookmark"></i> Reserva Origen:</span>
+                                        <span class="detail-value">#{{ inc.reserva.id }}</span>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Description -->
+                            <div class="inc-card__description">
+                                <span class="desc-title">Motivo / Detalles:</span>
+                                <p>{{ inc.descripcion }}</p>
+                            </div>
+
+                            <!-- Actions -->
+                            @if (inc.estado === 'ACTIVA' && inc.tipo === 'REPARACION') {
+                                <div class="inc-card__actions">
+                                    <button pButton 
+                                            class="w-full p-button-sm p-button-outlined p-button-success" 
+                                            icon="pi pi-check-circle" 
+                                            label="Solucionar / Finalizar" 
+                                            (click)="openSolucionarDialog(inc)"></button>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            } @else {
+                <div class="inc-empty">
+                    <i class="pi pi-inbox inc-empty__icon"></i>
+                    <p>No se encontraron incidencias con los filtros aplicados.</p>
+                </div>
+            }
+        }
+
+    </div>
+</div>
+
+<!-- Diálogo para Solucionar Incidencia (Reparación) -->
+<p-dialog [(visible)]="showSolucionarDialog" 
+          [modal]="true" 
+          [header]="'Solucionar Incidencia'"
+          [style]="{ width: '400px', maxWidth: '95vw' }"
+          [draggable]="false"
+          [resizable]="false">
+    
+    <div class="solucionar-dialog-content">
+        <p class="text-sm text-muted mb-4">
+            Al marcar esta reparación como solucionada, las <strong>{{ selectedIncidencia()?.cantidadAfectada }}</strong> unidades volverán a estar disponibles en el stock activo.
+        </p>
+
+        <div class="form-field w-full">
+            <label class="font-semibold block mb-2 text-sm">Costo de Reparación / Mantenimiento (Opcional)</label>
+            <p-inputnumber [ngModel]="costoReparacion()"
+                          (ngModelChange)="costoReparacion.set($event)"
+                          placeholder="Bs. 0.00"
+                          mode="currency"
+                          currency="BOB"
+                          locale="es-BO"
+                          styleClass="w-full" />
+        </div>
+
+        <div class="dialog-actions-right mt-6">
+            <button pButton 
+                    class="p-button-text p-button-secondary" 
+                    label="Cancelar" 
+                    (click)="showSolucionarDialog.set(false)" 
+                    [disabled]="submittingSolucion()"></button>
+            <button pButton 
+                    class="p-button-success" 
+                    label="Confirmar Solución" 
+                    icon="pi pi-check"
+                    (click)="solucionarIncidencia()"
+                    [loading]="submittingSolucion()"></button>
+        </div>
+    </div>
+</p-dialog>

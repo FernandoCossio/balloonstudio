@@ -58,7 +58,9 @@ export class AppMenu {
         return [
             {
                 label: 'Home',
-                items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
+                items: [
+                    // { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }
+                ]
             }
         ];
     }
@@ -81,6 +83,11 @@ export class AppMenu {
                         label: 'Artículos',
                         icon: 'pi pi-fw pi-box',
                         routerLink: ['/inventario']
+                    },
+                    {
+                        label: 'Incidencias',
+                        icon: 'pi pi-fw pi-exclamation-triangle',
+                        routerLink: ['/inventario/incidencias']
                     }
                 ]
             }
@@ -104,6 +111,11 @@ export class AppMenu {
                         label: 'Artículos',
                         icon: 'pi pi-fw pi-box',
                         routerLink: ['/inventario']
+                    },
+                    {
+                        label: 'Incidencias',
+                        icon: 'pi pi-fw pi-exclamation-triangle',
+                        routerLink: ['/inventario/incidencias']
                     }
                 ]
             }
@@ -112,11 +124,10 @@ export class AppMenu {
 
     private buildClienteMenu(): MenuItem[] {
         return [
-            {
-                label: 'Cliente',
-                items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
-            }
-            ,
+            // {
+            //     label: 'Cliente',
+            //     items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
+            // },
             {
                 label: 'Proyectos',
                 icon: 'pi pi-fw pi-box',
