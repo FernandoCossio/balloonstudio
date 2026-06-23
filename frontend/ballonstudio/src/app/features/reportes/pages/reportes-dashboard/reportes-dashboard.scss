@@ -422,6 +422,43 @@
     border-radius: 6px !important;
 }
 
+.rep-btn-propuesta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: 7px;
+    border: 1px solid #fbcfe8;
+    background: #fdf2f8;
+    color: #db2777;
+    cursor: pointer;
+    transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
+    white-space: nowrap;
+
+    i {
+        font-size: 0.9rem;
+    }
+
+    &:hover:not(:disabled) {
+        background: #fce7f3;
+        border-color: #f9a8d4;
+        box-shadow: 0 3px 8px rgba(219, 39, 119, 0.15);
+        transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    &:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+}
+
 // Empty State
 .rep-empty-state {
     padding: 4rem 1.5rem;

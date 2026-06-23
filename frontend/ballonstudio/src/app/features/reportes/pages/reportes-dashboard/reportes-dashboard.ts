@@ -5,6 +5,7 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import { ReportesService, VentasReporteData } from '../../service/reportes.service';
 
@@ -18,7 +19,8 @@ import { ReportesService, VentasReporteData } from '../../service/reportes.servi
         TableModule,
         ButtonModule,
         TagModule,
-        ToastModule
+        ToastModule,
+        TooltipModule
     ],
     providers: [MessageService],
     templateUrl: './reportes-dashboard.html',
@@ -184,6 +186,46 @@ export class ReportesDashboard implements OnInit {
             }
         });
     }
+
+    readonly downloadingId = signal<number | null>(null);
+
+    descargarPropuesta(reservaId: number): void {
+        this.downloadingId.set(reservaId);
+        this.messageService.add({
+            severity: 'info',
+            summary: 'Generando Propuesta',
+            detail: `Preparando propuesta comercial PDF de la reserva #${reservaId}...`
+        });
+
+        this.reportesService.descargarPropuestaPorReserva(reservaId).subscribe({
+            next: (blob: Blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `propuesta-reserva-${reservaId}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                this.downloadingId.set(null);
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Propuesta Descargada',
+                    detail: `La propuesta PDF de la reserva #${reservaId} fue descargada.`
+                });
+            },
+            error: (err) => {
+                this.downloadingId.set(null);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'No se pudo generar la propuesta PDF.'
+                });
+                console.error(err);
+            }
+        });
+    }
+
 
     getEstadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' {
         switch (estado.toUpperCase()) {

@@ -166,6 +166,7 @@
                         <th>Fecha Reserva</th>
                         <th>Total</th>
                         <th>Estado</th>
+                        <th style="width: 130px; text-align: center;">Propuesta</th>
                     </tr>
                 </ng-template>
 
@@ -195,12 +196,29 @@
                                 styleClass="rep-status-tag"
                             ></p-tag>
                         </td>
+                        <td style="text-align: center;">
+                            <button
+                                type="button"
+                                class="rep-btn-propuesta"
+                                (click)="descargarPropuesta(v.id)"
+                                [disabled]="downloadingId() === v.id"
+                                pTooltip="Exportar Propuesta PDF de esta venta"
+                                tooltipPosition="top"
+                            >
+                                @if (downloadingId() === v.id) {
+                                    <i class="pi pi-spin pi-spinner"></i>
+                                } @else {
+                                    <i class="pi pi-file-pdf"></i>
+                                }
+                                <span>Propuesta</span>
+                            </button>
+                        </td>
                     </tr>
                 </ng-template>
 
                 <ng-template pTemplate="emptymessage">
                     <tr>
-                        <td colspan="5">
+                        <td colspan="6">
                             <div class="rep-empty-state">
                                 <i class="pi pi-chart-line rep-empty-state__icon"></i>
                                 <h3>Sin Ventas Registradas</h3>

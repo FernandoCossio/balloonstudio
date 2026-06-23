@@ -72,4 +72,10 @@ export class ReportesService {
             responseType: 'blob'
         });
     }
+
+    descargarPropuestaPorReserva(reservaId: number): Observable<Blob> {
+        return this.http.get(`${API_BASE}/ventas/${reservaId}/propuesta-pdf`, {
+            responseType: 'blob'
+        });
+    }
 }
