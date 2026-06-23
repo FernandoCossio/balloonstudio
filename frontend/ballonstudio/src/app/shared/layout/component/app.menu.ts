@@ -58,7 +58,9 @@ export class AppMenu {
         return [
             {
                 label: 'Home',
-                items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
+                items: [
+                    // { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }
+                ]
             }
         ];
     }
@@ -68,7 +70,7 @@ export class AppMenu {
             {
                 label: 'Administrador',
                 items: [
-                    { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] },
+                    // { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] },
                     { label: 'Empleados', icon: 'pi pi-fw pi-users', routerLink: ['/empleados'] }
                 ]
             },
@@ -93,10 +95,10 @@ export class AppMenu {
 
     private buildEmpleadoMenu(): MenuItem[] {
         return [
-            {
-                label: 'Empleado',
-                items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
-            },
+            // {
+            //     label: 'Empleado',
+            //     items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
+            // },
             {
                 label: 'Inventario',
                 icon: 'pi pi-fw pi-box',
@@ -118,11 +120,10 @@ export class AppMenu {
 
     private buildClienteMenu(): MenuItem[] {
         return [
-            {
-                label: 'Cliente',
-                items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
-            }
-            ,
+            // {
+            //     label: 'Cliente',
+            //     items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
+            // },
             {
                 label: 'Proyectos',
                 icon: 'pi pi-fw pi-box',
