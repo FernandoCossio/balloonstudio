@@ -41,6 +41,12 @@ public class ReservaService {
 
     @org.springframework.beans.factory.annotation.Value("${app.reserva.lock-ttl-minutes:15}")
     private int lockTtlMinutes;
+
+    @org.springframework.beans.factory.annotation.Value("${pagofacil.test-mode.enabled:false}")
+    private boolean testModeEnabled;
+
+    @org.springframework.beans.factory.annotation.Value("${pagofacil.test-mode.monto-simulado:0.10}")
+    private double testModeMontoSimulado;
 // ... (iniciarReserva stays exactly same) ...
     @Transactional
     public Map<String, Object> iniciarReserva(Long proyectoId, ReservaRequest request) {
@@ -232,6 +238,10 @@ public class ReservaService {
 
         String token = pagoFacilService.login();
         double amount = reserva.getMontoAnticipo().doubleValue();
+        if (testModeEnabled) {
+            log.info("[PagoFacil TEST MODE] Forzando monto del QR a: {} (Monto original: {})", testModeMontoSimulado, amount);
+            amount = testModeMontoSimulado;
+        }
 
         String safeName = (clientName != null && !clientName.trim().isEmpty()) ? clientName.trim() : reserva.getUsuario().getNombreCompleto();
         if (safeName == null || safeName.trim().isEmpty()) {
