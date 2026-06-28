@@ -72,7 +72,9 @@ export class AppMenu {
                 items: [
                     { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] },
                     { label: 'Empleados', icon: 'pi pi-fw pi-users', routerLink: ['/empleados'] },
-                    { label: 'Reportes', icon: 'pi pi-fw pi-file', routerLink: ['/reportes'] }
+                    { label: 'Reservas', icon: 'pi pi-fw pi-calendar', routerLink: ['/reservas'] },
+                    { label: 'Reportes', icon: 'pi pi-fw pi-file', routerLink: ['/reportes'] },
+                    { label: 'Configuración', icon: 'pi pi-fw pi-cog', routerLink: ['/configuracion'] }
                 ]
             },
             {
@@ -83,6 +85,11 @@ export class AppMenu {
                         label: 'Artículos',
                         icon: 'pi pi-fw pi-box',
                         routerLink: ['/inventario']
+                    },
+                    {
+                        label: 'Categorías',
+                        icon: 'pi pi-fw pi-tags',
+                        routerLink: ['/categorias']
                     },
                     {
                         label: 'Incidencias',
@@ -100,6 +107,7 @@ export class AppMenu {
                 label: 'Empleado',
                 items: [
                     { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] },
+                    { label: 'Reservas', icon: 'pi pi-fw pi-calendar', routerLink: ['/reservas'] },
                     { label: 'Reportes', icon: 'pi pi-fw pi-file', routerLink: ['/reportes'] }
                 ]
             },
@@ -111,6 +119,11 @@ export class AppMenu {
                         label: 'Artículos',
                         icon: 'pi pi-fw pi-box',
                         routerLink: ['/inventario']
+                    },
+                    {
+                        label: 'Categorías',
+                        icon: 'pi pi-fw pi-tags',
+                        routerLink: ['/categorias']
                     },
                     {
                         label: 'Incidencias',
@@ -129,13 +142,18 @@ export class AppMenu {
             //     items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
             // },
             {
-                label: 'Proyectos',
+                label: 'Proyectos y Reservas',
                 icon: 'pi pi-fw pi-box',
                 items: [
                     {
                         label: 'Proyectos',
                         icon: 'pi pi-fw pi-box',
                         routerLink: ['/proyectos']
+                    },
+                    {
+                        label: 'Reservas',
+                        icon: 'pi pi-fw pi-calendar',
+                        routerLink: ['/reservas']
                     }
                 ]
             }

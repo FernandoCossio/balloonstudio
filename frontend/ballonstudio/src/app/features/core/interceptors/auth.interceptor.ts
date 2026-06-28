@@ -20,8 +20,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     const isAuthRoute =
         req.url.includes('/auth/refresh') ||
         req.url.includes('/auth/login') ||
-        req.url.includes('/auth/logout') ||
-        req.url.includes('/auth/me/token');
+        req.url.includes('/auth/logout');
 
     const credReq = req.clone({ withCredentials: true });
 

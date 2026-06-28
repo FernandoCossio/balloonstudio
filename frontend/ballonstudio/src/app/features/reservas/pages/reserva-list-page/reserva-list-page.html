@@ -1,0 +1,123 @@
+<p-toast />
+
+<div class="emp-page">
+
+    <!-- Header Section -->
+    <div class="emp-header">
+        <div class="emp-header__text">
+            <h1 class="emp-header__title">Control de Reservas</h1>
+            <p class="emp-header__sub">Consulta y administra el estado, cotizaciones y anticipos de las reservas.</p>
+        </div>
+    </div>
+
+    <!-- Table/Card Section -->
+    <div class="emp-table-section">
+        
+        <!-- Filters Bar -->
+        <div class="emp-filters-bar">
+            <!-- Search Input (Only for Admin/Employee) -->
+            @if (isAdmin() || isEmpleado()) {
+                <div class="emp-input-wrapper flex-grow">
+                    <label>Buscar Cliente:</label>
+                    <div class="emp-search">
+                        <i class="pi pi-search emp-search__icon"></i>
+                        <input
+                            type="text"
+                            class="emp-search__input"
+                            placeholder="Buscar por nombre..."
+                            [ngModel]="searchQuery()"
+                            (ngModelChange)="onSearchChange($event)"
+                        />
+                    </div>
+                </div>
+            }
+
+            <!-- State Selector (Only for Admin/Client) -->
+            @if (isAdmin() || isCliente()) {
+                <div class="emp-input-wrapper">
+                    <label>Estado de Reserva:</label>
+                    <select 
+                        [ngModel]="selectedEstadoFilter()" 
+                        (ngModelChange)="onEstadoChange($event)"
+                        class="emp-filter-select"
+                    >
+                        <option value="">Todos los estados</option>
+                        <option value="PENDIENTE_PAGO">Pendiente de Pago</option>
+                        <option value="CONFIRMADA">Confirmada</option>
+                        <option value="EXPIRADA">Expirada</option>
+                        <option value="CANCELADA">Cancelada</option>
+                    </select>
+                </div>
+            }
+
+            <!-- Date Range Filters -->
+            <div class="emp-input-wrapper">
+                <label>Desde:</label>
+                <input 
+                    type="datetime-local" 
+                    [ngModel]="fechaInicioFilter()"
+                    (ngModelChange)="onFechaInicioChange($event)"
+                    class="emp-filter-date"
+                />
+            </div>
+
+            <div class="emp-input-wrapper">
+                <label>Hasta:</label>
+                <input 
+                    type="datetime-local" 
+                    [ngModel]="fechaFinFilter()"
+                    (ngModelChange)="onFechaFinChange($event)"
+                    class="emp-filter-date"
+                />
+            </div>
+
+            <!-- Clear button -->
+            <div class="emp-reset-wrapper">
+                <button type="button" (click)="limpiarFiltros()" class="emp-btn-clear">
+                    <i class="pi pi-refresh"></i>
+                    <span>Limpiar</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Grid of Reservation Cards -->
+        @if (loading()) {
+            <div class="reserva-loading-state">
+                <i class="pi pi-spin pi-spinner spinner-icon"></i>
+                <p>Cargando reservas...</p>
+            </div>
+        } @else if (reservas().length === 0) {
+            <div class="reserva-empty-state">
+                <i class="pi pi-folder-open empty-icon"></i>
+                <p>No se encontraron reservas con los filtros aplicados.</p>
+            </div>
+        } @else {
+            <div class="reserva-cards-grid">
+                @for (reserva of reservas(); track reserva.id) {
+                    <app-reserva-card 
+                        [reserva]="reserva"
+                        (verDetalle)="verDetalle($event)"
+                        (descargarRecibo)="descargarRecibo($event)"
+                    ></app-reserva-card>
+                }
+            </div>
+
+            <!-- Pagination Control -->
+            <div class="reserva-paginator-wrapper">
+                <p-paginator 
+                    [rows]="size()" 
+                    [totalRecords]="totalElements()" 
+                    [rowsPerPageOptions]="[6, 12, 24]"
+                    (onPageChange)="onPageChange($event)"
+                ></p-paginator>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal Detalle -->
+<app-detalle-reserva-dialog
+    [(visible)]="detailVisible"
+    [reserva]="selectedReserva()"
+    (descargarRecibo)="descargarRecibo($event)"
+></app-detalle-reserva-dialog>

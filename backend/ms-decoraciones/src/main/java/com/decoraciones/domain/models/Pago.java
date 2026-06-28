@@ -30,8 +30,9 @@ public class Pago extends BaseEntity {
     @Column(precision = 12, scale = 2, nullable = false)
     private BigDecimal monto;
 
-    @Column(nullable = false)
-    private String metodo; // STRIPE, PAGO_FACIL
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "metodo_pago_id", nullable = false)
+    private MetodoPago metodoPago;
 
     @Column(nullable = false)
     private String estado = "COMPLETADO"; // COMPLETADO, RECHAZADO, PENDIENTE
