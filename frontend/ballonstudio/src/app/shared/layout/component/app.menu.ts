@@ -70,7 +70,7 @@ export class AppMenu {
             {
                 label: 'Administrador',
                 items: [
-                    { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] },
+                    { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/dashboard'] },
                     { label: 'Empleados', icon: 'pi pi-fw pi-users', routerLink: ['/empleados'] },
                     { label: 'Reservas', icon: 'pi pi-fw pi-calendar', routerLink: ['/reservas'] },
                     { label: 'Reportes', icon: 'pi pi-fw pi-file', routerLink: ['/reportes'] },
@@ -107,7 +107,7 @@ export class AppMenu {
             {
                 label: 'Empleado',
                 items: [
-                    { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] },
+                    { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/dashboard'] },
                     { label: 'Reservas', icon: 'pi pi-fw pi-calendar', routerLink: ['/reservas'] },
                     { label: 'Reportes', icon: 'pi pi-fw pi-file', routerLink: ['/reportes'] }
                 ]

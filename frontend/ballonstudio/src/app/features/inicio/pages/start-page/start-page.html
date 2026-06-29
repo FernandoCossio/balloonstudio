@@ -1,1 +1,194 @@
-<p>start-page works!</p>
+<div class="landing-container">
+  <!-- Navbar -->
+  <header class="landing-header">
+    <div class="header-logo">
+      <img src="images/logo-1.png" alt="BalloonStudio Logo" class="landing-logo-img" />
+      <span class="logo-text">BalloonStudio</span>
+    </div>
+    <nav class="header-nav">
+      <a href="#features" class="nav-link">¿Cómo funciona?</a>
+      <a href="#gallery" class="nav-link">Inspiración</a>
+      <a href="#about" class="nav-link">Nosotros</a>
+    </nav>
+    <div class="header-actions">
+      <button pButton label="Crear Cuenta" icon="pi pi-user-plus" class="p-button-sm header-btn" routerLink="/auth/register"></button>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">
+        Diseña el evento de tus sueños con <span class="highlight-text">Globos en 2D</span>
+      </h1>
+      <p class="hero-subtitle">
+        Visualiza, personaliza y cotiza la decoración ideal para tus celebraciones en tiempo real. Un lienzo interactivo adaptado a tu espacio y presupuesto.
+      </p>
+      <div class="hero-actions">
+        <button pButton label="Comenzar a Diseñar" icon="pi pi-palette" class="p-button-lg cta-primary" (click)="startDesigning()"></button>
+        <button pButton label="Explorar Diseños" icon="pi pi-images" class="p-button-lg p-button-outlined cta-secondary" href="#gallery"></button>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <!-- Contenedor con tamaño predefinido para la imagen principal de la landing page -->
+      <div class="image-wrapper hero-image-container">
+        <img src="assets/images/hero-placeholder.png" alt="Lienzo de Diseño BalloonStudio" class="landing-img" />
+        <div class="image-overlay-card">
+          <i class="pi pi-box mr-2"></i>
+          <span>Lienzo Interactivo 2D</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features-section">
+    <div class="section-header">
+      <span class="section-badge">Características</span>
+      <h2 class="section-title">¿Cómo BalloonStudio facilita tus eventos?</h2>
+      <p class="section-subtitle">Todo lo que necesitas para diseñar, planificar y cotizar tu decoración con globos en un solo lugar.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon-wrapper">
+          <i class="pi pi-box feature-icon"></i>
+        </div>
+        <h3 class="feature-card-title">Diseñador 2D</h3>
+        <p class="feature-card-desc">Crea arcos, columnas y murales de globos en un espacio virtual 2D interactivo que simula las dimensiones de tu evento.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-wrapper">
+          <i class="pi pi-dollar feature-icon"></i>
+        </div>
+        <h3 class="feature-card-title">Cotizador en Tiempo Real</h3>
+        <p class="feature-card-desc">Cada globo, color y accesorio agregado actualiza el presupuesto automáticamente para evitar sorpresas.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-wrapper">
+          <i class="pi pi-palette feature-icon"></i>
+        </div>
+        <h3 class="feature-card-title">Paleta de Texturas</h3>
+        <p class="feature-card-desc">Elige entre globos mate, metálicos, cromados o confetti, y personaliza los diámetros según tu gusto.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery Section -->
+  <section id="gallery" class="gallery-section">
+    <div class="section-header">
+      <span class="section-badge">Galería</span>
+      <h2 class="section-title">Inspiración para tu Próximo Evento</h2>
+      <p class="section-subtitle">Explora plantillas preestablecidas y diseños creados por otros clientes de BalloonStudio.</p>
+    </div>
+
+    <div class="gallery-grid">
+      <!-- Tarjeta de Galería 1 -->
+      <div class="gallery-item">
+        <div class="image-wrapper gallery-image-container">
+          <img src="assets/images/gallery-1.png" alt="Arco de Globos Pastel Orgánico" class="landing-img" />
+        </div>
+        <div class="gallery-info">
+          <h4>Arco Orgánico Pastel</h4>
+          <span class="gallery-tag">Bautizos y Cumpleaños</span>
+        </div>
+      </div>
+
+      <!-- Tarjeta de Galería 2 -->
+      <div class="gallery-item">
+        <div class="image-wrapper gallery-image-container">
+          <img src="assets/images/gallery-2.png" alt="Mural de Globos Cromados Elegante" class="landing-img" />
+        </div>
+        <div class="gallery-info">
+          <h4>Mural de Globos Cromados</h4>
+          <span class="gallery-tag">Eventos Corporativos</span>
+        </div>
+      </div>
+
+      <!-- Tarjeta de Galería 3 -->
+      <div class="gallery-item">
+        <div class="image-wrapper gallery-image-container">
+          <img src="assets/images/gallery-3.png" alt="Decoración Temática Infantil" class="landing-img" />
+        </div>
+        <div class="gallery-info">
+          <h4>Set Cumpleaños Temático</h4>
+          <span class="gallery-tag">Fiestas Infantiles</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Us Section -->
+  <section id="about" class="about-section">
+    <div class="about-container">
+      <div class="about-content">
+        <span class="section-badge">Nosotros</span>
+        <h2 class="about-title">Pasión por el Arte de Celebrar</h2>
+        <p class="about-text">
+          En <strong>BalloonStudio</strong>, creemos que cada celebración es una oportunidad para crear recuerdos inolvidables. Somos una plataforma pionera diseñada para conectar las ideas más creativas con decoraciones con globos espectaculares.
+        </p>
+        <p class="about-text">
+          Nuestra misión es empoderar a clientes y organizadores de eventos facilitándoles un lienzo interactivo 2D para diseñar y cotizar en tiempo real. Queremos que el proceso de planeación sea tan mágico, divertido y transparente como el evento mismo.
+        </p>
+        <div class="about-features">
+          <div class="about-feat-item">
+            <i class="pi pi-check-circle mr-2 text-primary"></i>
+            <span>Diseño libre y sin límites de creatividad</span>
+          </div>
+          <div class="about-feat-item">
+            <i class="pi pi-check-circle mr-2 text-primary"></i>
+            <span>Transparencia total de costos</span>
+          </div>
+          <div class="about-feat-item">
+            <i class="pi pi-check-circle mr-2 text-primary"></i>
+            <span>Decoraciones profesionales garantizadas</span>
+          </div>
+        </div>
+      </div>
+      <div class="about-visual">
+        <div class="image-wrapper about-image-container">
+          <img src="assets/images/about-team.png" alt="Nuestro Taller BalloonStudio" class="landing-img" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Banner -->
+  <section class="cta-banner">
+    <div class="cta-banner-content">
+      <h2>¿Listo para dar vida a tu celebración?</h2>
+      <p>Comienza a experimentar con colores, formas y tamaños. No necesitas experiencia en diseño.</p>
+      <button pButton label="Crear Mi Primer Diseño" icon="pi pi-sparkles" class="p-button-lg cta-banner-btn" (click)="startDesigning()"></button>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <img src="images/logo-1.png" alt="BalloonStudio Logo" class="landing-footer-logo-img" />
+          <span>BalloonStudio</span>
+        </div>
+        <p>Haciendo que la planificación de decoraciones sea tan divertida como la fiesta misma.</p>
+      </div>
+      <div class="footer-links">
+        <div class="link-group">
+          <h5>Plataforma</h5>
+          <a href="#features">Cómo Funciona</a>
+          <a (click)="startDesigning()" class="cursor-pointer">Creador 2D</a>
+        </div>
+        <div class="link-group">
+          <h5>Contacto</h5>
+          <span>info@balloonstudio.com</span>
+          <span>+591 70000000</span>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 BalloonStudio. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+</div>

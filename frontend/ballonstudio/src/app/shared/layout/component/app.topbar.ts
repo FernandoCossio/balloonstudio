@@ -16,7 +16,7 @@ import { AuthService } from '@/app/features/auth/service/auth.service';
             <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
                 <i class="pi pi-bars"></i>
             </button>
-            <a class="layout-topbar-logo" routerLink="/">
+            <a class="layout-topbar-logo" routerLink="/dashboard">
                 <img src="images/logo-1.png" alt="Balloon Studio" class="w-10 h-10" />
                 <span>Balloon Studio</span>
             </a>
