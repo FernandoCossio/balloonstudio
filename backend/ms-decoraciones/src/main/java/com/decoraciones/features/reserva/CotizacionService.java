@@ -6,8 +6,10 @@ import com.decoraciones.domain.dtos.cotizacion.CotizacionDetalleResponse;
 import com.decoraciones.domain.dtos.proyectodiseno.ElementoLienzoRequest;
 import com.decoraciones.domain.models.ArticuloInventario;
 import com.decoraciones.domain.models.FactorEstacional;
+import com.decoraciones.domain.models.ParametroNegocio;
 import com.decoraciones.domain.models.ProyectoDiseno;
 import com.decoraciones.features.inventario.ArticuloInventarioRepository;
+import com.decoraciones.features.parametro.ParametroNegocioService;
 import com.decoraciones.features.proyectodiseno.ProyectoDisenoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,7 @@ public class CotizacionService {
     private final ProyectoDisenoRepository proyectoRepository;
     private final ArticuloInventarioRepository articuloRepository;
     private final FactorEstacionalRepository factorEstacionalRepository;
+    private final ParametroNegocioService parametroNegocioService;
 
     /**
      * Calcula la cotización completa y detallada según los elementos en el lienzo.
@@ -36,6 +39,8 @@ public class CotizacionService {
     public CotizacionDetalleResponse calcularCotizacion(Long proyectoId, List<ElementoLienzoRequest> elementosRequest, Double customDistanciaKm) {
         ProyectoDiseno proyecto = proyectoRepository.findById(proyectoId)
                 .orElseThrow(ProyectoDisenoNoEncontradoException::new);
+
+        ParametroNegocio params = parametroNegocioService.obtenerParametrosActivos();
 
         LocalDate fechaEvento = proyecto.getFechaEvento() != null ? proyecto.getFechaEvento() : LocalDate.now().plusDays(30);
         
@@ -46,9 +51,12 @@ public class CotizacionService {
             distancia = proyecto.getDistanciaKm();
         }
 
+        log.info("=== INICIANDO CÁLCULO DE COTIZACIÓN ===");
+        log.info("Proyecto ID: {}, Distancia: {} km, Fecha Evento: {}", proyectoId, distancia, fechaEvento);
+
         BigDecimal costoArticulos = BigDecimal.ZERO;
+        BigDecimal costoArmado = BigDecimal.ZERO;
         double volumenTotal = 0.0;
-        String maxComplexity = "BAJO";
         int cantidadTotalArticulos = 0;
         List<CotizacionArticuloDetalle> desglose = new ArrayList<>();
 
@@ -60,7 +68,7 @@ public class CotizacionService {
             ArticuloInventario art = articuloRepository.findById(req.articuloId())
                     .orElseThrow(() -> new IllegalArgumentException("Artículo no encontrado con ID: " + req.articuloId()));
 
-            BigDecimal precioUnitario = calcularPrecioUnitario(art);
+            BigDecimal precioUnitario = calcularPrecioUnitario(art, params);
             BigDecimal precioTotal = precioUnitario.multiply(BigDecimal.valueOf(req.cantidad()));
             costoArticulos = costoArticulos.add(precioTotal);
 
@@ -68,13 +76,23 @@ public class CotizacionService {
             double volUnitario = art.getVolumenM3() != null ? art.getVolumenM3().doubleValue() : 0.0;
             volumenTotal += volUnitario * req.cantidad();
 
-            // Complejidad máxima
+            // CMO acumulativa por tiempo de armado e ítem
+            int tiempoArmado = art.getTiempoArmadoMin() != null ? art.getTiempoArmadoMin() : 0;
             String complexity = art.getNivelComplejidad() != null ? art.getNivelComplejidad().toUpperCase() : "BAJO";
+            BigDecimal tarifaComplejidad = params.getTarifaHoraComplejidadBaja();
             if (complexity.equals("ALTO")) {
-                maxComplexity = "ALTO";
-            } else if (complexity.equals("MEDIO") && !maxComplexity.equals("ALTO")) {
-                maxComplexity = "MEDIO";
+                tarifaComplejidad = params.getTarifaHoraComplejidadAlta();
+            } else if (complexity.equals("MEDIO")) {
+                tarifaComplejidad = params.getTarifaHoraComplejidadMedia();
             }
+
+            BigDecimal cmoItem = BigDecimal.valueOf(tiempoArmado)
+                    .multiply(BigDecimal.valueOf(req.cantidad()))
+                    .multiply(divideSafe(tarifaComplejidad, BigDecimal.valueOf(60)));
+            costoArmado = costoArmado.add(cmoItem);
+
+            log.info("[Fórmula CMO] Artículo: '{}' (ID: {}). Cantidad: {}, Tiempo de Armado: {} min, Complejidad: {}, Tarifa/Hora: {} Bs. CMO Calculado: {} Bs.",
+                    art.getNombre(), art.getId(), req.cantidad(), tiempoArmado, complexity, tarifaComplejidad, cmoItem);
 
             cantidadTotalArticulos += req.cantidad();
 
@@ -89,83 +107,122 @@ public class CotizacionService {
             ));
         }
 
-        // Calcular flete (CLT)
-        BigDecimal costoFlete = calcularFlete(volumenTotal, distancia);
+        // Calcular flete (CLT) con escalabilidad por número de viajes
+        int numeroViajes = 0;
+        BigDecimal costoFlete = BigDecimal.ZERO;
+        double capacidad = params.getCapacidadVolumetricaVehiculo() != null ? params.getCapacidadVolumetricaVehiculo().doubleValue() : 8.0;
+        if (capacidad <= 0) {
+            capacidad = 8.0;
+        }
 
-        // Calcular mano de obra (CMO)
-        BigDecimal costoArmado = calcularManoObra(maxComplexity, cantidadTotalArticulos);
+        if (volumenTotal > 0) {
+            numeroViajes = (int) Math.ceil(volumenTotal / capacidad);
+            if (numeroViajes < 1) {
+                numeroViajes = 1;
+            }
+            BigDecimal tarifaBase = params.getTarifaBaseViaje() != null ? params.getTarifaBaseViaje() : BigDecimal.ZERO;
+            BigDecimal tarifaKm = params.getTarifaKmLogistica() != null ? params.getTarifaKmLogistica() : BigDecimal.ZERO;
+            costoFlete = tarifaBase.multiply(BigDecimal.valueOf(numeroViajes))
+                    .add(BigDecimal.valueOf(distancia).multiply(tarifaKm));
+
+            log.info("[Fórmula CLT] Volumen Total: {} m3, Capacidad Vehículo: {} m3, Viajes requeridos: {}. Tarifa Base/Viaje: {} Bs, Tarifa/Km: {} Bs, Distancia: {} Km. Flete Total: {} Bs.",
+                    volumenTotal, capacidad, numeroViajes, tarifaBase, tarifaKm, distancia, costoFlete);
+        } else {
+            log.info("[Fórmula CLT] Volumen total es 0. Flete establecido en 0 Bs.");
+        }
+
+        // Costo fijo por gastos indirectos (Overhead)
+        BigDecimal costoOverhead = params.getCostoOverheadFijo() != null ? params.getCostoOverheadFijo() : BigDecimal.ZERO;
+        log.info("[Fórmula Overhead] Overhead Fijo aplicado: {} Bs.", costoOverhead);
 
         // Subtotal de flete + armado + artículos
         BigDecimal subtotal = costoArticulos.add(costoFlete).add(costoArmado);
 
-        // Overhead (10%)
-        BigDecimal tasaOverhead = BigDecimal.valueOf(10.00); // 10%
-        BigDecimal overhead = subtotal.multiply(BigDecimal.valueOf(0.10));
-        BigDecimal subtotalConOverhead = subtotal.add(overhead);
+        // Subtotal con Overhead Fijo inyectado
+        BigDecimal subtotalConOverhead = subtotal.add(costoOverhead);
 
         // Factor Estacional
+        BigDecimal factorEstacional = BigDecimal.ONE;
         int mes = fechaEvento.getMonthValue();
-        BigDecimal factorEstacional = factorEstacionalRepository.findByMes(mes)
-                .map(FactorEstacional::getFactorEstacional)
-                .orElse(BigDecimal.ONE);
+        if (Boolean.TRUE.equals(params.getCalcularFactorEstacional())) {
+            factorEstacional = factorEstacionalRepository.findByMes(mes)
+                    .map(FactorEstacional::getFactorEstacional)
+                    .orElse(BigDecimal.ONE);
+            log.info("[Fórmula Factor Estacional] Feature Toggle ACTIVO. Mes del evento: {}, Factor Estacional aplicado: {}x", mes, factorEstacional);
+        } else {
+            log.info("[Fórmula Factor Estacional] Feature Toggle INACTIVO. Factor Estacional forzado a: 1.00x");
+        }
 
         BigDecimal total = subtotalConOverhead.multiply(factorEstacional);
+        log.info("[Fórmula PT] PT = (Artículos: {} + Flete/CLT: {} + Armado/CMO: {} + Overhead: {}) * FactorEstacional: {} = Presupuesto Total (PT) Final: {} Bs.",
+                costoArticulos, costoFlete, costoArmado, costoOverhead, factorEstacional, total);
+        log.info("=== FIN CÁLCULO DE COTIZACIÓN ===");
 
         return new CotizacionDetalleResponse(
                 costoArticulos.setScale(2, RoundingMode.HALF_UP),
                 costoFlete.setScale(2, RoundingMode.HALF_UP),
                 costoArmado.setScale(2, RoundingMode.HALF_UP),
-                tasaOverhead.setScale(2, RoundingMode.HALF_UP),
+                costoOverhead.setScale(2, RoundingMode.HALF_UP),
                 factorEstacional.setScale(2, RoundingMode.HALF_UP),
                 subtotal.setScale(2, RoundingMode.HALF_UP),
                 subtotalConOverhead.setScale(2, RoundingMode.HALF_UP),
                 total.setScale(2, RoundingMode.HALF_UP),
                 cantidadTotalArticulos,
+                BigDecimal.valueOf(volumenTotal).setScale(3, RoundingMode.HALF_UP),
+                numeroViajes,
                 desglose
         );
     }
 
     /**
-     * Calcula el precio unitario del artículo basándose en su tipo (reutilizable vs consumible).
+     * Calcula el precio unitario del artículo basándose en su tipo (reutilizable vs consumible) y parámetros dinámicos.
      */
-    public BigDecimal calcularPrecioUnitario(ArticuloInventario art) {
+    public BigDecimal calcularPrecioUnitario(ArticuloInventario art, ParametroNegocio params) {
         BigDecimal costoAdq = art.getCostoAdquisicion() != null ? art.getCostoAdquisicion() : BigDecimal.ZERO;
-        BigDecimal ganancia = art.getPorcentajeGanancia() != null ? art.getPorcentajeGanancia() : BigDecimal.ZERO;
-        BigDecimal factorGanancia = BigDecimal.ONE.add(ganancia.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
 
         if (art.getTipoArticulo() != null && art.getTipoArticulo().equalsIgnoreCase("reutilizable")) {
-            BigDecimal valRes = art.getValorResidual() != null ? art.getValorResidual() : BigDecimal.ZERO;
-            BigDecimal mantenimiento = art.getMantenimientoPromedioBs() != null ? art.getMantenimientoPromedioBs() : BigDecimal.ZERO;
+            Integer vidaUsos = art.getVidaUtilUsos();
+            Integer vidaAnos = art.getVidaUtilAnos();
+            BigDecimal valRes = art.getValorResidual();
+            BigDecimal mantenimiento = art.getMantenimientoPromedioBs();
+            Integer diasPrep = art.getDiasPreparacionPrevios();
+            Integer diasLimp = art.getDiasLimpiezaPosteriores();
 
-            Integer diasPrep = art.getDiasPreparacionPrevios() != null ? art.getDiasPreparacionPrevios() : 0;
-            Integer diasLimp = art.getDiasLimpiezaPosteriores() != null ? art.getDiasLimpiezaPosteriores() : 0;
-            Integer vidaUsos = art.getVidaUtilUsos() != null ? art.getVidaUtilUsos() : 0;
-            Integer vidaAnos = art.getVidaUtilAnos() != null ? art.getVidaUtilAnos() : 0;
-
-            // FALLBACK ROBUSTO: Si no se configuraron usos ni años, aplicar parámetros por defecto razonables
-            if (vidaUsos <= 0 && vidaAnos <= 0) {
-                log.warn("Artículo reutilizable ID: {} '{}' no tiene configurados vida_util_usos ni vida_util_anos. Aplicando fallback de amortización estándar.", art.getId(), art.getNombre());
-                vidaUsos = 50; // 50 usos estimados
-                vidaAnos = 3;  // 3 años estimados
-                if (art.getValorResidual() == null) {
-                    valRes = costoAdq.multiply(BigDecimal.valueOf(0.10)); // 10% valor residual
+            boolean fallbackApplied = false;
+            // Si usos y años son nulos/vacíos, inyectamos fallbacks
+            if ((vidaUsos == null || vidaUsos <= 0) && (vidaAnos == null || vidaAnos <= 0)) {
+                fallbackApplied = true;
+                vidaUsos = params.getFallbackVidaUtilUsos();
+                vidaAnos = params.getFallbackVidaUtilAnos();
+                if (valRes == null) {
+                    valRes = costoAdq.multiply(params.getFallbackValorResidualPorcentaje().divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
                 }
-                if (art.getMantenimientoPromedioBs() == null) {
-                    mantenimiento = costoAdq.multiply(BigDecimal.valueOf(0.02)); // 2% mantenimiento
+                if (mantenimiento == null) {
+                    mantenimiento = costoAdq.multiply(params.getFallbackMantenimientoPorcentaje().divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
                 }
-                diasPrep = 1;
-                diasLimp = 1;
+                if (diasPrep == null) diasPrep = params.getFallbackDiasPreparacion();
+                if (diasLimp == null) diasLimp = params.getFallbackDiasLimpieza();
+            } else {
+                if (vidaUsos == null || vidaUsos <= 0) vidaUsos = 0;
+                if (vidaAnos == null || vidaAnos <= 0) vidaAnos = 0;
+                if (valRes == null) {
+                    valRes = costoAdq.multiply(params.getFallbackValorResidualPorcentaje().divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
+                }
+                if (mantenimiento == null) {
+                    mantenimiento = costoAdq.multiply(params.getFallbackMantenimientoPorcentaje().divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
+                }
+                if (diasPrep == null) diasPrep = params.getFallbackDiasPreparacion();
+                if (diasLimp == null) diasLimp = params.getFallbackDiasLimpieza();
             }
 
             // Fórmulas
-            // PAU = (costoAdq - valRes) / vidaUsos + mantenimiento
+            // PAU = (Costo_Adquisicion / Vida_Util_Usos) + Mantenimiento
             BigDecimal pau = BigDecimal.ZERO;
             if (vidaUsos > 0) {
-                BigDecimal amortizacion = costoAdq.subtract(valRes);
-                pau = divideSafe(amortizacion, BigDecimal.valueOf(vidaUsos)).add(mantenimiento);
+                pau = divideSafe(costoAdq, BigDecimal.valueOf(vidaUsos)).add(mantenimiento);
             }
 
-            // DLA = ((costoAdq - valRes) / (vidaAnos * 365)) * (1 + diasPrep + diasLimp)
+            // DLA = ((Costo_Adquisicion - Valor_Residual) / (Vida_Util_Anios * 365)) * (1 + Dias_Preparacion + Dias_Limpieza)
             BigDecimal dla = BigDecimal.ZERO;
             if (vidaAnos > 0) {
                 BigDecimal amortizacion = costoAdq.subtract(valRes);
@@ -175,38 +232,47 @@ public class CotizacionService {
                 dla = costoPorDia.multiply(diasAfectados);
             }
 
+            // Provisión por Siniestro (PS)
+            BigDecimal ps = BigDecimal.ZERO;
+            if (Boolean.TRUE.equals(params.getProvisionSiniestroReutilizables())) {
+                ps = costoAdq.multiply(params.getPorcentajeSiniestralidad().divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
+            }
+
+            // PAR unitario final
+            BigDecimal ganancia = art.getPorcentajeGanancia() != null ? art.getPorcentajeGanancia() : params.getFallbackPorcentajeGanancia();
+            if (ganancia == null) {
+                ganancia = BigDecimal.ZERO;
+            }
+            BigDecimal factorGanancia = BigDecimal.ONE.add(ganancia.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
             BigDecimal mayorBase = pau.max(dla);
-            return mayorBase.multiply(factorGanancia);
+            BigDecimal parUnitario = mayorBase.add(ps).multiply(factorGanancia);
+
+            log.info("[Fórmula PAR Reutilizable] Artículo: '{}' (ID: {}). Costo Adq: {} Bs, Vida Usos: {}, Vida Años: {}, Val Residual: {} Bs, Mantenimiento: {} Bs, Días Prep: {}, Días Limpieza: {}. PAU: {} Bs, DLA: {} Bs, PS: {} Bs, Ganancia: {}%. Fallbacks Aplicados: {}. PAR Unitario Resultante: {} Bs.",
+                    art.getNombre(), art.getId(), costoAdq, vidaUsos, vidaAnos, valRes, mantenimiento, diasPrep, diasLimp, pau, dla, ps, ganancia, fallbackApplied, parUnitario);
+
+            return parUnitario;
         } else {
-            // Consumible: Precio = costoAdq * (1 + ganancia/100)
-            return costoAdq.multiply(factorGanancia);
+            // Consumible: PC = Costo_Adquisicion * (1 + (Porcentaje_Markup / 100))
+            BigDecimal markup = art.getPorcentajeGanancia() != null ? art.getPorcentajeGanancia() : params.getFallbackPorcentajeGanancia();
+            if (markup == null) {
+                markup = BigDecimal.ZERO;
+            }
+            BigDecimal factorGanancia = BigDecimal.ONE.add(markup.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
+            BigDecimal pcUnitario = costoAdq.multiply(factorGanancia);
+
+            log.info("[Fórmula PC Consumible] Artículo: '{}' (ID: {}). Costo Adq: {} Bs, Markup: {}%. PC Unitario Resultante: {} Bs.",
+                    art.getNombre(), art.getId(), costoAdq, markup, pcUnitario);
+
+            return pcUnitario;
         }
     }
 
-    private BigDecimal calcularFlete(double volumenM3, double distanciaKm) {
-        double base = 0.0;
-        if (volumenM3 <= 1.5) {
-            base = 100.0;
-        } else if (volumenM3 <= 8.0) {
-            base = 250.0;
-        } else {
-            base = 500.0;
-        }
-        double totalFlete = base + (distanciaKm * 5.0);
-        return BigDecimal.valueOf(totalFlete);
-    }
-
-    private BigDecimal calcularManoObra(String maxComplexity, int cantidadTotal) {
-        if (cantidadTotal == 0) {
-            return BigDecimal.ZERO;
-        }
-        double base = 50.0; // BAJO
-        if (maxComplexity.equalsIgnoreCase("ALTO")) {
-            base = 350.0;
-        } else if (maxComplexity.equalsIgnoreCase("MEDIO")) {
-            base = 150.0;
-        }
-        return BigDecimal.valueOf(base);
+    /**
+     * Fallback deprecated signature for compatibility or external tests.
+     */
+    public BigDecimal calcularPrecioUnitario(ArticuloInventario art) {
+        ParametroNegocio params = parametroNegocioService.obtenerParametrosActivos();
+        return calcularPrecioUnitario(art, params);
     }
 
     private BigDecimal divideSafe(BigDecimal numerator, BigDecimal denominator) {

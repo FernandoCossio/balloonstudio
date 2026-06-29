@@ -74,7 +74,8 @@ export class AppMenu {
                     { label: 'Empleados', icon: 'pi pi-fw pi-users', routerLink: ['/empleados'] },
                     { label: 'Reservas', icon: 'pi pi-fw pi-calendar', routerLink: ['/reservas'] },
                     { label: 'Reportes', icon: 'pi pi-fw pi-file', routerLink: ['/reportes'] },
-                    { label: 'Configuración', icon: 'pi pi-fw pi-cog', routerLink: ['/configuracion'] }
+                    { label: 'Configuración', icon: 'pi pi-fw pi-cog', routerLink: ['/configuracion'] },
+                    { label: 'Parámetros Contables', icon: 'pi pi-fw pi-calculator', routerLink: ['/parametros-contabilidad'] }
                 ]
             },
             {

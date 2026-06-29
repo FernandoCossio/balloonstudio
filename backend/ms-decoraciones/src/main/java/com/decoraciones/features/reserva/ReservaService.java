@@ -190,7 +190,10 @@ public class ReservaService {
         cotizacion.setTotal(total);
         cotizacion.setEstado("ACEPTADA");
         cotizacion.setFechaGeneracion(LocalDateTime.now());
-        cotizacion.setTasaOverheadAplicada(detail.tasaOverheadAplicada());
+        cotizacion.setCostoOverheadAplicado(detail.costoOverhead());
+        cotizacion.setFactorEstacionalAplicado(detail.factorEstacionalAplicado());
+        cotizacion.setVolumenTotalM3(detail.volumenTotalM3());
+        cotizacion.setNumeroViajes(detail.numeroViajes());
         cotizacion = cotizacionRepository.save(cotizacion);
 
         // 3. Crear Reserva CONFIRMADA

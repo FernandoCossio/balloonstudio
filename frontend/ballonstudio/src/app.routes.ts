@@ -16,6 +16,7 @@ export const appRoutes: Routes = [
             { path: 'reportes', loadChildren: () => import('./app/features/reportes/reportes.routes') },
             { path: 'reservas', loadChildren: () => import('./app/features/reservas/reserva.routes') },
             { path: 'configuracion', loadChildren: () => import('./app/features/configuracion/configuracion.routes').then(m => m.CONFIGURACION_ROUTES) },
+            { path: 'parametros-contabilidad', loadChildren: () => import('./app/features/parametros-negocio/parametros-negocio.route').then(m => m.PARAMETROS_NEGOCIO_ROUTES) },
             {
                 path: 'proyectos',
                 loadComponent: () =>
