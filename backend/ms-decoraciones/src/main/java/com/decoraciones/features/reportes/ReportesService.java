@@ -355,8 +355,8 @@ public class ReportesService {
 
     // ── Reporte de Usuarios PDF ───────────────────────────────────────────────
 
-    public byte[] generarUsuariosPdf(String rol, Boolean activo) {
-        List<Usuario> usuarios = usuarioRepository.buscarReporte(rol, activo);
+    public byte[] generarUsuariosPdf(String rol, Boolean activo, String query, LocalDateTime fechaInicio, LocalDateTime fechaFin) {
+        List<Usuario> usuarios = usuarioRepository.buscarReporte(rol, activo, query, fechaInicio, fechaFin);
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Document document = new Document(PageSize.A4, 36, 36, 36, 36);
@@ -372,7 +372,11 @@ public class ReportesService {
             title.setAlignment(Element.ALIGN_CENTER);
             document.add(title);
 
-            Paragraph info = new Paragraph("Filtros: Rol: " + (rol != null ? rol : "TODOS") + " | Estado: " + (activo != null ? (activo ? "ACTIVO" : "INACTIVO") : "TODOS"), infoFont);
+            Paragraph info = new Paragraph("Filtros: Rol: " + (rol != null ? rol : "TODOS") + 
+                    " | Estado: " + (activo != null ? (activo ? "ACTIVO" : "INACTIVO") : "TODOS") +
+                    (query != null ? " | Búsqueda: " + query : "") +
+                    (fechaInicio != null ? " | Desde: " + fechaInicio.format(DATE_FORMATTER) : "") +
+                    (fechaFin != null ? " | Hasta: " + fechaFin.format(DATE_FORMATTER) : ""), infoFont);
             info.setAlignment(Element.ALIGN_CENTER);
             info.setSpacingAfter(20);
             document.add(info);
@@ -420,8 +424,8 @@ public class ReportesService {
 
     // ── Reporte de Usuarios Excel ─────────────────────────────────────────────
 
-    public byte[] generarUsuariosExcel(String rol, Boolean activo) {
-        List<Usuario> usuarios = usuarioRepository.buscarReporte(rol, activo);
+    public byte[] generarUsuariosExcel(String rol, Boolean activo, String query, LocalDateTime fechaInicio, LocalDateTime fechaFin) {
+        List<Usuario> usuarios = usuarioRepository.buscarReporte(rol, activo, query, fechaInicio, fechaFin);
 
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Reporte Usuarios");
@@ -477,8 +481,8 @@ public class ReportesService {
         return reservaRepository.buscarReporte(inicio, fin, estado);
     }
 
-    public List<Usuario> buscarUsuarios(String rol, Boolean activo) {
-        return usuarioRepository.buscarReporte(rol, activo);
+    public List<Usuario> buscarUsuarios(String rol, Boolean activo, String query, LocalDateTime fechaInicio, LocalDateTime fechaFin) {
+        return usuarioRepository.buscarReporte(rol, activo, query, fechaInicio, fechaFin);
     }
 
     // ── Generar Propuesta PDF por ID de Reserva (CA-01: acceso admin/empleado) ─
