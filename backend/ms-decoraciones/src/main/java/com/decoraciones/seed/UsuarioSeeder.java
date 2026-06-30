@@ -43,12 +43,12 @@ public class UsuarioSeeder implements CommandLineRunner {
                 .orElseThrow(() -> new RuntimeException("Error: Rol CLIENTE no encontrado."));
 
         // 1. Administradores
-        seedUsuario("fcossio100", "fcossio100@gmail.com", "Fernando Cossio", "70000001", true, Set.of(adminRol));
-        seedUsuario("axelmquispia", "axelmquispia@gmail.com", "Axel Quispe", "70000002", true, Set.of(adminRol));
+        seedUsuario("admin1", "fcossio100@gmail.com", "Fernando Cossio", "70000001", true, Set.of(adminRol));
+        seedUsuario("admin2", "axelmquispia@gmail.com", "Axel Quispe", "70000002", true, Set.of(adminRol));
 
         // 2. Empleados Específicos
-        seedUsuario("fcossio333", "fcossio333@gmail.com", "Fernando Cossio Empleado", "70000003", true, Set.of(empleadoRol));
-        seedUsuario("alexandernetx", "alexander.netx@gmail.com", "Alexander Netx", "70000004", true, Set.of(empleadoRol));
+        seedUsuario("fernandoe", "fcossio333@gmail.com", "Fernando Cossio Empleado", "70000003", true, Set.of(empleadoRol));
+        seedUsuario("axele", "alexander.netx@gmail.com", "Alexander Netx", "70000004", true, Set.of(empleadoRol));
 
         // 3. Empleados Genéricos
         for (int i = 1; i <= 5; i++) {
@@ -56,8 +56,8 @@ public class UsuarioSeeder implements CommandLineRunner {
         }
 
         // 4. Clientes Específicos
-        seedUsuario("fcossio0x41", "fcossio0x41@gmail.com", "Fernando Cossio Cliente", "72000001", true, Set.of(clienteRol));
-        seedUsuario("axelmqdocs", "axelmq.docs@gmail.com", "Axel Quispe Cliente", "72000002", true, Set.of(clienteRol));
+        seedUsuario("fernandoc", "fcossio0x41@gmail.com", "Fernando Cossio Cliente", "72000001", true, Set.of(clienteRol));
+        seedUsuario("axelc", "axelmq.docs@gmail.com", "Axel Quispe Cliente", "72000002", true, Set.of(clienteRol));
 
         // 5. Clientes Genéricos
         // 10 activos (cliente1 a cliente10)
