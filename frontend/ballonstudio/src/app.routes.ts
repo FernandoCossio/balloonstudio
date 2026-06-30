@@ -13,7 +13,7 @@ export const appRoutes: Routes = [
         path: '',
         component: AppLayout,
         children: [
-            { path: 'dashboard', component: Dashboard },
+            { path: 'dashboard', loadChildren: () => import('./app/features/dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES) },
             { path: 'pages', loadChildren: () => import('./app/shared/pages/shared.routes') },
             { path: 'inventario', loadChildren: () => import('./app/features/articulo-inventario/articulo-inventario.routes') },
             { path: 'categorias', loadChildren: () => import('./app/features/categoria/categoria.routes').then(m => m.CATEGORIA_ROUTES) },

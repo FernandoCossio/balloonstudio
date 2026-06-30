@@ -1,0 +1,248 @@
+<div class="dashboard-container p-6 space-y-6">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
+    <div>
+      <h1 class="text-3xl font-extrabold tracking-tight text-slate-800 dark:text-white">Panel de Administración</h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400">Resumen operativo y financiero en tiempo real</p>
+    </div>
+    <button pButton icon="pi pi-refresh" label="Actualizar" (click)="loadMetrics()" [loading]="loading()" class="p-button-outlined p-button-secondary rounded-lg"></button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="flex justify-center items-center h-96">
+    <div class="text-center space-y-4">
+      <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+      <p class="text-slate-500 font-medium">Cargando métricas del sistema...</p>
+    </div>
+  </div>
+
+  <!-- Content State -->
+  <div *ngIf="!loading() && metrics()" class="space-y-8 animate-fade-in">
+    <!-- KPI Cards Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+      <!-- Total Revenue -->
+      <div class="kpi-card revenue-card bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm transition-all duration-300">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Ingresos Totales</p>
+            <h3 class="text-2xl font-black mt-2 text-slate-800 dark:text-white">{{ metrics()?.kpis?.totalRevenue || 0 | currency:'Bs. ':'symbol':'1.2-2' }}</h3>
+          </div>
+          <span class="p-3 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl">
+            <i class="pi pi-dollar text-xl"></i>
+          </span>
+        </div>
+      </div>
+
+      <!-- Total Reservations -->
+      <div class="kpi-card reservations-card bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm transition-all duration-300">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Reservas</p>
+            <h3 class="text-2xl font-black mt-2 text-slate-800 dark:text-white">{{ metrics()?.kpis?.totalReservations || 0 }}</h3>
+          </div>
+          <span class="p-3 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl">
+            <i class="pi pi-calendar text-xl"></i>
+          </span>
+        </div>
+      </div>
+
+      <!-- Active Clients -->
+      <div class="kpi-card clients-card bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm transition-all duration-300">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Clientes Activos</p>
+            <h3 class="text-2xl font-black mt-2 text-slate-800 dark:text-white">{{ metrics()?.kpis?.activeClients || 0 }}</h3>
+          </div>
+          <span class="p-3 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-xl">
+            <i class="pi pi-users text-xl"></i>
+          </span>
+        </div>
+      </div>
+
+      <!-- Design Projects -->
+      <div class="kpi-card projects-card bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm transition-all duration-300">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Proyectos Diseño</p>
+            <h3 class="text-2xl font-black mt-2 text-slate-800 dark:text-white">{{ metrics()?.kpis?.designProjects || 0 }}</h3>
+          </div>
+          <span class="p-3 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl">
+            <i class="pi pi-image text-xl"></i>
+          </span>
+        </div>
+      </div>
+
+      <!-- Total Articles -->
+      <div class="kpi-card articles-card bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm transition-all duration-300">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Artículos Catálogo</p>
+            <h3 class="text-2xl font-black mt-2 text-slate-800 dark:text-white">{{ metrics()?.kpis?.totalArticles || 0 }}</h3>
+          </div>
+          <span class="p-3 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 rounded-xl">
+            <i class="pi pi-box text-xl"></i>
+          </span>
+        </div>
+      </div>
+
+      <!-- Low Stock Alerts -->
+      <div class="kpi-card alerts-card bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm transition-all duration-300">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Alertas Stock</p>
+            <h3 class="text-2xl font-black mt-2 text-slate-800 dark:text-white">{{ metrics()?.kpis?.lowStockAlerts || 0 }}</h3>
+          </div>
+          <span class="p-3 bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-xl" [class.animate-pulse]="(metrics()?.kpis?.lowStockAlerts || 0) > 0">
+            <i class="pi pi-exclamation-triangle text-xl"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Revenue Trend -->
+      <div class="chart-container bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm lg:col-span-2 flex flex-col">
+        <h2 class="text-lg font-bold text-slate-800 dark:text-white mb-4">Ingresos de los Últimos 6 Meses</h2>
+        <div class="flex-grow flex flex-col justify-center min-h-[300px]">
+          <!-- Non-empty chart state -->
+          <p-chart *ngIf="metrics()?.kpis?.totalRevenue && metrics()!.kpis.totalRevenue > 0" type="bar" [data]="revenueData()" [options]="revenueOptions()" class="w-full"></p-chart>
+          
+          <!-- Empty chart state -->
+          <div *ngIf="!metrics()?.kpis?.totalRevenue || metrics()!.kpis.totalRevenue === 0" class="empty-state">
+            <div class="empty-icon-wrapper pulse">
+              <i class="pi pi-chart-line"></i>
+            </div>
+            <h3 class="empty-title">Sin historial de ingresos</h3>
+            <p class="empty-desc">Los gráficos financieros se activarán una vez que se registren los primeros pagos completados.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reservation Status -->
+      <div class="chart-container bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col">
+        <h2 class="text-lg font-bold text-slate-800 dark:text-white mb-4">Distribución de Reservas</h2>
+        <div class="flex-grow flex flex-col justify-center min-h-[300px]">
+          <!-- Non-empty state -->
+          <div *ngIf="metrics()?.kpis?.totalReservations && metrics()!.kpis.totalReservations > 0" class="flex justify-center items-center w-full">
+            <p-chart type="doughnut" [data]="statusData()" [options]="statusOptions()" class="w-full max-w-[260px]"></p-chart>
+          </div>
+          
+          <!-- Empty state -->
+          <div *ngIf="!metrics()?.kpis?.totalReservations || metrics()!.kpis.totalReservations === 0" class="empty-state">
+            <div class="empty-icon-wrapper">
+              <i class="pi pi-calendar-times"></i>
+            </div>
+            <h3 class="empty-title">Sin reservas registradas</h3>
+            <p class="empty-desc">No hay datos de estados disponibles para mostrar en la distribución.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed Lists Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Recent Reservations -->
+      <div class="list-container bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm lg:col-span-2">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-bold text-slate-800 dark:text-white">Reservas Recientes</h2>
+          <button pButton label="Ver todas" icon="pi pi-arrow-right" class="p-button-text p-button-sm" routerLink="/reservas"></button>
+        </div>
+        
+        <!-- Non-empty state -->
+        <p-table *ngIf="metrics()?.recentReservations?.length" [value]="metrics()?.recentReservations || []" responsiveLayout="scroll" styleClass="p-datatable-striped">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Cliente</th>
+              <th>Fecha Reserva</th>
+              <th>Monto Total</th>
+              <th>Estado</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-reserva>
+            <tr>
+              <td class="font-medium text-slate-700 dark:text-slate-300">{{ reserva.cliente }}</td>
+              <td class="text-slate-600 dark:text-slate-400">{{ reserva.fechaReserva | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td class="font-bold text-slate-800 dark:text-white">{{ reserva.total | currency:'Bs. ':'symbol':'1.2-2' }}</td>
+              <td>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold"
+                  [ngClass]="{
+                    'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400': reserva.estado === 'PENDIENTE_PAGO',
+                    'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400': reserva.estado === 'CONFIRMADA',
+                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': reserva.estado === 'EXPIRADA',
+                    'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-400': reserva.estado === 'CANCELADA'
+                  }">
+                  {{ reserva.estado }}
+                </span>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+
+        <!-- Empty state -->
+        <div *ngIf="!metrics()?.recentReservations?.length" class="empty-state py-12">
+          <div class="empty-icon-wrapper pulse">
+            <i class="pi pi-inbox"></i>
+          </div>
+          <h3 class="empty-title">Bandeja de reservas vacía</h3>
+          <p class="empty-desc">Las solicitudes de reserva se listarán aquí en orden cronológico en cuanto se inicien.</p>
+        </div>
+      </div>
+
+      <!-- Popular & Low Stock Section -->
+      <div class="space-y-8">
+        <!-- Low Stock warning -->
+        <div class="list-container bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+          <h2 class="text-lg font-bold text-rose-600 dark:text-rose-400 mb-4 flex items-center gap-2">
+            <i class="pi pi-exclamation-circle"></i> Alertas de Stock Bajo
+          </h2>
+          
+          <!-- Non-empty state -->
+          <ul class="divide-y divide-slate-100 dark:divide-slate-800" *ngIf="metrics()?.lowStockArticles?.length">
+            <li *ngFor="let art of metrics()?.lowStockArticles" class="py-3 flex justify-between items-center">
+              <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ art.nombre }}</span>
+              <span class="px-2 py-1 rounded bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-400 text-xs font-bold">
+                {{ art.stockTotal }} disp.
+              </span>
+            </li>
+          </ul>
+
+          <!-- Empty state -->
+          <div *ngIf="!metrics()?.lowStockArticles?.length" class="empty-state py-6">
+            <div class="empty-icon-wrapper !bg-emerald-50 text-emerald-500 !border-emerald-200">
+              <i class="pi pi-check-circle"></i>
+            </div>
+            <h3 class="empty-title">Stock óptimo</h3>
+            <p class="empty-desc">Todos los artículos del inventario se encuentran por encima de los límites mínimos.</p>
+          </div>
+        </div>
+
+        <!-- Popular Articles -->
+        <div class="list-container bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+          <h2 class="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+            <i class="pi pi-star text-amber-500"></i> Más Populares (Canvas)
+          </h2>
+
+          <!-- Non-empty state -->
+          <ul class="divide-y divide-slate-100 dark:divide-slate-800" *ngIf="metrics()?.popularArticles?.length">
+            <li *ngFor="let art of metrics()?.popularArticles" class="py-3 flex justify-between items-center">
+              <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ art.nombre }}</span>
+              <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+                {{ art.usageCount }} usos
+              </span>
+            </li>
+          </ul>
+
+          <!-- Empty state -->
+          <div *ngIf="!metrics()?.popularArticles?.length" class="empty-state py-6">
+            <div class="empty-icon-wrapper">
+              <i class="pi pi-box"></i>
+            </div>
+            <h3 class="empty-title">Sin artículos populares</h3>
+            <p class="empty-desc">Las estadísticas de popularidad se generan cuando los diseñadores coloquen artículos en sus lienzos.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

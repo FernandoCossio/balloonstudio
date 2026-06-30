@@ -48,6 +48,7 @@ public class SecurityConfig {
 					"/reportes/**"
 				).permitAll()
 				.requestMatchers("/empleados/**").hasAuthority("role_administrador")
+				.requestMatchers("/dashboard/**").hasAuthority("role_administrador")
 				.requestMatchers(HttpMethod.POST, "/inventario").hasAuthority("role_administrador")
 				.requestMatchers(HttpMethod.PUT, "/inventario/*").hasAuthority("role_administrador")
 				.requestMatchers(HttpMethod.DELETE, "/inventario/*").hasAuthority("role_administrador")
