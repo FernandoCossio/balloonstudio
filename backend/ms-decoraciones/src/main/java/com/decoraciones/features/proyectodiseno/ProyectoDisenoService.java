@@ -74,6 +74,8 @@ public class ProyectoDisenoService {
         proyecto.setLugarEvento(request.lugarEvento());
         proyecto.setNumeroMetadato(request.numeroMetadato());
         proyecto.setDistanciaKm(request.distanciaKm());
+        proyecto.setLatitud(request.latitud());
+        proyecto.setLongitud(request.longitud());
         proyecto.setUsuario(usuario);
         return toProyectoResponse(proyectoRepository.save(proyecto));
     }
@@ -90,6 +92,8 @@ public class ProyectoDisenoService {
         proyecto.setLugarEvento(request.lugarEvento());
         proyecto.setNumeroMetadato(request.numeroMetadato());
         proyecto.setDistanciaKm(request.distanciaKm());
+        proyecto.setLatitud(request.latitud());
+        proyecto.setLongitud(request.longitud());
 
         return toProyectoResponse(proyectoRepository.save(proyecto));
     }
@@ -268,7 +272,7 @@ public class ProyectoDisenoService {
         return new ProyectoDisenoResponse(
                 p.getId(), p.getNombre(), p.getDescripcion(), p.getEstado(),
                 p.getFechaEvento(), p.getLugarEvento(), p.getNumeroMetadato(),
-                p.getDistanciaKm(), p.getCostoRealTotal(), p.getEscenarioBaseId(),
+                p.getDistanciaKm(), p.getLatitud(), p.getLongitud(), p.getCostoRealTotal(), p.getEscenarioBaseId(),
                 p.getFechaCreacion(), p.getFechaUltimaModificacion(),
                 List.of()   // sin escenarios en listado general — evita N+1
         );
@@ -282,7 +286,7 @@ public class ProyectoDisenoService {
         return new ProyectoDisenoResponse(
                 p.getId(), p.getNombre(), p.getDescripcion(), p.getEstado(),
                 p.getFechaEvento(), p.getLugarEvento(), p.getNumeroMetadato(),
-                p.getDistanciaKm(), p.getCostoRealTotal(), p.getEscenarioBaseId(),
+                p.getDistanciaKm(), p.getLatitud(), p.getLongitud(), p.getCostoRealTotal(), p.getEscenarioBaseId(),
                 p.getFechaCreacion(), p.getFechaUltimaModificacion(),
                 escenarios
         );

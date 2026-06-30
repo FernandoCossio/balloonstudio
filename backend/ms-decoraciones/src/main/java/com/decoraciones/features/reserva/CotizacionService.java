@@ -31,11 +31,12 @@ public class CotizacionService {
     private final ArticuloInventarioRepository articuloRepository;
     private final FactorEstacionalRepository factorEstacionalRepository;
     private final ParametroNegocioService parametroNegocioService;
+    private final com.decoraciones.features.configuracion.ConfiguracionRepository configuracionRepository;
 
     /**
      * Calcula la cotización completa y detallada según los elementos en el lienzo.
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public CotizacionDetalleResponse calcularCotizacion(Long proyectoId, List<ElementoLienzoRequest> elementosRequest, Double customDistanciaKm) {
         ProyectoDiseno proyecto = proyectoRepository.findById(proyectoId)
                 .orElseThrow(ProyectoDisenoNoEncontradoException::new);
@@ -47,6 +48,31 @@ public class CotizacionService {
         double distancia = 10.0;
         if (customDistanciaKm != null) {
             distancia = customDistanciaKm;
+        } else if (proyecto.getLatitud() != null && proyecto.getLongitud() != null) {
+            try {
+                String empLatStr = configuracionRepository.findByClave("EMPRESA_LATITUD")
+                        .map(com.decoraciones.domain.models.Configuracion::getValor).orElse(null);
+                String empLonStr = configuracionRepository.findByClave("EMPRESA_LONGITUD")
+                        .map(com.decoraciones.domain.models.Configuracion::getValor).orElse(null);
+                if (empLatStr != null && empLonStr != null) {
+                    double empLat = Double.parseDouble(empLatStr);
+                    double empLon = Double.parseDouble(empLonStr);
+                    distancia = calcularDistanciaHaversine(empLat, empLon, proyecto.getLatitud(), proyecto.getLongitud());
+                    
+                    // Guardar la distancia real calculada en el proyecto
+                    if (proyecto.getDistanciaKm() == null || Math.abs(proyecto.getDistanciaKm() - distancia) > 0.01) {
+                        proyecto.setDistanciaKm(distancia);
+                        proyectoRepository.save(proyecto);
+                    }
+                } else if (proyecto.getDistanciaKm() != null) {
+                    distancia = proyecto.getDistanciaKm();
+                }
+            } catch (Exception e) {
+                log.warn("Error al calcular distancia georreferenciada, usando fallback o distanciaKm", e);
+                if (proyecto.getDistanciaKm() != null) {
+                    distancia = proyecto.getDistanciaKm();
+                }
+            }
         } else if (proyecto.getDistanciaKm() != null) {
             distancia = proyecto.getDistanciaKm();
         }
@@ -280,5 +306,16 @@ public class CotizacionService {
             return BigDecimal.ZERO;
         }
         return numerator.divide(denominator, 4, RoundingMode.HALF_UP);
+    }
+
+    private double calcularDistanciaHaversine(double lat1, double lon1, double lat2, double lon2) {
+        final int R = 6371; // Radio de la Tierra en Km
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
     }
 }

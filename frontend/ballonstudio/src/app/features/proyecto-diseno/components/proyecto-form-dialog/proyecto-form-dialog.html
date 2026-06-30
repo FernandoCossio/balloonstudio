@@ -1,25 +1,32 @@
-<div class="proyecto-form">
-  <div class="field">
-    <label>Nombre del proyecto *</label>
+<div class="proyecto-form flex flex-col gap-4">
+  <div class="field flex flex-col gap-1">
+    <label class="font-medium text-sm">Nombre del proyecto *</label>
     <input pInputText [ngModel]="nombre()" (ngModelChange)="nombre.set($event)"
            placeholder="Ej: Boda García 2025" class="w-full"/>
   </div>
-  <div class="field">
-    <label>Descripción</label>
+  <div class="field flex flex-col gap-1">
+    <label class="font-medium text-sm">Descripción</label>
     <textarea pTextarea [ngModel]="descripcion()" (ngModelChange)="descripcion.set($event)"
-              rows="3" class="w-full"></textarea>
+              rows="2" class="w-full"></textarea>
   </div>
-  <div class="field">
-    <label>Lugar del evento</label>
-    <input pInputText [ngModel]="lugarEvento()" (ngModelChange)="lugarEvento.set($event)"
-           placeholder="Ej: Club Social" class="w-full"/>
-  </div>
-  <div class="field">
-    <label>Fecha del evento</label>
+  <div class="field flex flex-col gap-1">
+    <label class="font-medium text-sm">Fecha del evento</label>
     <p-datepicker [ngModel]="fechaEvento()" (ngModelChange)="fechaEvento.set($event)"
                   dateFormat="dd/mm/yy" [showIcon]="true" [minDate]="minFecha" appendTo="body" class="w-full"/>
   </div>
-  <div class="proyecto-form__actions">
+  <div class="field flex flex-col gap-1">
+    <label class="font-medium text-sm">Lugar del evento (Dirección)</label>
+    <input pInputText [ngModel]="lugarEvento()" (ngModelChange)="lugarEvento.set($event)"
+           placeholder="Selecciona en el mapa o escribe aquí..." class="w-full"/>
+  </div>
+  <div class="field flex flex-col gap-1">
+    <label class="font-medium text-sm text-gray-600 dark:text-gray-400">Seleccione la ubicación en el mapa</label>
+    <div id="map-dialog" style="height: 230px; width: 100%; border-radius: 8px; border: 1px solid var(--surface-border); z-index: 1;"></div>
+    @if (latitud() && longitud()) {
+      <span class="text-xs text-gray-500 mt-1 block">Coordenadas: {{ latitud() | number:'1.6-6' }}, {{ longitud() | number:'1.6-6' }}</span>
+    }
+  </div>
+  <div class="proyecto-form__actions flex justify-end gap-2 mt-2">
     <p-button label="Cancelar" severity="secondary" (onClick)="cancelar()"/>
     <p-button [label]="modoEdicion ? 'Guardar cambios' : 'Crear proyecto'"
               [loading]="cargando()" [disabled]="!nombre().trim()" (onClick)="guardar()"/>
