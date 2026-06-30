@@ -82,6 +82,16 @@ export class ProyectoDisenoService {
       ).pipe(map(r => r.data));
   }
 
+  uploadDisenoEscenario(proyectoId: number, escenarioId: number,
+                        file: File): Observable<EscenarioBaseResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http
+      .post<ApiResponse<EscenarioBaseResponse>>(
+        `${this.apiUrl}/${proyectoId}/escenarios/${escenarioId}/upload-diseno`, formData
+      ).pipe(map(r => r.data));
+  }
+
   deleteEscenario(proyectoId: number, escenarioId: number): Observable<void> {
     return this.http
       .delete<ApiResponse<void>>(

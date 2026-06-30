@@ -70,9 +70,13 @@ export class AppMenu {
             {
                 label: 'Administrador',
                 items: [
-                    { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] },
+                    { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/dashboard'] },
                     { label: 'Empleados', icon: 'pi pi-fw pi-users', routerLink: ['/empleados'] },
-                    { label: 'Reportes', icon: 'pi pi-fw pi-file', routerLink: ['/reportes'] }
+                    { label: 'Reservas', icon: 'pi pi-fw pi-calendar', routerLink: ['/reservas'] },
+                    { label: 'Reporte Ventas', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/reportes'] },
+                    { label: 'Reporte Clientes', icon: 'pi pi-fw pi-users', routerLink: ['/reportes/clientes'] },
+                    { label: 'Configuración', icon: 'pi pi-fw pi-cog', routerLink: ['/configuracion'] },
+                    { label: 'Parámetros Contables', icon: 'pi pi-fw pi-calculator', routerLink: ['/parametros-contabilidad'] }
                 ]
             },
             {
@@ -83,6 +87,11 @@ export class AppMenu {
                         label: 'Artículos',
                         icon: 'pi pi-fw pi-box',
                         routerLink: ['/inventario']
+                    },
+                    {
+                        label: 'Categorías',
+                        icon: 'pi pi-fw pi-tags',
+                        routerLink: ['/categorias']
                     },
                     {
                         label: 'Incidencias',
@@ -99,8 +108,10 @@ export class AppMenu {
             {
                 label: 'Empleado',
                 items: [
-                    { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] },
-                    { label: 'Reportes', icon: 'pi pi-fw pi-file', routerLink: ['/reportes'] }
+                    { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/dashboard'] },
+                    { label: 'Reservas', icon: 'pi pi-fw pi-calendar', routerLink: ['/reservas'] },
+                    { label: 'Reporte Ventas', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/reportes'] },
+                    { label: 'Reporte Clientes', icon: 'pi pi-fw pi-users', routerLink: ['/reportes/clientes'] }
                 ]
             },
             {
@@ -111,6 +122,11 @@ export class AppMenu {
                         label: 'Artículos',
                         icon: 'pi pi-fw pi-box',
                         routerLink: ['/inventario']
+                    },
+                    {
+                        label: 'Categorías',
+                        icon: 'pi pi-fw pi-tags',
+                        routerLink: ['/categorias']
                     },
                     {
                         label: 'Incidencias',
@@ -129,13 +145,18 @@ export class AppMenu {
             //     items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
             // },
             {
-                label: 'Proyectos',
+                label: 'Proyectos y Reservas',
                 icon: 'pi pi-fw pi-box',
                 items: [
                     {
                         label: 'Proyectos',
                         icon: 'pi pi-fw pi-box',
                         routerLink: ['/proyectos']
+                    },
+                    {
+                        label: 'Reservas',
+                        icon: 'pi pi-fw pi-calendar',
+                        routerLink: ['/reservas']
                     }
                 ]
             }

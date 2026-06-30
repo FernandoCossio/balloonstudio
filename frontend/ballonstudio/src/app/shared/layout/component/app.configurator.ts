@@ -7,14 +7,14 @@ import { LayoutService } from '../service/layout.service';
     standalone: true,
     imports: [ButtonModule],
     template: `
-        <p-button
+        <button
             type="button"
-            (onClick)="toggleDarkMode()"
-            [rounded]="true"
-            [text]="true"
-            [icon]="layoutService.isDarkTheme() ? 'pi pi-moon' : 'pi pi-sun'"
-            styleClass="layout-topbar-action"
-        />
+            class="layout-topbar-action"
+            (click)="toggleDarkMode()"
+            [title]="layoutService.isDarkTheme() ? 'Modo Claro' : 'Modo Oscuro'"
+        >
+            <i [class]="layoutService.isDarkTheme() ? 'pi pi-sun' : 'pi pi-moon'"></i>
+        </button>
     `
 })
 export class AppConfigurator {

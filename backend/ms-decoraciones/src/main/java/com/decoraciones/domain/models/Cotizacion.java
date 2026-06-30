@@ -44,6 +44,18 @@ public class Cotizacion extends BaseEntity {
     @Column(name = "tasa_overhead_aplicada", precision = 5, scale = 2)
     private BigDecimal tasaOverheadAplicada;
 
+    @Column(name = "costo_overhead_aplicado", precision = 12, scale = 2)
+    private BigDecimal costoOverheadAplicado;
+
+    @Column(name = "factor_estacional_aplicado", precision = 5, scale = 2)
+    private BigDecimal factorEstacionalAplicado;
+
+    @Column(name = "volumen_total_m3", precision = 8, scale = 3)
+    private BigDecimal volumenTotalM3;
+
+    @Column(name = "numero_viajes")
+    private Integer numeroViajes;
+
     @Column(precision = 12, scale = 2, nullable = false)
     private BigDecimal total;
 

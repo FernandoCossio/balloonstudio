@@ -74,6 +74,8 @@ public class ProyectoDisenoService {
         proyecto.setLugarEvento(request.lugarEvento());
         proyecto.setNumeroMetadato(request.numeroMetadato());
         proyecto.setDistanciaKm(request.distanciaKm());
+        proyecto.setLatitud(request.latitud());
+        proyecto.setLongitud(request.longitud());
         proyecto.setUsuario(usuario);
         return toProyectoResponse(proyectoRepository.save(proyecto));
     }
@@ -90,6 +92,8 @@ public class ProyectoDisenoService {
         proyecto.setLugarEvento(request.lugarEvento());
         proyecto.setNumeroMetadato(request.numeroMetadato());
         proyecto.setDistanciaKm(request.distanciaKm());
+        proyecto.setLatitud(request.latitud());
+        proyecto.setLongitud(request.longitud());
 
         return toProyectoResponse(proyectoRepository.save(proyecto));
     }
@@ -159,11 +163,40 @@ public class ProyectoDisenoService {
 
         String extension  = getExtension(file.getOriginalFilename());
         String nombreArchivo = "escenario-" + escenarioId + "-" + UUID.randomUUID() + "." + extension;
-        Path destino = Paths.get(uploadDir, "escenarios", nombreArchivo);
+
+        UUID proyectoUuid = escenario.getProyectoDiseno().getUuid();
+        UUID escenarioUuid = escenario.getUuid();
+
+        Path destino = Paths.get(uploadDir, proyectoUuid.toString(), escenarioUuid.toString(), nombreArchivo);
         Files.createDirectories(destino.getParent());
         Files.write(destino, file.getBytes());
 
-        escenario.setImagenUrl("escenarios/" + nombreArchivo);
+        String relativePath = proyectoUuid.toString() + "/" + escenarioUuid.toString() + "/" + nombreArchivo;
+        escenario.setImagenUrl(relativePath);
+        return toEscenarioResponse(escenarioRepository.save(escenario));
+    }
+
+    public EscenarioBaseResponse uploadDisenoEscenario(Long escenarioId, Long proyectoId,
+                                                       MultipartFile file) throws IOException {
+        EscenarioBase escenario = escenarioRepository
+                .findByIdAndProyectoDisenoId(escenarioId, proyectoId)
+                .orElseThrow(ProyectoDisenoNoEncontradoException::new);
+
+        String extension  = getExtension(file.getOriginalFilename());
+        if (extension == null || extension.isEmpty()) {
+            extension = "png";
+        }
+        String nombreArchivo = "diseno-canvas." + extension;
+
+        UUID proyectoUuid = escenario.getProyectoDiseno().getUuid();
+        UUID escenarioUuid = escenario.getUuid();
+
+        Path destino = Paths.get(uploadDir, proyectoUuid.toString(), escenarioUuid.toString(), nombreArchivo);
+        Files.createDirectories(destino.getParent());
+        Files.write(destino, file.getBytes());
+
+        String relativePath = proyectoUuid.toString() + "/" + escenarioUuid.toString() + "/" + nombreArchivo;
+        escenario.setImagenDisenoUrl(relativePath);
         return toEscenarioResponse(escenarioRepository.save(escenario));
     }
 
@@ -263,7 +296,7 @@ public class ProyectoDisenoService {
         return new ProyectoDisenoResponse(
                 p.getId(), p.getNombre(), p.getDescripcion(), p.getEstado(),
                 p.getFechaEvento(), p.getLugarEvento(), p.getNumeroMetadato(),
-                p.getDistanciaKm(), p.getCostoRealTotal(), p.getEscenarioBaseId(),
+                p.getDistanciaKm(), p.getLatitud(), p.getLongitud(), p.getCostoRealTotal(), p.getEscenarioBaseId(),
                 p.getFechaCreacion(), p.getFechaUltimaModificacion(),
                 List.of()   // sin escenarios en listado general — evita N+1
         );
@@ -277,7 +310,7 @@ public class ProyectoDisenoService {
         return new ProyectoDisenoResponse(
                 p.getId(), p.getNombre(), p.getDescripcion(), p.getEstado(),
                 p.getFechaEvento(), p.getLugarEvento(), p.getNumeroMetadato(),
-                p.getDistanciaKm(), p.getCostoRealTotal(), p.getEscenarioBaseId(),
+                p.getDistanciaKm(), p.getLatitud(), p.getLongitud(), p.getCostoRealTotal(), p.getEscenarioBaseId(),
                 p.getFechaCreacion(), p.getFechaUltimaModificacion(),
                 escenarios
         );
@@ -287,12 +320,15 @@ public class ProyectoDisenoService {
         String imagenUrl = e.getImagenUrl() != null
                 ? baseUrl + "/uploads/" + e.getImagenUrl()
                 : null;
+        String imagenDisenoUrl = e.getImagenDisenoUrl() != null
+                ? baseUrl + "/uploads/" + e.getImagenDisenoUrl()
+                : null;
         List<ElementoLienzoResponse> elementos = e.getElementos() == null
                 ? List.of()
                 : e.getElementos().stream().map(this::toElementoResponse).toList();
         return new EscenarioBaseResponse(
                 e.getId(), e.getNombre(), e.getDescripcion(),
-                imagenUrl, e.getDimensionesAltoPx(), e.getDimensionesAnchoPx(),
+                imagenUrl, imagenDisenoUrl, e.getDimensionesAltoPx(), e.getDimensionesAnchoPx(),
                 e.getActivo(), elementos
         );
     }

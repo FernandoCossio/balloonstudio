@@ -1,0 +1,302 @@
+<p-toast></p-toast>
+
+<div class="card p-4">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Parámetros Contables</h1>
+            <p class="text-gray-500 dark:text-gray-400">Administre los márgenes de ganancia, tarifas de flete, mano de obra y variables de amortización del sistema.</p>
+        </div>
+        <p-button 
+            label="Guardar Cambios" 
+            icon="pi pi-check" 
+            [loading]="guardando()"
+            (onClick)="guardarParametros()">
+        </p-button>
+    </div>
+
+    @if (cargando()) {
+        <div class="flex justify-content-center align-items-center py-8">
+            <i class="pi pi-spin pi-spinner text-primary" style="font-size: 3rem;"></i>
+        </div>
+    } @else {
+        <div class="parametros-page__content">
+            <p-tabs value="0">
+                <p-tablist>
+                    <p-tab value="0" icon="pi pi-cog mr-2">Reglas Generales & Overhead</p-tab>
+                    <p-tab value="1" icon="pi pi-truck mr-2">Matriz Logística (CLT)</p-tab>
+                    <p-tab value="2" icon="pi pi-users mr-2">Mano de Obra (CMO)</p-tab>
+                    <p-tab value="3" icon="pi pi-history mr-2">Fallbacks de Amortización</p-tab>
+                </p-tablist>
+                
+                <p-tabpanels>
+                    <!-- PESTAÑA 1: REGLAS GENERALES Y OVERHEAD -->
+                    <p-tabpanel value="0">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4">
+                            <!-- Feature Toggles -->
+                            <div class="lg:col-span-6 flex flex-col gap-4">
+                                <div class="p-card p-4 flex flex-col gap-4">
+                                    <h3 class="text-lg font-semibold border-b pb-2 mb-2 text-primary">Reglas de Negocio</h3>
+                                    
+                                    <div class="flex items-center justify-between p-3 border border-surface-border rounded-lg bg-surface-ground hover:border-primary transition-all duration-200">
+                                        <div class="flex flex-col gap-1 pr-4">
+                                            <span class="font-semibold text-sm">Cálculo de Factor Estacional</span>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Aplica variaciones de precios automáticas según el mes del evento.</span>
+                                        </div>
+                                        <div class="flex items-center justify-center shrink-0">
+                                            <p-toggleswitch [(ngModel)]="parametros().calcularFactorEstacional"></p-toggleswitch>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center justify-between p-3 border border-surface-border rounded-lg bg-surface-ground hover:border-primary transition-all duration-200">
+                                        <div class="flex flex-col gap-1 pr-4">
+                                            <span class="font-semibold text-sm">Provisión por Siniestro (PS)</span>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Recarga una tasa por siniestralidad en los artículos reutilizables alquilados.</span>
+                                        </div>
+                                        <div class="flex items-center justify-center shrink-0">
+                                            <p-toggleswitch [(ngModel)]="parametros().provisionSiniestroReutilizables"></p-toggleswitch>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Overhead e Indirectos -->
+                            <div class="lg:col-span-6 flex flex-col gap-4">
+                                <div class="p-card p-4 flex flex-col gap-4">
+                                    <h3 class="text-lg font-semibold border-b pb-2 mb-2 text-primary">Costos Indirectos y Margen Base</h3>
+                                    
+                                    <div class="flex flex-col gap-1">
+                                        <label class="font-medium text-sm">Costo Overhead Fijo (por evento)</label>
+                                        <p-inputNumber 
+                                            [(ngModel)]="parametros().costoOverheadFijo" 
+                                            mode="currency" 
+                                            currency="BOB" 
+                                            locale="es-BO"
+                                            [min]="0"
+                                            styleClass="w-full">
+                                        </p-inputNumber>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">Monto absoluto para cubrir gastos mensuales fijos de administración.</span>
+                                    </div>
+
+                                    <div class="flex flex-col gap-1">
+                                        <label class="font-medium text-sm">Porcentaje de Siniestralidad (PS)</label>
+                                        <p-inputNumber 
+                                            [(ngModel)]="parametros().porcentajeSiniestralidad" 
+                                            suffix="%" 
+                                            [min]="0"
+                                            [max]="100"
+                                            [minFractionDigits]="2"
+                                            [maxFractionDigits]="2"
+                                            styleClass="w-full">
+                                        </p-inputNumber>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">Tasa porcentual aplicada sobre el costo de adquisición del inventario reutilizable.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </p-tabpanel>
+
+                    <!-- PESTAÑA 2: LOGÍSTICA (CLT) -->
+                    <p-tabpanel value="1">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4">
+                            <div class="lg:col-span-8 lg:col-start-2">
+                                <div class="p-card p-4 flex flex-col gap-4">
+                                    <h3 class="text-lg font-semibold border-b pb-2 mb-2 text-primary">Capacidad y Tarifación Logística</h3>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div class="flex flex-col gap-1">
+                                            <label class="font-medium text-sm">Capacidad del Vehículo</label>
+                                            <p-inputNumber 
+                                                [(ngModel)]="parametros().capacidadVolumetricaVehiculo" 
+                                                suffix=" m³" 
+                                                [min]="0.1"
+                                                [minFractionDigits]="2"
+                                                [maxFractionDigits]="3"
+                                                styleClass="w-full">
+                                            </p-inputNumber>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Volumen físico máximo del camión de transporte.</span>
+                                        </div>
+
+                                        <div class="flex flex-col gap-1">
+                                            <label class="font-medium text-sm">Tarifa Base por Viaje</label>
+                                            <p-inputNumber 
+                                                [(ngModel)]="parametros().tarifaBaseViaje" 
+                                                mode="currency" 
+                                                currency="BOB" 
+                                                locale="es-BO"
+                                                [min]="0"
+                                                styleClass="w-full">
+                                            </p-inputNumber>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Costo fijo mínimo cobrado por cada viaje necesario.</span>
+                                        </div>
+
+                                        <div class="flex flex-col gap-1">
+                                            <label class="font-medium text-sm">Tarifa por Kilómetro</label>
+                                            <p-inputNumber 
+                                                [(ngModel)]="parametros().tarifaKmLogistica" 
+                                                mode="currency" 
+                                                currency="BOB" 
+                                                locale="es-BO"
+                                                [min]="0"
+                                                styleClass="w-full">
+                                            </p-inputNumber>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Costo variable cobrado por kilómetro de distancia.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </p-tabpanel>
+
+                    <!-- PESTAÑA 3: MANO DE OBRA (CMO) -->
+                    <p-tabpanel value="2">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4">
+                            <div class="lg:col-span-8 lg:col-start-2">
+                                <div class="p-card p-4 flex flex-col gap-4">
+                                    <h3 class="text-lg font-semibold border-b pb-2 mb-2 text-primary">Tarifas por Hora según Complejidad</h3>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div class="flex flex-col gap-1">
+                                            <label class="font-medium text-sm">Complejidad BAJA</label>
+                                            <p-inputNumber 
+                                                [(ngModel)]="parametros().tarifaHoraComplejidadBaja" 
+                                                mode="currency" 
+                                                currency="BOB" 
+                                                locale="es-BO"
+                                                [min]="0"
+                                                styleClass="w-full">
+                                            </p-inputNumber>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Cobrado por hora de armado para ítems básicos.</span>
+                                        </div>
+
+                                        <div class="flex flex-col gap-1">
+                                            <label class="font-medium text-sm">Complejidad MEDIA</label>
+                                            <p-inputNumber 
+                                                [(ngModel)]="parametros().tarifaHoraComplejidadMedia" 
+                                                mode="currency" 
+                                                currency="BOB" 
+                                                locale="es-BO"
+                                                [min]="0"
+                                                styleClass="w-full">
+                                            </p-inputNumber>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Cobrado por hora de armado para ítems medianos.</span>
+                                        </div>
+
+                                        <div class="flex flex-col gap-1">
+                                            <label class="font-medium text-sm">Complejidad ALTA</label>
+                                            <p-inputNumber 
+                                                [(ngModel)]="parametros().tarifaHoraComplejidadAlta" 
+                                                mode="currency" 
+                                                currency="BOB" 
+                                                locale="es-BO"
+                                                [min]="0"
+                                                styleClass="w-full">
+                                            </p-inputNumber>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Cobrado por hora para decoraciones complejas.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </p-tabpanel>
+
+                    <!-- PESTAÑA 4: FALLBACKS DE AMORTIZACIÓN -->
+                    <p-tabpanel value="3">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4">
+                            <!-- Amortización -->
+                            <div class="lg:col-span-8 flex flex-col gap-4">
+                                <div class="p-card p-4 flex flex-col gap-4">
+                                    <h3 class="text-lg font-semibold border-b pb-2 mb-2 text-primary">Amortización Estándar (Fallbacks)</h3>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="flex flex-col gap-1">
+                                            <label class="font-medium text-sm">Vida Útil en Usos</label>
+                                            <p-inputNumber 
+                                                [(ngModel)]="parametros().fallbackVidaUtilUsos" 
+                                                [min]="1"
+                                                styleClass="w-full">
+                                            </p-inputNumber>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Cantidad estimada de usos del mobiliario.</span>
+                                        </div>
+
+                                        <div class="flex flex-col gap-1">
+                                            <label class="font-medium text-sm">Vida Útil en Años</label>
+                                            <p-inputNumber 
+                                                [(ngModel)]="parametros().fallbackVidaUtilAnos" 
+                                                [min]="1"
+                                                styleClass="w-full">
+                                            </p-inputNumber>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Duración estimada del mobiliario en años.</span>
+                                        </div>
+
+                                        <div class="flex flex-col gap-1">
+                                            <label class="font-medium text-sm">Valor Residual (%)</label>
+                                            <p-inputNumber 
+                                                [(ngModel)]="parametros().fallbackValorResidualPorcentaje" 
+                                                suffix="%" 
+                                                [min]="0"
+                                                [max]="100"
+                                                styleClass="w-full">
+                                            </p-inputNumber>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Valor residual del artículo al finalizar su amortización.</span>
+                                        </div>
+
+                                        <div class="flex flex-col gap-1">
+                                            <label class="font-medium text-sm">Mantenimiento Promedio (%)</label>
+                                            <p-inputNumber 
+                                                [(ngModel)]="parametros().fallbackMantenimientoPorcentaje" 
+                                                suffix="%" 
+                                                [min]="0"
+                                                [max]="100"
+                                                styleClass="w-full">
+                                            </p-inputNumber>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Costo anual estimado para mantenimiento.</span>
+                                        </div>
+
+                                        <div class="flex flex-col gap-1">
+                                            <label class="font-medium text-sm">Días Preparación Previos</label>
+                                            <p-inputNumber 
+                                                [(ngModel)]="parametros().fallbackDiasPreparacion" 
+                                                [min]="0"
+                                                styleClass="w-full">
+                                            </p-inputNumber>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Días bloqueados antes del evento.</span>
+                                        </div>
+
+                                        <div class="flex flex-col gap-1">
+                                            <label class="font-medium text-sm">Días Limpieza Posteriores</label>
+                                            <p-inputNumber 
+                                                [(ngModel)]="parametros().fallbackDiasLimpieza" 
+                                                [min]="0"
+                                                styleClass="w-full">
+                                            </p-inputNumber>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Días bloqueados después del evento.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Ganancia Base -->
+                            <div class="lg:col-span-4 flex flex-col gap-4">
+                                <div class="p-card p-4 flex flex-col gap-4">
+                                    <h3 class="text-lg font-semibold border-b pb-2 mb-2 text-primary">Ganancia y Marcación</h3>
+                                    
+                                    <div class="flex flex-col gap-1">
+                                        <label class="font-medium text-sm">Porcentaje Ganancia Base</label>
+                                        <p-inputNumber 
+                                            [(ngModel)]="parametros().fallbackPorcentajeGanancia" 
+                                            suffix="%" 
+                                            [min]="0"
+                                            styleClass="w-full">
+                                        </p-inputNumber>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">Margen de ganancia aplicable cuando un artículo no tiene configurado uno propio.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </p-tabpanel>
+                </p-tabpanels>
+            </p-tabs>
+        </div>
+    }
+</div>

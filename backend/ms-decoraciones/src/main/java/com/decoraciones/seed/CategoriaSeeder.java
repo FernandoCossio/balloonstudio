@@ -22,8 +22,13 @@ public class CategoriaSeeder implements CommandLineRunner {
     }
 
     private void seedCategorias() {
-        seedCategoria("Sofas", "Categoría para sofás y mobiliario similar");
+        seedCategoria("Globos", "Categoría para globos, arcos de globos y muros de globos");
+        seedCategoria("Arcos", "Categoría para arcos y estructuras decorativas");
+        seedCategoria("Carpas", "Categoría para carpas, casetas y sombrillas");
         seedCategoria("Mesas", "Categoría para mesas y superficies de apoyo");
+        seedCategoria("Sillas", "Categoría para sillas y asientos");
+        seedCategoria("Plantas", "Categoría para elementos decorativos de plantas");
+        seedCategoria("Cintas", "Categoría para decoraciones con cintas");
     }
 
     private void seedCategoria(String nombre, String descripcion) {

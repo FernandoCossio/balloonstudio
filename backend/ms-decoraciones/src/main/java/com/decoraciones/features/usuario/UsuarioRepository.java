@@ -36,9 +36,17 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 	@org.springframework.data.jpa.repository.Query("SELECT u FROM Usuario u " +
 			"WHERE (CAST(:rol AS string) IS NULL OR EXISTS (SELECT r FROM u.roles r WHERE LOWER(r.nombre) = LOWER(CAST(:rol AS string)))) " +
 			"  AND (CAST(:activo AS boolean) IS NULL OR u.activo = :activo) " +
+			"  AND (CAST(:query AS string) IS NULL OR LOWER(u.nombreCompleto) LIKE LOWER(CONCAT('%', CAST(:query AS string), '%')) " +
+			"       OR LOWER(u.email) LIKE LOWER(CONCAT('%', CAST(:query AS string), '%')) " +
+			"       OR LOWER(u.username) LIKE LOWER(CONCAT('%', CAST(:query AS string), '%'))) " +
+			"  AND (CAST(:fechaInicio AS localdatetime) IS NULL OR u.createdAt >= :fechaInicio) " +
+			"  AND (CAST(:fechaFin AS localdatetime) IS NULL OR u.createdAt <= :fechaFin) " +
 			"ORDER BY u.nombreCompleto ASC")
 	List<Usuario> buscarReporte(
 			@org.springframework.data.repository.query.Param("rol") String rol,
-			@org.springframework.data.repository.query.Param("activo") Boolean activo
+			@org.springframework.data.repository.query.Param("activo") Boolean activo,
+			@org.springframework.data.repository.query.Param("query") String query,
+			@org.springframework.data.repository.query.Param("fechaInicio") java.time.LocalDateTime fechaInicio,
+			@org.springframework.data.repository.query.Param("fechaFin") java.time.LocalDateTime fechaFin
 	);
 }

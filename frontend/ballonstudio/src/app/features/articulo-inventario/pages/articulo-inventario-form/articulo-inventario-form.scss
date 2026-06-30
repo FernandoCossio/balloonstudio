@@ -132,6 +132,14 @@
     @media (max-width: 600px) { grid-template-columns: 1fr; }
 }
 
+.form-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+
+    @media (max-width: 768px) { grid-template-columns: 1fr; }
+}
+
 .form-field {
     display: flex;
     flex-direction: column;
