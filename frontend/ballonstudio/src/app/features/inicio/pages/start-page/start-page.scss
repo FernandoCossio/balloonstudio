@@ -507,6 +507,7 @@ $celeste-dark: #0288d1;
       font-weight: 800;
       margin: 0;
       letter-spacing: -0.02em;
+      color: $celeste-color;
 
       @media (max-width: 640px) {
         font-size: 2rem;
