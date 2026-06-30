@@ -67,6 +67,7 @@ services:
       - "${BACKEND_PORT_OUT:-8080}:8080"
     volumes:
       - uploads-data:${APP_UPLOAD_DIR:-/app/uploads}
+      - ./backend/ms-decoraciones/imagenes:/app/imagenes:ro
     networks:
       - ballonnetwork
 
