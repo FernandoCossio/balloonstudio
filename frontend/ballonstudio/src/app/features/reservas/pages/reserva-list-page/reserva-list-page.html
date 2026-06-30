@@ -96,8 +96,11 @@
                 @for (reserva of reservas(); track reserva.id) {
                     <app-reserva-card 
                         [reserva]="reserva"
+                        [isAdminOrEmpleado]="isAdmin() || isEmpleado()"
+                        [isCliente]="isCliente()"
                         (verDetalle)="verDetalle($event)"
                         (descargarRecibo)="descargarRecibo($event)"
+                        (descargarCotizacion)="descargarCotizacion($event)"
                     ></app-reserva-card>
                 }
             </div>
@@ -119,5 +122,8 @@
 <app-detalle-reserva-dialog
     [(visible)]="detailVisible"
     [reserva]="selectedReserva()"
+    [isAdminOrEmpleado]="isAdmin() || isEmpleado()"
+    [isCliente]="isCliente()"
     (descargarRecibo)="descargarRecibo($event)"
+    (descargarCotizacion)="descargarCotizacion($event)"
 ></app-detalle-reserva-dialog>

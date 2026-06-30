@@ -13,8 +13,12 @@ import type { ReservaResponse } from '../../interface/reserva.interface';
 })
 export class ReservaCard {
     reserva = input.required<ReservaResponse>();
+    isAdminOrEmpleado = input<boolean>(false);
+    isCliente = input<boolean>(false);
+
     verDetalle = output<ReservaResponse>();
     descargarRecibo = output<ReservaResponse>();
+    descargarCotizacion = output<ReservaResponse>();
 
     getEstadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
         switch (estado?.toUpperCase()) {

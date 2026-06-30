@@ -121,12 +121,28 @@
                 (onClick)="visible.set(false)"
             ></p-button>
             @if (reserva()) {
-                <p-button 
-                    label="Descargar Recibo" 
-                    icon="pi pi-download" 
-                    styleClass="p-button-primary"
-                    (onClick)="descargarRecibo.emit(reserva()!)"
-                ></p-button>
+                @if (isAdminOrEmpleado()) {
+                    <p-button 
+                        label="Descargar Cotización" 
+                        icon="pi pi-file-pdf" 
+                        styleClass="p-button-secondary"
+                        (onClick)="descargarCotizacion.emit(reserva()!)"
+                    ></p-button>
+                }
+                @if (isCliente()) {
+                    <p-button 
+                        label="Descargar Cotización" 
+                        icon="pi pi-file-pdf" 
+                        styleClass="p-button-secondary"
+                        (onClick)="descargarCotizacion.emit(reserva()!)"
+                    ></p-button>
+                    <p-button 
+                        label="Descargar Recibo" 
+                        icon="pi pi-download" 
+                        styleClass="p-button-success"
+                        (onClick)="descargarRecibo.emit(reserva()!)"
+                    ></p-button>
+                }
             }
         </div>
     </ng-template>

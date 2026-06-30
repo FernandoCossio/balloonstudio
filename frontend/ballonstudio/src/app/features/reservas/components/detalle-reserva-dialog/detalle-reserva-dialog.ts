@@ -15,7 +15,11 @@ import type { ReservaResponse } from '../../interface/reserva.interface';
 export class DetalleReservaDialog {
     visible = model<boolean>(false);
     reserva = input<ReservaResponse | null>(null);
+    isAdminOrEmpleado = input<boolean>(false);
+    isCliente = input<boolean>(false);
+
     descargarRecibo = output<ReservaResponse>();
+    descargarCotizacion = output<ReservaResponse>();
 
     getEstadoSeverity(estado?: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
         switch (estado?.toUpperCase()) {

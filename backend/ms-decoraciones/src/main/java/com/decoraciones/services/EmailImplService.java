@@ -35,4 +35,21 @@ public class EmailImplService implements EmailService {
             throw new RuntimeException("Error al enviar el email", e);
         }
     }
+
+    @Override
+    public void sendEmailWithAttachment(String to, String subject, String body, String attachmentName, byte[] attachmentData) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(body, true);
+            helper.addAttachment(attachmentName, new org.springframework.core.io.ByteArrayResource(attachmentData));
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Error al enviar el email con adjunto", e);
+        }
+    }
 }

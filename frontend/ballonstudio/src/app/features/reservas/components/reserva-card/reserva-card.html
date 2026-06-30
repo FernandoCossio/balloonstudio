@@ -36,18 +36,34 @@
         </div>
     </div>
     
-    <div class="reserva-card-footer">
+    <div class="reserva-card-footer flex gap-2 w-full flex-wrap">
         <p-button 
             label="Detalles" 
             icon="pi pi-info-circle" 
             styleClass="p-button-outlined p-button-sm flex-grow-1"
             (onClick)="verDetalle.emit(reserva())">
         </p-button>
-        <p-button 
-            label="Recibo" 
-            icon="pi pi-download" 
-            styleClass="p-button-secondary p-button-sm"
-            (onClick)="descargarRecibo.emit(reserva())">
-        </p-button>
+        @if (isAdminOrEmpleado()) {
+            <p-button 
+                label="Cotización" 
+                icon="pi pi-file-pdf" 
+                styleClass="p-button-secondary p-button-sm"
+                (onClick)="descargarCotizacion.emit(reserva())">
+            </p-button>
+        }
+        @if (isCliente()) {
+            <p-button 
+                label="Cotización" 
+                icon="pi pi-file-pdf" 
+                styleClass="p-button-secondary p-button-sm"
+                (onClick)="descargarCotizacion.emit(reserva())">
+            </p-button>
+            <p-button 
+                label="Recibo" 
+                icon="pi pi-download" 
+                styleClass="p-button-success p-button-sm"
+                (onClick)="descargarRecibo.emit(reserva())">
+            </p-button>
+        }
     </div>
 </div>

@@ -56,6 +56,7 @@ public class ReservaService {
     private final CotizacionService cotizacionService;
     private final PagoFacilService pagoFacilService;
     private final ConfiguracionService configuracionService;
+    private final com.decoraciones.services.EmailService emailService;
 
     @org.springframework.beans.factory.annotation.Value("${app.reserva.lock-ttl-minutes:15}")
     private int lockTtlMinutes;
@@ -244,6 +245,78 @@ public class ReservaService {
 
         // 6. Liberar llaves temporales de Redis
         lockService.liberarBloqueosTemporales(proyectoId);
+
+        // 7. Enviar correo al cliente con el PDF del recibo adjunto
+        try {
+            byte[] pdfBytes = generarReciboPdf(reserva.getId());
+            String emailCuerpo = """
+            <div style="background:#f5f5f5;padding:2rem;font-family:Arial,sans-serif;">
+              <div style="max-width:580px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:0.5px solid #ddd;">
+        
+                <div style="background:#1a1a1a;padding:2rem;text-align:center;">
+                  <div style="text-align:center;line-height:1.1;">
+                    <div style="font-size:22px;font-weight:900;color:#fff;font-style:italic;">Ball<span style="color:#E87DA8;">o</span><span style="color:#6EC6D4;">o</span>n</div>
+                    <div style="font-size:13px;color:#fff;font-style:italic;letter-spacing:1px;">studio</div>
+                  </div>
+                  <div style="height:3px;background:linear-gradient(90deg,#E87DA8 0%%,#6EC6D4 100%%);margin-top:1.5rem;"></div>
+                </div>
+        
+                <div style="padding:2.5rem 2.5rem 1.5rem;">
+                  <p style="font-size:13px;color:#999;text-transform:uppercase;letter-spacing:2px;margin:0 0 0.5rem;">Reserva Confirmada</p>
+                  <h1 style="font-size:26px;font-weight:800;color:#1a1a1a;margin:0 0 1.5rem;">Hola, <span style="color:#E87DA8;">%s</span> 🎉</h1>
+                  <p style="font-size:15px;color:#444;line-height:1.7;margin:0 0 1rem;">
+                    ¡Tu reserva para el proyecto <strong>"%s"</strong> ha sido confirmada exitosamente!
+                  </p>
+                  <p style="font-size:15px;color:#444;line-height:1.7;margin:0 0 1.5rem;">
+                    Adjunto a este correo encontrarás el recibo de tu pago de anticipo por un monto de <strong>%s Bs.</strong>
+                  </p>
+                  <div style="background:#f9f9f9;border-radius:8px;padding:1rem 1.25rem;border-left:4px solid #6EC6D4;margin:0 0 2rem;">
+                    <p style="font-size:13px;color:#666;margin:0;line-height:1.6;">
+                      <strong style="color:#444;">Detalles del Evento:</strong><br>
+                      📅 Fecha: %s<br>
+                      📍 Lugar: %s
+                    </p>
+                  </div>
+                </div>
+        
+                <div style="border-top:0.5px solid #eee;background:#fafafa;padding:1.5rem 2.5rem;">
+                  <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+                    <div>
+                      <p style="font-size:13px;font-weight:700;color:#1a1a1a;margin:0 0 2px;">Balloon Studio</p>
+                      <p style="font-size:12px;color:#999;margin:0;">Decoraciones & Eventos</p>
+                    </div>
+                    <div style="text-align:right;">
+                      <p style="font-size:12px;color:#999;margin:0 0 2px;">📧 contacto@balloonstudio.bo</p>
+                      <p style="font-size:12px;color:#999;margin:0 0 2px;">📱 +591 7X XXX XXX</p>
+                      <p style="font-size:12px;color:#999;margin:0;">📍 Santa Cruz de la Sierra, Bolivia</p>
+                    </div>
+                  </div>
+                  <div style="border-top:0.5px solid #eee;margin-top:1rem;padding-top:0.75rem;text-align:center;">
+                    <p style="font-size:11px;color:#bbb;margin:0;">© 2025 Balloon Studio · Todos los derechos reservados</p>
+                  </div>
+                </div>
+        
+              </div>
+            </div>
+            """.formatted(
+                    usuario.getNombreCompleto(),
+                    proyecto.getNombre(),
+                    montoAnticipo.toString(),
+                    proyecto.getFechaEvento() != null ? proyecto.getFechaEvento().toString() : "No definida",
+                    proyecto.getLugarEvento() != null ? proyecto.getLugarEvento() : "No especificado"
+            );
+
+            emailService.sendEmailWithAttachment(
+                    usuario.getEmail(),
+                    "Confirmación de Reserva #" + reserva.getId() + " - Balloon Studio",
+                    emailCuerpo,
+                    "Recibo_Reserva_" + reserva.getId() + ".pdf",
+                    pdfBytes
+            );
+            log.info("Correo de confirmación de reserva con PDF adjunto enviado a {}", usuario.getEmail());
+        } catch (Exception e) {
+            log.error("Error al enviar el correo de confirmación de reserva con PDF para la reserva ID: {}", reserva.getId(), e);
+        }
 
         log.info("Pago confirmado exitosamente para el proyecto ID: {} con el método {}. Reserva confirmada creada.", proyectoId, metodoPagoNombre);
     }

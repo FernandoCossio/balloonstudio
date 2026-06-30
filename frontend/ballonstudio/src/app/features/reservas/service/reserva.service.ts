@@ -86,4 +86,12 @@ export class ReservaService {
             map(res => res.data)
         );
     }
+
+    descargarRecibo(reservaId: number): Observable<Blob> {
+        return this.http.get(`${API_BASE}/${reservaId}/recibo`, { responseType: 'blob' });
+    }
+
+    descargarCotizacion(reservaId: number): Observable<Blob> {
+        return this.http.get(`${API_URL}/reportes/ventas/${reservaId}/propuesta-pdf`, { responseType: 'blob' });
+    }
 }

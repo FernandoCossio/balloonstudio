@@ -148,10 +148,56 @@ export class ReservaListPage implements OnInit {
     }
 
     descargarRecibo(reserva: ReservaResponse) {
-        this.messageService.add({
-            severity: 'info',
-            summary: 'Descarga',
-            detail: `Descarga de recibo para reserva #${reserva.id} iniciada (Simulado).`
+        this.reservaService.descargarRecibo(reserva.id).subscribe({
+            next: (blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `recibo_reserva_${reserva.id}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Descarga Exitosa',
+                    detail: 'El recibo se ha descargado correctamente.'
+                });
+            },
+            error: (err) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error al Descargar',
+                    detail: 'No se pudo descargar el recibo.'
+                });
+            }
+        });
+    }
+
+    descargarCotizacion(reserva: ReservaResponse) {
+        this.reservaService.descargarCotizacion(reserva.id).subscribe({
+            next: (blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `cotizacion_reserva_${reserva.id}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Descarga Exitosa',
+                    detail: 'La cotización se ha descargado correctamente.'
+                });
+            },
+            error: (err) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error al Descargar',
+                    detail: 'No se pudo descargar la cotización.'
+                });
+            }
         });
     }
 }
