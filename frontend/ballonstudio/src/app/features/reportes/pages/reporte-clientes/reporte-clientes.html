@@ -1,0 +1,219 @@
+<p-toast />
+
+<div class="rep-page">
+
+    <!-- Header Section -->
+    <div class="rep-header">
+        <div class="rep-header__text">
+            <h1 class="rep-header__title">Reporte de Clientes</h1>
+            <p class="rep-header__sub">Análisis de la base de usuarios con rol de CLIENTE registrados en la plataforma.</p>
+        </div>
+        <div class="rep-header__actions">
+            <button 
+                type="button" 
+                class="rep-btn rep-btn-secondary" 
+                (click)="exportar('pdf')"
+                [disabled]="loading()"
+            >
+                <i class="pi pi-file-pdf"></i>
+                <span>Exportar PDF</span>
+            </button>
+            <button 
+                type="button" 
+                class="rep-btn rep-btn-primary" 
+                (click)="exportar('excel')"
+                [disabled]="loading()"
+            >
+                <i class="pi pi-file-excel"></i>
+                <span>Exportar Excel</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="rep-metrics">
+        <!-- KPI: Total Clientes -->
+        <div class="rep-card rep-card--pink">
+            <div class="rep-card__icon">
+                <i class="pi pi-users"></i>
+            </div>
+            <div class="rep-card__body">
+                <div class="rep-card__header">
+                    <h3>Total Clientes</h3>
+                </div>
+                <span class="rep-card__value">
+                    {{ kpiTotalClientes() }}
+                </span>
+            </div>
+        </div>
+
+        <!-- KPI: Clientes Activos -->
+        <div class="rep-card rep-card--blue">
+            <div class="rep-card__icon">
+                <i class="pi pi-user-plus"></i>
+            </div>
+            <div class="rep-card__body">
+                <div class="rep-card__header">
+                    <h3>Activos</h3>
+                </div>
+                <span class="rep-card__value">
+                    {{ kpiClientesActivos() }}
+                </span>
+            </div>
+        </div>
+
+        <!-- KPI: Clientes Inactivos -->
+        <div class="rep-card rep-card--yellow">
+            <div class="rep-card__icon">
+                <i class="pi pi-user-minus"></i>
+            </div>
+            <div class="rep-card__body">
+                <div class="rep-card__header">
+                    <h3>Inactivos</h3>
+                </div>
+                <span class="rep-card__value">
+                    {{ kpiClientesInactivos() }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table & Filters Section -->
+    <div class="rep-table-section">
+        
+        <!-- Filters Bar -->
+        <div class="rep-filters-bar">
+            <!-- Date Filters Group -->
+            <div class="rep-date-group">
+                <div class="rep-input-wrapper">
+                    <label>Desde (Registro):</label>
+                    <input 
+                        type="date" 
+                        [(ngModel)]="fechaInicio" 
+                        (change)="onFiltrosChange()" 
+                        class="rep-filter-input" 
+                    />
+                </div>
+                <div class="rep-input-wrapper">
+                    <label>Hasta (Registro):</label>
+                    <input 
+                        type="date" 
+                        [(ngModel)]="fechaFin" 
+                        (change)="onFiltrosChange()" 
+                        class="rep-filter-input" 
+                    />
+                </div>
+            </div>
+
+            <!-- Status Dropdown -->
+            <div class="rep-input-wrapper">
+                <label>Estado Cuenta:</label>
+                <select 
+                    [ngModel]="activeFilter()" 
+                    (ngModelChange)="activeFilter.set($event); onFiltrosChange()"
+                    class="rep-filter-select"
+                >
+                    <option [ngValue]="null">Todos</option>
+                    <option [ngValue]="true">Activos</option>
+                    <option [ngValue]="false">Inactivos</option>
+                </select>
+            </div>
+
+            <!-- Search Client Input -->
+            <div class="rep-search">
+                <label>Búsqueda:</label>
+                <div class="rep-search__box">
+                    <i class="pi pi-search rep-search__icon"></i>
+                    <input
+                        type="text"
+                        class="rep-search__input"
+                        placeholder="Buscar por nombre, correo o usuario..."
+                        [ngModel]="searchQuery()"
+                        (ngModelChange)="searchQuery.set($event); onFiltrosChange()"
+                    />
+                </div>
+            </div>
+
+            <!-- Reset Filters Button -->
+            <div class="rep-reset-wrapper">
+                <button type="button" class="rep-btn-clear" (click)="limpiarFiltros()" pTooltip="Limpiar Filtros" tooltipPosition="top">
+                    <i class="pi pi-refresh"></i>
+                    <span>Limpiar</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="rep-table-container">
+            <p-table
+                [value]="clientesFiltrados()"
+                [paginator]="true"
+                [rows]="10"
+                [loading]="loading()"
+                [rowsPerPageOptions]="[5, 10, 20]"
+                responsiveLayout="scroll"
+                styleClass="p-datatable-striped rep-table-custom"
+            >
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 100px;">ID</th>
+                        <th>Nombre Completo</th>
+                        <th>Correo Electrónico</th>
+                        <th>Nombre de Usuario</th>
+                        <th>Estado</th>
+                        <th>Roles</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-c>
+                    <tr class="rep-row">
+                        <!-- ID -->
+                        <td>
+                            <strong class="rep-text-id">#{{ c.id }}</strong>
+                        </td>
+                        <!-- Nombre Completo -->
+                        <td>
+                            <span class="rep-text-main">{{ c.nombreCompleto || 'Sin nombre registrado' }}</span>
+                        </td>
+                        <!-- Email -->
+                        <td>
+                            <span class="rep-text-sub">{{ c.email }}</span>
+                        </td>
+                        <!-- Username -->
+                        <td>
+                            <span class="rep-text-sub">{{ c.username }}</span>
+                        </td>
+                        <!-- Estado -->
+                        <td>
+                            <p-tag 
+                                [severity]="getStatusSeverity(c.activo)" 
+                                [value]="getStatusLabel(c.activo)" 
+                                styleClass="rep-status-tag"
+                            ></p-tag>
+                        </td>
+                        <!-- Roles -->
+                        <td>
+                            <div class="roles-container">
+                                @for (r of c.roles; track r) {
+                                    <span class="role-badge">{{ r }}</span>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="6">
+                            <div class="rep-empty-state">
+                                <i class="pi pi-users rep-empty-state__icon"></i>
+                                <h3>Sin Clientes Registrados</h3>
+                                <p>No se encontraron registros de clientes para los filtros seleccionados.</p>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>

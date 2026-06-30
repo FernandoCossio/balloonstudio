@@ -67,7 +67,7 @@ export class CanvasStateService {
               this.costoFlete.set(data.costoFlete);
               this.costoArmado.set(data.costoArmado);
               this.totalConLogistica.set(data.total);
-              this.tasaOverhead.set(data.tasaOverheadAplicada);
+              this.tasaOverhead.set(data.costoOverhead);
               this.factorEstacional.set(data.factorEstacionalAplicado);
               
               const mapPrecios = new Map<number, number>();

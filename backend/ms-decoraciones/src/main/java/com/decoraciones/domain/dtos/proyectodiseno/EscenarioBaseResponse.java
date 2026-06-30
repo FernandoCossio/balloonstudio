@@ -7,6 +7,7 @@ public record EscenarioBaseResponse(
         String nombre,
         String descripcion,
         String imagenUrl,
+        String imagenDisenoUrl,
         Integer dimensionesAltoPx,
         Integer dimensionesAnchoPx,
         Boolean activo,

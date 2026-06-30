@@ -1,0 +1,24 @@
+<p-dialog 
+    [header]="categoria ? 'Editar Categoría' : 'Nueva Categoría'" 
+    [(visible)]="visible" 
+    [modal]="true" 
+    [style]="{ width: '450px' }"
+    (onHide)="close()"
+>
+    <div class="flex flex-col gap-4 py-2">
+        <div class="flex flex-col gap-1">
+            <label for="nombre" class="font-medium text-sm">Nombre <span class="text-red-500">*</span></label>
+            <input pInputText id="nombre" [(ngModel)]="formValue['nombre']" placeholder="Ej. Globos Metálicos" autofocus />
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <label for="descripcion" class="font-medium text-sm">Descripción</label>
+            <textarea pTextarea id="descripcion" rows="3" [(ngModel)]="formValue['descripcion']" placeholder="Escriba una breve descripción..."></textarea>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <p-button label="Cancelar" icon="pi pi-times" styleClass="p-button-text" (onClick)="close()"></p-button>
+        <p-button label="Guardar" icon="pi pi-check" [loading]="saving" (onClick)="save()"></p-button>
+    </ng-template>
+</p-dialog>

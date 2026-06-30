@@ -1,0 +1,149 @@
+<p-dialog 
+    [(visible)]="visible" 
+    [modal]="true" 
+    [header]="'Detalle de la Reserva #' + (reserva()?.id || '')" 
+    [style]="{ width: '550px' }" 
+    [draggable]="false" 
+    [resizable]="false"
+    styleClass="reserva-detail-dialog"
+>
+    @if (reserva()) {
+        <div class="reserva-detail-content">
+            <!-- Header Section with State badge -->
+            <div class="reserva-detail-status-bar">
+                <span class="reserva-detail-date-badge">
+                    <i class="pi pi-calendar-plus"></i>
+                    Evento: {{ reserva()?.fechaEvento | date:'dd/MM/yyyy' }}
+                </span>
+                <p-tag 
+                    [value]="getEstadoLabel(reserva()?.estado)" 
+                    [severity]="getEstadoSeverity(reserva()?.estado)"
+                    styleClass="reserva-badge-lg"
+                ></p-tag>
+            </div>
+
+            <!-- Customer Details -->
+            <div class="reserva-detail-section">
+                <h3 class="reserva-section-title"><i class="pi pi-user"></i> Información del Cliente</h3>
+                <div class="reserva-detail-grid">
+                    <div class="reserva-detail-item">
+                        <span class="detail-label">Nombre Completo</span>
+                        <span class="detail-val">{{ reserva()?.nombreCliente }}</span>
+                    </div>
+                    <div class="reserva-detail-item">
+                        <span class="detail-label">Correo Electrónico</span>
+                        <span class="detail-val">{{ reserva()?.emailCliente }}</span>
+                    </div>
+                    <div class="reserva-detail-item">
+                        <span class="detail-label">Teléfono de Contacto</span>
+                        <span class="detail-val">{{ reserva()?.telefonoCliente || 'No provisto' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Details -->
+            <div class="reserva-detail-section">
+                <h3 class="reserva-section-title"><i class="pi pi-map-marker"></i> Detalles del Proyecto & Ubicación</h3>
+                <div class="reserva-detail-grid">
+                    <div class="reserva-detail-item col-span-2">
+                        <span class="detail-label">Proyecto / Diseño</span>
+                        <span class="detail-val">{{ reserva()?.nombreProyecto }}</span>
+                    </div>
+                    <div class="reserva-detail-item col-span-2">
+                        <span class="detail-label">Lugar del Evento</span>
+                        <span class="detail-val">{{ reserva()?.lugarEvento || 'No provisto' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Details -->
+            <div class="reserva-detail-section">
+                <h3 class="reserva-section-title"><i class="pi pi-wallet"></i> Desglose de Cotización</h3>
+                <div class="reserva-cost-list">
+                    <div class="cost-row">
+                        <span>Costo de Artículos:</span>
+                        <span class="cost-val">Bs. {{ reserva()?.costoArticulos | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="cost-row">
+                        <span>Costo de Flete:</span>
+                        <span class="cost-val">Bs. {{ reserva()?.costoFlete | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="cost-row">
+                        <span>Costo de Armado:</span>
+                        <span class="cost-val">Bs. {{ reserva()?.costoArmado | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="cost-row highlight-total">
+                        <span>Total Presupuestado:</span>
+                        <span class="cost-val">Bs. {{ reserva()?.total | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="cost-row highlight-anticipo">
+                        <span>Anticipo de Reserva (20%):</span>
+                        <span class="cost-val">Bs. {{ reserva()?.montoAnticipo | number:'1.2-2' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control Dates / Logs -->
+            <div class="reserva-detail-section">
+                <h3 class="reserva-section-title"><i class="pi pi-clock"></i> Historial y Control</h3>
+                <div class="reserva-detail-grid">
+                    <div class="reserva-detail-item">
+                        <span class="detail-label">Fecha de Reserva</span>
+                        <span class="detail-val">{{ reserva()?.fechaReserva | date:'dd/MM/yyyy HH:mm' }}</span>
+                    </div>
+                    <div class="reserva-detail-item">
+                        <span class="detail-label">Límite de Pago</span>
+                        <span class="detail-val">{{ reserva()?.fechaLimitePago | date:'dd/MM/yyyy HH:mm' }}</span>
+                    </div>
+                    @if (reserva()?.fechaConfirmacion) {
+                        <div class="reserva-detail-item">
+                            <span class="detail-label">Fecha de Confirmación</span>
+                            <span class="detail-val">{{ reserva()?.fechaConfirmacion | date:'dd/MM/yyyy HH:mm' }}</span>
+                        </div>
+                    }
+                    @if (reserva()?.empleadoAsignadoId) {
+                        <div class="reserva-detail-item">
+                            <span class="detail-label">Empleado Asignado ID</span>
+                            <span class="detail-val">#{{ reserva()?.empleadoAsignadoId }}</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    
+    <ng-template pTemplate="footer">
+        <div class="reserva-detail-footer">
+            <p-button 
+                label="Cerrar" 
+                icon="pi pi-times" 
+                styleClass="p-button-text p-button-secondary" 
+                (onClick)="visible.set(false)"
+            ></p-button>
+            @if (reserva()) {
+                @if (isAdminOrEmpleado()) {
+                    <p-button 
+                        label="Descargar Cotización" 
+                        icon="pi pi-file-pdf" 
+                        styleClass="p-button-secondary"
+                        (onClick)="descargarCotizacion.emit(reserva()!)"
+                    ></p-button>
+                }
+                @if (isCliente()) {
+                    <p-button 
+                        label="Descargar Cotización" 
+                        icon="pi pi-file-pdf" 
+                        styleClass="p-button-secondary"
+                        (onClick)="descargarCotizacion.emit(reserva()!)"
+                    ></p-button>
+                    <p-button 
+                        label="Descargar Recibo" 
+                        icon="pi pi-download" 
+                        styleClass="p-button-success"
+                        (onClick)="descargarRecibo.emit(reserva()!)"
+                    ></p-button>
+                }
+            }
+        </div>
+    </ng-template>
+</p-dialog>

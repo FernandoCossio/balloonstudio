@@ -27,78 +27,65 @@ public class UsuarioSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        seedAdminUser();
-        seedEmployees();
-        seedClientUsers();
-    }
-
-    private void seedAdminUser() {
-        String adminUsername = "admin";
-        if (usuarioRepository.findByUsernameIgnoreCase(adminUsername).isEmpty()) {
-            Rol adminRol = rolRepository.findByNombre("ADMIN")
-                    .orElseThrow(() -> new RuntimeException("Error: Rol ADMIN no encontrado."));
-
-            Usuario admin = new Usuario();
-            admin.setUsername(adminUsername);
-            admin.setEmail("admin@decoraciones.com");
-            admin.setNombreCompleto("Administrador del Sistema");
-            admin.setPassword(passwordEncoder.encode("admin123"));
-            admin.setTelefono("00000000");
-            admin.setActivo(true);
-            admin.setRoles(Set.of(adminRol));
-
-            usuarioRepository.save(admin);
-            System.out.println("Usuario administrador creado por defecto (admin / admin123)");
+        if (usuarioRepository.count() > 0) {
+            System.out.println("UsuarioSeeder: Ya existen usuarios en la base de datos. Omitiendo seed.");
+            return;
         }
-    }
-    private void seedEmployees() {
-        seedEmployee("empleado1", "empleado1@decoraciones.com", "Juan Perez", "71020304", true);
-        seedEmployee("empleado2", "empleado2@decoraciones.com", "Maria Lopez", "72030405", false);
+        seedUsuarios();
     }
 
-    private void seedEmployee(String username, String email, String nombreCompleto, String telefono, boolean activo) {
-        if (usuarioRepository.findByUsernameIgnoreCase(username).isEmpty()) {
-            Rol empleadoRol = rolRepository.findByNombre("EMPLEADO")
-                    .orElseThrow(() -> new RuntimeException("Error: Rol EMPLEADO no encontrado."));
-
-            Usuario empleado = new Usuario();
-            empleado.setUsername(username);
-            empleado.setEmail(email);
-            empleado.setNombreCompleto(nombreCompleto);
-            empleado.setPassword(passwordEncoder.encode("empleado123"));
-            empleado.setTelefono(telefono);
-            empleado.setActivo(activo);
-            empleado.setRoles(Set.of(empleadoRol));
-
-            usuarioRepository.save(empleado);
-            System.out.println("Usuario empleado creado por defecto: " + username + " (activo: " + activo + ")");
-        }
-    }
-     private void seedClientUsers() {
-        // Obtenemos el rol CLIENTE una sola vez para pasarlo a todos los usuarios
+    private void seedUsuarios() {
+        Rol adminRol = rolRepository.findByNombre("ADMIN")
+                .orElseThrow(() -> new RuntimeException("Error: Rol ADMIN no encontrado."));
+        Rol empleadoRol = rolRepository.findByNombre("EMPLEADO")
+                .orElseThrow(() -> new RuntimeException("Error: Rol EMPLEADO no encontrado."));
         Rol clienteRol = rolRepository.findByNombre("CLIENTE")
                 .orElseThrow(() -> new RuntimeException("Error: Rol CLIENTE no encontrado."));
 
-        // Generamos los 4 clientes usando el método de ayuda
-        seedCliente("cliente1", "cliente1@decoraciones.com", "Carlos Mendoza", "71111111", clienteRol);
-        seedCliente("cliente2", "cliente2@decoraciones.com", "Ana Rojas", "72222222", clienteRol);
-        seedCliente("cliente3", "cliente3@decoraciones.com", "Luis Silva", "73333333", clienteRol);
-        seedCliente("cliente4", "cliente4@decoraciones.com", "Marta Guzmán", "74444444", clienteRol);
+        // 1. Administradores
+        seedUsuario("admin1", "fcossio100@gmail.com", "Fernando Cossio", "70000001", true, Set.of(adminRol));
+        seedUsuario("admin2", "axelmquispia@gmail.com", "Axel Quispe", "70000002", true, Set.of(adminRol));
+
+        // 2. Empleados Específicos
+        seedUsuario("fernandoe", "fcossio333@gmail.com", "Fernando Cossio Empleado", "70000003", true, Set.of(empleadoRol));
+        seedUsuario("axele", "alexander.netx@gmail.com", "Alexander Netx", "70000004", true, Set.of(empleadoRol));
+
+        // 3. Empleados Genéricos
+        for (int i = 1; i <= 5; i++) {
+            seedUsuario("empleado" + i, "empleado" + i + "@gmail.com", "Empleado Genérico " + i, "7100000" + i, true, Set.of(empleadoRol));
+        }
+
+        // 4. Clientes Específicos
+        seedUsuario("fernandoc", "fcossio0x41@gmail.com", "Fernando Cossio Cliente", "72000001", true, Set.of(clienteRol));
+        seedUsuario("axelc", "axelmq.docs@gmail.com", "Axel Quispe Cliente", "72000002", true, Set.of(clienteRol));
+
+        // 5. Clientes Genéricos
+        // 10 activos (cliente1 a cliente10)
+        for (int i = 1; i <= 10; i++) {
+            seedUsuario("cliente" + i, "cliente" + i + "@gmail.com", "Cliente Genérico Activo " + i, "730000" + (i < 10 ? "0" + i : i), true, Set.of(clienteRol));
+        }
+        // 5 inactivos (cliente11 a cliente15)
+        for (int i = 11; i <= 15; i++) {
+            seedUsuario("cliente" + i, "cliente" + i + "@gmail.com", "Cliente Genérico Inactivo " + i, "730000" + i, false, Set.of(clienteRol));
+        }
     }
 
-    private void seedCliente(String username, String email, String nombreCompleto, String telefono, Rol rol) {
-        if (usuarioRepository.findByUsernameIgnoreCase(username).isEmpty()) {
-            Usuario cliente = new Usuario();
-            cliente.setUsername(username);
-            cliente.setEmail(email);
-            cliente.setNombreCompleto(nombreCompleto);
-            cliente.setPassword(passwordEncoder.encode("cliente123")); // Contraseña genérica para pruebas
-            cliente.setTelefono(telefono);
-            cliente.setActivo(true);
-            cliente.setRoles(Set.of(rol));
-
-            usuarioRepository.save(cliente);
-            System.out.println("Usuario cliente creado por defecto (" + username + " / cliente123)");
+    private void seedUsuario(String username, String email, String nombreCompleto, String telefono, boolean activo, Set<Rol> roles) {
+        if (usuarioRepository.existsByUsernameIgnoreCase(username) || usuarioRepository.existsByEmailIgnoreCase(email)) {
+            System.out.println("UsuarioSeeder: El usuario o email ya existe. Omitiendo: " + username + " / " + email);
+            return;
         }
+
+        Usuario usuario = new Usuario();
+        usuario.setUsername(username);
+        usuario.setEmail(email);
+        usuario.setNombreCompleto(nombreCompleto);
+        usuario.setPassword(passwordEncoder.encode("123123")); // Contraseña requerida: 123123
+        usuario.setTelefono(telefono);
+        usuario.setActivo(activo);
+        usuario.setRoles(roles);
+
+        usuarioRepository.save(usuario);
+        System.out.println("Usuario creado: " + username + " (" + email + ") - Activo: " + activo);
     }
 }

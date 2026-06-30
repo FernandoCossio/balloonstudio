@@ -67,9 +67,15 @@ public class ReportesController {
     @GetMapping("/usuarios/datos")
     public ResponseEntity<ApiResponse<List<ReporteUsuariosDatosResponse>>> getReporteUsuariosDatos(
             @RequestParam(value = "rol", required = false) String rol,
-            @RequestParam(value = "activo", required = false) Boolean activo) {
+            @RequestParam(value = "activo", required = false) Boolean activo,
+            @RequestParam(value = "query", required = false) String query,
+            @RequestParam(value = "fechaInicio", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam(value = "fechaFin", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
 
-        List<Usuario> usuarios = reportesService.buscarUsuarios(rol, activo);
+        LocalDateTime startDateTime = fechaInicio != null ? fechaInicio.atStartOfDay() : null;
+        LocalDateTime endDateTime = fechaFin != null ? fechaFin.atTime(23, 59, 59) : null;
+
+        List<Usuario> usuarios = reportesService.buscarUsuarios(rol, activo, query, startDateTime, endDateTime);
 
         List<ReporteUsuariosDatosResponse> data = usuarios.stream().map(u -> new ReporteUsuariosDatosResponse(
                 u.getId(),
@@ -90,6 +96,9 @@ public class ReportesController {
             @RequestParam(value = "fechaFin", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
             @RequestParam(value = "estado", required = false) String estado) {
 
+        LocalDateTime startDateTime = fechaInicio != null ? fechaInicio.atStartOfDay() : null;
+        LocalDateTime endDateTime = fechaFin != null ? fechaFin.atTime(23, 59, 59) : null;
+
         if (format.equalsIgnoreCase("excel")) {
             byte[] excelBytes = reportesService.generarVentasExcel(fechaInicio, fechaFin, estado);
             return ResponseEntity.ok()
@@ -109,16 +118,22 @@ public class ReportesController {
     public ResponseEntity<byte[]> exportarReporteUsuarios(
             @RequestParam(value = "format", defaultValue = "pdf") String format,
             @RequestParam(value = "rol", required = false) String rol,
-            @RequestParam(value = "activo", required = false) Boolean activo) {
+            @RequestParam(value = "activo", required = false) Boolean activo,
+            @RequestParam(value = "query", required = false) String query,
+            @RequestParam(value = "fechaInicio", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam(value = "fechaFin", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
+
+        LocalDateTime startDateTime = fechaInicio != null ? fechaInicio.atStartOfDay() : null;
+        LocalDateTime endDateTime = fechaFin != null ? fechaFin.atTime(23, 59, 59) : null;
 
         if (format.equalsIgnoreCase("excel")) {
-            byte[] excelBytes = reportesService.generarUsuariosExcel(rol, activo);
+            byte[] excelBytes = reportesService.generarUsuariosExcel(rol, activo, query, startDateTime, endDateTime);
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"reporte-usuarios.xlsx\"")
                     .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                     .body(excelBytes);
         } else {
-            byte[] pdfBytes = reportesService.generarUsuariosPdf(rol, activo);
+            byte[] pdfBytes = reportesService.generarUsuariosPdf(rol, activo, query, startDateTime, endDateTime);
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"reporte-usuarios.pdf\"")
                     .contentType(MediaType.APPLICATION_PDF)

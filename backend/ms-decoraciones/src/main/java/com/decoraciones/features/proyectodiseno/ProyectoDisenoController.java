@@ -117,6 +117,17 @@ public class ProyectoDisenoController {
                         "Imagen del escenario subida correctamente"));
     }
 
+    @PostMapping(value = "/{proyectoId}/escenarios/{escenarioId}/upload-diseno",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<EscenarioBaseResponse>> uploadDiseno(
+            @PathVariable Long proyectoId,
+            @PathVariable Long escenarioId,
+            @RequestParam("file") MultipartFile file) throws IOException {
+        return ResponseEntity.ok(
+                ApiResponse.success(service.uploadDisenoEscenario(escenarioId, proyectoId, file),
+                        "Diseño del escenario subido correctamente"));
+    }
+
     @DeleteMapping("/{proyectoId}/escenarios/{escenarioId}")
     public ResponseEntity<ApiResponse<Void>> deleteEscenario(
             @PathVariable Long proyectoId,

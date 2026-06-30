@@ -12,7 +12,7 @@ import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
 import Konva from 'konva';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of, Observable } from 'rxjs';
 
 import { DialogModule } from 'primeng/dialog';
 import { IaForm } from './components/ia-form/ia-form';
@@ -97,6 +97,7 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
 
   readonly imageElements = signal<Map<string, HTMLImageElement>>(new Map());
   readonly guardando     = signal(false);
+  readonly escenariosDisenosMap = new Map<number, string>();
 
   // Zoom actual — solo para mostrar el label, se actualiza desde Konva
   private _currentScale = signal(1);
@@ -464,6 +465,61 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
     this.cargarImagenDeVista(updatedSelected, nuevaVista);
   }
 
+  onAntesDeCambiarEscenario(escenarioId: number): void {
+    if (!this.stage) return;
+    try {
+      // Ocultar la selección del transformer temporalmente
+      const tr = this.transformerRef?.getNode() as Konva.Transformer;
+      const activeNodes = tr ? tr.nodes() : [];
+      if (tr) {
+        tr.nodes([]);
+      }
+      this.stage.batchDraw();
+
+      const dataUrl = this.stage.toDataURL({
+        pixelRatio: CANVAS_W / this.stage.width(),
+        x: 0, y: 0, width: CANVAS_W, height: CANVAS_H
+      });
+
+      // Restaurar transformer
+      if (tr && activeNodes.length > 0) {
+        tr.nodes(activeNodes);
+        this.stage.batchDraw();
+      }
+
+      this.escenariosDisenosMap.set(escenarioId, dataUrl);
+    } catch (e) {
+      console.error('Error al capturar canvas del escenario ' + escenarioId, e);
+    }
+  }
+
+  capturarCanvasActivo(): void {
+    const escenario = this.canvasState.escenarioActual();
+    if (!escenario || !this.stage) return;
+    try {
+      const tr = this.transformerRef?.getNode() as Konva.Transformer;
+      const activeNodes = tr ? tr.nodes() : [];
+      if (tr) {
+        tr.nodes([]);
+      }
+      this.stage.batchDraw();
+
+      const dataUrl = this.stage.toDataURL({
+        pixelRatio: CANVAS_W / this.stage.width(),
+        x: 0, y: 0, width: CANVAS_W, height: CANVAS_H
+      });
+
+      if (tr && activeNodes.length > 0) {
+        tr.nodes(activeNodes);
+        this.stage.batchDraw();
+      }
+
+      this.escenariosDisenosMap.set(escenario.id, dataUrl);
+    } catch (e) {
+      console.error('Error al capturar el escenario activo', e);
+    }
+  }
+
   // ── Guardar ───────────────────────────────────────────────────────────────
 
   guardarCanvas(): void {
@@ -476,7 +532,10 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
     // Guardar el estado del canvas actual en memoria para tener los datos más recientes
     this.canvasState.guardarEscenarioActualEnMemoria();
 
-    const requests = this.canvasState.escenarios().map(esc => {
+    // Capturar el canvas del escenario activo actual
+    this.capturarCanvasActivo();
+
+    const requests: Observable<any>[] = this.canvasState.escenarios().map(esc => {
       const elRequests: any[] = esc.elementos.map(el => ({
         articuloId: el.articuloId,
         cantidad: el.cantidad,
@@ -495,10 +554,23 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
       return this.proyectoService.guardarElementos(proyecto.id, esc.id, elRequests);
     });
 
-    if (requests.length === 0) {
-      this.guardando.set(false);
-      return;
-    }
+    // Subir todos los diseños guardados en memoria
+    this.escenariosDisenosMap.forEach((dataUrl, escId) => {
+      try {
+        const arr = dataUrl.split(',');
+        const mime = arr[0].match(/:(.*?);/)![1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while(n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        const file = new File([u8arr], 'diseno-canvas.png', { type: mime });
+        requests.push(this.proyectoService.uploadDisenoEscenario(proyecto.id, escId, file));
+      } catch (e) {
+        console.error('Error preparando subida para el escenario ' + escId, e);
+      }
+    });
 
     forkJoin(requests).subscribe({
       next: () => {
@@ -641,6 +713,9 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
     this.guardando.set(true);
     this.canvasState.guardarEscenarioActualEnMemoria();
 
+    // Capturar el canvas del escenario activo actual
+    this.capturarCanvasActivo();
+
     if (this.stage) {
       const dataUrl = this.stage.toDataURL({
         pixelRatio: CANVAS_W / this.stage.width(),
@@ -649,7 +724,7 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
       this.canvasState.base64Canvas.set(dataUrl);
     }
 
-    const requests = this.canvasState.escenarios().map(esc => {
+    const requests: Observable<any>[] = this.canvasState.escenarios().map(esc => {
       const elRequests: any[] = esc.elementos.map(el => ({
         articuloId: el.articuloId,
         cantidad: el.cantidad,
@@ -668,11 +743,23 @@ export class DesignCanvas implements AfterViewInit, OnDestroy {
       return this.proyectoService.guardarElementos(proyecto.id, esc.id, elRequests);
     });
 
-    if (requests.length === 0) {
-      this.guardando.set(false);
-      this.iniciarFlujoReserva(proyecto.id);
-      return;
-    }
+    // Subir todos los diseños guardados en memoria
+    this.escenariosDisenosMap.forEach((dataUrl, escId) => {
+      try {
+        const arr = dataUrl.split(',');
+        const mime = arr[0].match(/:(.*?);/)![1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while(n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        const file = new File([u8arr], 'diseno-canvas.png', { type: mime });
+        requests.push(this.proyectoService.uploadDisenoEscenario(proyecto.id, escId, file));
+      } catch (e) {
+        console.error('Error preparando subida para el escenario ' + escId, e);
+      }
+    });
 
     forkJoin(requests).subscribe({
       next: () => {

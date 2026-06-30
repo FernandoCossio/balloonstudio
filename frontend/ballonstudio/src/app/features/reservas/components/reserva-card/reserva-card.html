@@ -1,0 +1,69 @@
+<div class="reserva-card-wrapper">
+    <div class="reserva-card-header">
+        <div class="reserva-card-title-sec">
+            <span class="reserva-card-project">{{ reserva().nombreProyecto }}</span>
+            <span class="reserva-card-id">#{{ reserva().id }}</span>
+        </div>
+        <p-tag 
+            [value]="getEstadoLabel(reserva().estado)" 
+            [severity]="getEstadoSeverity(reserva().estado)" 
+            styleClass="reserva-badge">
+        </p-tag>
+    </div>
+    
+    <div class="reserva-card-body">
+        <div class="reserva-info-row">
+            <i class="pi pi-user reserva-info-icon"></i>
+            <span class="reserva-info-text"><strong>Cliente:</strong> {{ reserva().nombreCliente }}</span>
+        </div>
+        <div class="reserva-info-row">
+            <i class="pi pi-calendar-plus reserva-info-icon"></i>
+            <span class="reserva-info-text"><strong>Evento:</strong> {{ reserva().fechaEvento | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="reserva-info-row">
+            <i class="pi pi-clock reserva-info-icon"></i>
+            <span class="reserva-info-text"><strong>Registrada:</strong> {{ reserva().fechaReserva | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+        <div class="reserva-price-grid">
+            <div class="reserva-price-col">
+                <span class="reserva-price-label">Anticipo (20%):</span>
+                <span class="reserva-price-val font-semibold text-primary">Bs. {{ reserva().montoAnticipo | number:'1.2-2' }}</span>
+            </div>
+            <div class="reserva-price-col">
+                <span class="reserva-price-label">Total:</span>
+                <span class="reserva-price-val font-bold">Bs. {{ reserva().total | number:'1.2-2' }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="reserva-card-footer flex gap-2 w-full flex-wrap">
+        <p-button 
+            label="Detalles" 
+            icon="pi pi-info-circle" 
+            styleClass="p-button-outlined p-button-sm flex-grow-1"
+            (onClick)="verDetalle.emit(reserva())">
+        </p-button>
+        @if (isAdminOrEmpleado()) {
+            <p-button 
+                label="Cotización" 
+                icon="pi pi-file-pdf" 
+                styleClass="p-button-secondary p-button-sm"
+                (onClick)="descargarCotizacion.emit(reserva())">
+            </p-button>
+        }
+        @if (isCliente()) {
+            <p-button 
+                label="Cotización" 
+                icon="pi pi-file-pdf" 
+                styleClass="p-button-secondary p-button-sm"
+                (onClick)="descargarCotizacion.emit(reserva())">
+            </p-button>
+            <p-button 
+                label="Recibo" 
+                icon="pi pi-download" 
+                styleClass="p-button-success p-button-sm"
+                (onClick)="descargarRecibo.emit(reserva())">
+            </p-button>
+        }
+    </div>
+</div>

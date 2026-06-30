@@ -14,6 +14,8 @@ public record ProyectoDisenoResponse(
         String lugarEvento,
         String numeroMetadato,
         Double distanciaKm,
+        Double latitud,
+        Double longitud,
         BigDecimal costoRealTotal,
         Long escenarioBaseId,       // escenario activo por defecto
         LocalDateTime fechaCreacion,
