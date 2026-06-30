@@ -159,11 +159,16 @@ public class ProyectoDisenoService {
 
         String extension  = getExtension(file.getOriginalFilename());
         String nombreArchivo = "escenario-" + escenarioId + "-" + UUID.randomUUID() + "." + extension;
-        Path destino = Paths.get(uploadDir, "escenarios", nombreArchivo);
+
+        UUID proyectoUuid = escenario.getProyectoDiseno().getUuid();
+        UUID escenarioUuid = escenario.getUuid();
+
+        Path destino = Paths.get(uploadDir, proyectoUuid.toString(), escenarioUuid.toString(), nombreArchivo);
         Files.createDirectories(destino.getParent());
         Files.write(destino, file.getBytes());
 
-        escenario.setImagenUrl("escenarios/" + nombreArchivo);
+        String relativePath = proyectoUuid.toString() + "/" + escenarioUuid.toString() + "/" + nombreArchivo;
+        escenario.setImagenUrl(relativePath);
         return toEscenarioResponse(escenarioRepository.save(escenario));
     }
 
