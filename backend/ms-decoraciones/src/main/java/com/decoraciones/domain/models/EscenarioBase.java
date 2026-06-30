@@ -29,6 +29,9 @@ public class EscenarioBase extends BaseEntity {
     @Column(name = "imagen_url")
     private String imagenUrl;
 
+    @Column(name = "imagen_diseno_url")
+    private String imagenDisenoUrl;
+
     @Column(name = "dimensiones_alto_px")
     private Integer dimensionesAltoPx;
 

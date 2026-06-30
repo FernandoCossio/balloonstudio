@@ -25,9 +25,14 @@ export class EscenarioTabsComponent {
 
   // El canvas padre recarga imageElements cuando cambia el escenario
   readonly escenarioCambiado = output<EscenarioBaseResponse>();
+  readonly antesDeCambiarEscenario = output<number>();
 
   seleccionarEscenario(escenario: EscenarioBaseResponse): void {
-    if (escenario.id === this.canvasState.escenarioActual()?.id) return;
+    const actual = this.canvasState.escenarioActual();
+    if (escenario.id === actual?.id) return;
+    if (actual) {
+      this.antesDeCambiarEscenario.emit(actual.id);
+    }
     this.canvasState.guardarEscenarioActualEnMemoria();
     this.canvasState.cargarEscenario(escenario);
     this.escenarioCambiado.emit(escenario);

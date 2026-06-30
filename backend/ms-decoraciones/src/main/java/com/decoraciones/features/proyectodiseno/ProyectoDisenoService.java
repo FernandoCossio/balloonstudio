@@ -176,6 +176,30 @@ public class ProyectoDisenoService {
         return toEscenarioResponse(escenarioRepository.save(escenario));
     }
 
+    public EscenarioBaseResponse uploadDisenoEscenario(Long escenarioId, Long proyectoId,
+                                                       MultipartFile file) throws IOException {
+        EscenarioBase escenario = escenarioRepository
+                .findByIdAndProyectoDisenoId(escenarioId, proyectoId)
+                .orElseThrow(ProyectoDisenoNoEncontradoException::new);
+
+        String extension  = getExtension(file.getOriginalFilename());
+        if (extension == null || extension.isEmpty()) {
+            extension = "png";
+        }
+        String nombreArchivo = "diseno-canvas." + extension;
+
+        UUID proyectoUuid = escenario.getProyectoDiseno().getUuid();
+        UUID escenarioUuid = escenario.getUuid();
+
+        Path destino = Paths.get(uploadDir, proyectoUuid.toString(), escenarioUuid.toString(), nombreArchivo);
+        Files.createDirectories(destino.getParent());
+        Files.write(destino, file.getBytes());
+
+        String relativePath = proyectoUuid.toString() + "/" + escenarioUuid.toString() + "/" + nombreArchivo;
+        escenario.setImagenDisenoUrl(relativePath);
+        return toEscenarioResponse(escenarioRepository.save(escenario));
+    }
+
     public void deleteEscenario(Long escenarioId, Long proyectoId) {
         EscenarioBase escenario = escenarioRepository
                 .findByIdAndProyectoDisenoId(escenarioId, proyectoId)
@@ -296,12 +320,15 @@ public class ProyectoDisenoService {
         String imagenUrl = e.getImagenUrl() != null
                 ? baseUrl + "/uploads/" + e.getImagenUrl()
                 : null;
+        String imagenDisenoUrl = e.getImagenDisenoUrl() != null
+                ? baseUrl + "/uploads/" + e.getImagenDisenoUrl()
+                : null;
         List<ElementoLienzoResponse> elementos = e.getElementos() == null
                 ? List.of()
                 : e.getElementos().stream().map(this::toElementoResponse).toList();
         return new EscenarioBaseResponse(
                 e.getId(), e.getNombre(), e.getDescripcion(),
-                imagenUrl, e.getDimensionesAltoPx(), e.getDimensionesAnchoPx(),
+                imagenUrl, imagenDisenoUrl, e.getDimensionesAltoPx(), e.getDimensionesAnchoPx(),
                 e.getActivo(), elementos
         );
     }

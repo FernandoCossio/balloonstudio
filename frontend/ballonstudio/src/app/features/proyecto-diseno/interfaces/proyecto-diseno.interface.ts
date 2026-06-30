@@ -44,6 +44,7 @@ export interface EscenarioBaseResponse {
   nombre: string;
   descripcion: string | null;
   imagenUrl: string | null;
+  imagenDisenoUrl: string | null;
   dimensionesAltoPx: number | null;
   dimensionesAnchoPx: number | null;
   activo: boolean;

@@ -7,6 +7,7 @@ import com.decoraciones.domain.dtos.proyectodiseno.ElementoLienzoRequest;
 import com.decoraciones.domain.models.ProyectoDiseno;
 import com.decoraciones.domain.models.Reserva;
 import com.decoraciones.domain.models.Usuario;
+import com.decoraciones.domain.models.EscenarioBase;
 import com.decoraciones.features.elementolienzo.ElementoLienzoRepository;
 import com.decoraciones.features.proyectodiseno.ProyectoDisenoRepository;
 import com.decoraciones.features.reserva.CotizacionService;
@@ -33,6 +34,7 @@ import java.math.RoundingMode;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.file.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -52,6 +54,9 @@ public class ReportesService {
     private final ProyectoDisenoRepository proyectoRepository;
     private final CotizacionService cotizacionService;
     private final ElementoLienzoRepository elementoRepository;
+
+    @org.springframework.beans.factory.annotation.Value("${app.upload.dir}")
+    private String uploadDir;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -131,7 +136,7 @@ public class ReportesService {
 
             document.add(infoTable);
 
-            // Imagen del Canvas (si se provee)
+            // Imagen del Canvas (si se provee de forma directa)
             if (base64Canvas != null && base64Canvas.contains(",")) {
                 try {
                     String base64ImageBytes = base64Canvas.substring(base64Canvas.indexOf(",") + 1);
@@ -143,6 +148,56 @@ public class ReportesService {
                     document.add(image);
                 } catch (Exception e) {
                     log.error("Error al renderizar la imagen del canvas en el PDF", e);
+                }
+            }
+
+            // Diseños de Escenarios (Cargar desde disco de forma secuencial y limpia)
+            List<EscenarioBase> escenarios = proyecto.getEscenarios();
+            if (escenarios != null && !escenarios.isEmpty()) {
+                boolean headerAdded = false;
+                for (EscenarioBase escenario : escenarios) {
+                    if (escenario.getImagenDisenoUrl() != null) {
+                        try {
+                            Path imgPath = Paths.get(uploadDir, escenario.getImagenDisenoUrl());
+                            if (Files.exists(imgPath)) {
+                                if (!headerAdded) {
+                                    document.add(new Paragraph("Diseños de Escenarios", sectionFont));
+                                    document.add(new Paragraph(" ", textFont));
+                                    headerAdded = true;
+                                }
+                                byte[] imageBytes = Files.readAllBytes(imgPath);
+                                Image image = Image.getInstance(imageBytes);
+                                image.scaleToFit(400, 250);
+
+                                Paragraph pEscTitle = new Paragraph("Escenario: " + escenario.getNombre(), new Font(Font.HELVETICA, 11, Font.BOLD, java.awt.Color.DARK_GRAY));
+                                pEscTitle.setAlignment(Element.ALIGN_CENTER);
+                                document.add(pEscTitle);
+
+                                if (escenario.getDescripcion() != null && !escenario.getDescripcion().trim().isEmpty()) {
+                                    Paragraph pEscDesc = new Paragraph(escenario.getDescripcion(), new Font(Font.HELVETICA, 9, Font.ITALIC, java.awt.Color.GRAY));
+                                    pEscDesc.setAlignment(Element.ALIGN_CENTER);
+                                    pEscDesc.setSpacingAfter(5);
+                                    document.add(pEscDesc);
+                                }
+
+                                PdfPTable imgTable = new PdfPTable(1);
+                                imgTable.setWidthPercentage(100);
+                                imgTable.setHorizontalAlignment(Element.ALIGN_CENTER);
+                                imgTable.setSpacingAfter(15);
+                                imgTable.setKeepTogether(true);
+
+                                PdfPCell cell = new PdfPCell(image);
+                                cell.setBorder(PdfPCell.NO_BORDER);
+                                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                                cell.setPadding(0);
+                                imgTable.addCell(cell);
+
+                                document.add(imgTable);
+                            }
+                        } catch (Exception e) {
+                            log.error("Error al cargar la imagen de diseño para el escenario: " + escenario.getId(), e);
+                        }
+                    }
                 }
             }
 
@@ -179,8 +234,8 @@ public class ReportesService {
             document.add(new Paragraph(" ", textFont));
 
             PdfPTable totalsTable = new PdfPTable(2);
-            totalsTable.setWidthPercentage(50);
-            totalsTable.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            totalsTable.setWidthPercentage(60);
+            totalsTable.setHorizontalAlignment(Element.ALIGN_CENTER);
 
             addCell(totalsTable, "Subtotal Mobiliario:", labelFont);
             addCell(totalsTable, cot.costoArticulos().toString() + " Bs.", textFont);
