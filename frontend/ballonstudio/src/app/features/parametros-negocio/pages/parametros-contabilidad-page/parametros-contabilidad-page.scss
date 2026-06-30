@@ -1,0 +1,32 @@
+.parametros-page {
+  &__content {
+    margin-top: 1rem;
+  }
+
+  /* PrimeNG Tabs Styling Customizations */
+  .p-tablist {
+    margin-bottom: 1.5rem;
+  }
+
+  .p-tabpanels {
+    background: transparent;
+    padding: 0;
+  }
+
+  /* Custom inputs & toggles spacing */
+  .p-inputnumber {
+    width: 100%;
+  }
+
+  .p-toggleswitch {
+    flex-shrink: 0;
+  }
+
+  /* Focus and border styling */
+  .p-card {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+  }
+}
