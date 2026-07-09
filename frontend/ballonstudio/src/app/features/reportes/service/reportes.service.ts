@@ -40,10 +40,13 @@ export class ReportesService {
         );
     }
 
-    getUsuariosDatos(rol?: string, activo?: boolean): Observable<UsuariosReporteData[]> {
+    getUsuariosDatos(rol?: string, activo?: boolean, query?: string, fechaInicio?: string, fechaFin?: string): Observable<UsuariosReporteData[]> {
         let params = new HttpParams();
         if (rol) params = params.set('rol', rol);
         if (activo !== undefined && activo !== null) params = params.set('activo', activo.toString());
+        if (query) params = params.set('query', query);
+        if (fechaInicio) params = params.set('fechaInicio', fechaInicio);
+        if (fechaFin) params = params.set('fechaFin', fechaFin);
 
         return this.http.get<ApiResponse<UsuariosReporteData[]>>(`${API_BASE}/usuarios/datos`, { params }).pipe(
             map(res => res.data)
@@ -62,10 +65,13 @@ export class ReportesService {
         });
     }
 
-    descargarUsuarios(formato: 'pdf' | 'excel', rol?: string, activo?: boolean): Observable<Blob> {
+    descargarUsuarios(formato: 'pdf' | 'excel', rol?: string, activo?: boolean, query?: string, fechaInicio?: string, fechaFin?: string): Observable<Blob> {
         let params = new HttpParams().set('format', formato);
         if (rol) params = params.set('rol', rol);
         if (activo !== undefined && activo !== null) params = params.set('activo', activo.toString());
+        if (query) params = params.set('query', query);
+        if (fechaInicio) params = params.set('fechaInicio', fechaInicio);
+        if (fechaFin) params = params.set('fechaFin', fechaFin);
 
         return this.http.get(`${API_BASE}/usuarios`, {
             params,

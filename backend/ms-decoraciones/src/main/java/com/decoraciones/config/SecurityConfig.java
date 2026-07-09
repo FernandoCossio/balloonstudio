@@ -48,6 +48,7 @@ public class SecurityConfig {
 					"/reportes/**"
 				).permitAll()
 				.requestMatchers("/empleados/**").hasAuthority("role_administrador")
+				.requestMatchers("/dashboard/**").hasAuthority("role_administrador")
 				.requestMatchers(HttpMethod.POST, "/inventario").hasAuthority("role_administrador")
 				.requestMatchers(HttpMethod.PUT, "/inventario/*").hasAuthority("role_administrador")
 				.requestMatchers(HttpMethod.DELETE, "/inventario/*").hasAuthority("role_administrador")
@@ -84,7 +85,7 @@ public class SecurityConfig {
 			String uri = request.getRequestURI();
 			if (uri != null) {
 				if (uri.contains("/uploads/") || 
-					uri.contains("/auth/") || 
+					(uri.contains("/auth/") && !uri.contains("/auth/me/token")) || 
 					uri.contains("/v3/api-docs") || 
 					uri.contains("/swagger-ui")) {
 					return null;

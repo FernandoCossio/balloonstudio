@@ -1,0 +1,232 @@
+// ─── Import page layouts to match employee-list.scss style ───────────────────
+.emp-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    min-height: 100vh;
+    background: var(--surface-ground);
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.emp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    &__title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin: 0 0 0.25rem;
+        letter-spacing: -0.02em;
+    }
+
+    &__sub {
+        margin: 0;
+        font-size: 0.95rem;
+        color: var(--text-color-secondary);
+    }
+}
+
+.emp-table-section {
+    background: var(--surface-card);
+    border-radius: 16px;
+    border: 1px solid var(--surface-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.emp-filters-bar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.emp-search {
+    position: relative;
+    width: 100%;
+
+    &__icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-color-secondary);
+        font-size: 0.95rem;
+        pointer-events: none;
+    }
+
+    &__input {
+        width: 100%;
+        padding: 0.65rem 1rem 0.65rem 2.25rem;
+        font-size: 0.9rem;
+        background: var(--surface-100);
+        border: 1px solid var(--surface-border);
+        border-radius: 8px;
+        color: var(--text-color);
+        transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+        height: 38px;
+
+        &:focus {
+            outline: none;
+            background: var(--surface-card);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.15);
+        }
+    }
+}
+
+.emp-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    
+    &.flex-grow {
+        flex-grow: 1;
+        min-width: 250px;
+    }
+
+    label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-color-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+}
+
+.emp-filter-select, .emp-filter-date {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.875rem;
+    background: var(--surface-100);
+    border: 1px solid var(--surface-border);
+    border-radius: 8px;
+    color: var(--text-color);
+    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+    height: 38px;
+    min-width: 170px;
+    cursor: pointer;
+
+    &:focus {
+        outline: none;
+        background: var(--surface-card);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.15);
+    }
+}
+
+.emp-filter-date {
+    font-family: inherit;
+    cursor: text;
+}
+
+.emp-reset-wrapper {
+    height: 38px;
+    display: flex;
+    align-items: center;
+}
+
+.emp-btn-clear {
+    background: transparent;
+    border: 1px solid var(--surface-border);
+    border-radius: 8px;
+    padding: 0.65rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-color-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 38px;
+
+    &:hover {
+        background: var(--surface-hover);
+        color: var(--text-color);
+    }
+}
+
+// ─── Cards Grid ──────────────────────────────────────────────────────────────
+.reserva-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.reserva-paginator-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+    
+    ::ng-deep .p-paginator {
+        background: transparent !important;
+        border: none !important;
+    }
+}
+
+// ─── States ──────────────────────────────────────────────────────────────────
+.reserva-loading-state, .reserva-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    color: var(--text-color-secondary);
+    text-align: center;
+    border: 1px dashed var(--surface-border);
+    border-radius: 12px;
+    background: var(--surface-hover);
+    
+    p {
+        margin: 0;
+        font-size: 0.95rem;
+    }
+}
+
+.spinner-icon {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.empty-icon {
+    font-size: 2.5rem;
+    color: var(--surface-400);
+    margin-bottom: 1rem;
+}
+
+// ─── Responsive Styles ──────────────────────────────────────────────────────
+@media (max-width: 992px) {
+    .emp-filters-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .emp-input-wrapper {
+        width: 100%;
+    }
+
+    .emp-filter-select, .emp-filter-date, .emp-search__input {
+        width: 100%;
+    }
+
+    .emp-btn-clear {
+        width: 100%;
+        justify-content: center;
+    }
+}

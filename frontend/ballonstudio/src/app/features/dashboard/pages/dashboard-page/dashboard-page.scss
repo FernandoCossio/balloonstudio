@@ -1,0 +1,152 @@
+.dashboard-container {
+  min-height: 100vh;
+  background-color: var(--surface-b, #f8fafc);
+  
+  .kpi-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: transparent;
+      transition: background 0.3s ease;
+    }
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.08);
+      
+      &.revenue-card::after { background: #10b981; }
+      &.reservations-card::after { background: #3b82f6; }
+      &.clients-card::after { background: #a855f7; }
+      &.projects-card::after { background: #f59e0b; }
+      &.articles-card::after { background: #06b6d4; }
+      &.alerts-card::after { background: #f43f5e; }
+    }
+  }
+
+  .chart-container, .list-container {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.02);
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.04);
+    }
+  }
+
+  // Beautiful, premium empty state styling
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    background: radial-gradient(circle at center, rgba(248, 250, 252, 0.5) 0%, rgba(255, 255, 255, 0) 100%);
+    border-radius: 1rem;
+    
+    .empty-icon-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 4rem;
+      height: 4rem;
+      border-radius: 9999px;
+      margin-bottom: 1.25rem;
+      background: rgba(241, 245, 249, 0.8);
+      color: #94a3b8;
+      font-size: 1.75rem;
+      border: 1px dashed #cbd5e1;
+
+      &.pulse {
+        animation: subtlePulse 3s infinite ease-in-out;
+      }
+    }
+
+    .empty-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 0.25rem;
+    }
+
+    .empty-desc {
+      font-size: 0.825rem;
+      color: #64748b;
+      max-width: 250px;
+      line-height: 1.4;
+    }
+  }
+
+  // Fade-in animation for a premium entry effect
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes subtlePulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(148, 163, 184, 0.1);
+    }
+    50% {
+      transform: scale(1.05);
+      box-shadow: 0 0 0 10px rgba(148, 163, 184, 0.05);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+// Custom style override for PrimeNG Table
+::v-deep {
+  .p-datatable {
+    .p-datatable-thead > tr > th {
+      background: #f8fafc;
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid #e2e8f0;
+      color: #64748b;
+      padding: 0.85rem 1rem;
+    }
+
+    .p-datatable-tbody > tr {
+      background: transparent;
+      border-bottom: 1px solid #f1f5f9;
+      transition: background-color 0.2s ease;
+      
+      &:hover {
+        background-color: #f8fafc !important;
+      }
+
+      > td {
+        padding: 0.95rem 1rem;
+        border: none;
+        font-size: 0.875rem;
+      }
+    }
+  }
+}

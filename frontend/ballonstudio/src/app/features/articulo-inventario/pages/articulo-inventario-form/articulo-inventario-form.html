@@ -264,25 +264,19 @@
                     </div>
                 </div>
 
-                <!-- Toggle Reutilizable -->
-                <div class="reuse-toggle-card">
-                    <div class="reuse-toggle-card__left">
-                        <i class="pi pi-refresh"></i>
-                        <div>
-                            <span class="reuse-toggle-card__title">¿Es un artículo reutilizable?</span>
-                            <span class="reuse-toggle-card__sub">Habilita esta opción para estructuras, tanques o decoraciones permanentes.</span>
-                        </div>
-                    </div>
-                    <p-toggleswitch [(ngModel)]="esReutilizable" [ngModelOptions]="{standalone: true}"
-                                    (onChange)="esReutilizable.set($event.checked)" />
-                </div>
+
 
                 @if (esReutilizable()) {
-                    <div class="form-grid-2 mt-1">
+                    <div class="form-grid-3 mt-1">
                         <div class="form-field">
                             <label class="form-label">Vida Útil (Usos)</label>
                             <p-inputnumber formControlName="vidaUtilUsos" [min]="0"
                                            styleClass="form-inputnumber" placeholder="Ej. 50" />
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Vida Útil (Años)</label>
+                            <p-inputnumber formControlName="vidaUtilAnos" [min]="0"
+                                           styleClass="form-inputnumber" placeholder="Ej. 5" />
                         </div>
                         <div class="form-field">
                             <label class="form-label">Valor Residual ({{ currencySymbol }})</label>
@@ -405,6 +399,14 @@
                                 <div class="review-field">
                                     <span class="review-field__label">VALOR RESIDUAL</span>
                                     <span class="review-field__value">{{ s3.valorResidual | currency:currencyCode:'symbol':'1.2-2' }}</span>
+                                </div>
+                                <div class="review-field">
+                                    <span class="review-field__label">VIDA ÚTIL (USOS)</span>
+                                    <span class="review-field__value">{{ s3.vidaUtilUsos }} Usos</span>
+                                </div>
+                                <div class="review-field">
+                                    <span class="review-field__label">VIDA ÚTIL (AÑOS)</span>
+                                    <span class="review-field__value">{{ s3.vidaUtilAnos }} Años</span>
                                 </div>
                             }
                         </div>

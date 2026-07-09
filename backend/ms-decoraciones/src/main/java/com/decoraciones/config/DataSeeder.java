@@ -37,14 +37,14 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        seedRoles();
-        seedAdminUser();
+//        seedRoles();
+//        seedAdminUser();
         seedFactoresEstacionales();
     }
 
     private void seedRoles() {
-        crearRolSiNoExiste("ADMIN", "Administrador del sistema");
-        crearRolSiNoExiste("EMPLEADO", "Empleado con acceso limitado");
+//        crearRolSiNoExiste("ADMIN", "Administrador del sistema");
+//        crearRolSiNoExiste("EMPLEADO", "Empleado con acceso limitado");
     }
 
     private void crearRolSiNoExiste(String nombre, String descripcion) {
@@ -58,24 +58,24 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedAdminUser() {
-        if (usuarioRepository.findByUsernameIgnoreCase("admin").isPresent()) {
-            log.info("[Seeder] Usuario 'admin' ya existe, omitiendo.");
-            return;
-        }
-
-        Rol rolAdmin = rolRepository.findByNombreIgnoreCase("ADMIN")
-                .orElseThrow(() -> new IllegalStateException("Rol ADMIN no encontrado"));
-
-        Usuario admin = new Usuario();
-        admin.setUsername("admin");
-        admin.setEmail("admin@decoraciones.com");
-        admin.setNombreCompleto("Administrador");
-        admin.setPassword(passwordEncoder.encode("admin123"));
-        admin.setActivo(true);
-        admin.setRoles(Set.of(rolAdmin));
-
-        usuarioRepository.save(admin);
-        log.info("[Seeder] Usuario admin creado → username: admin | password: admin123");
+//        if (usuarioRepository.findByUsernameIgnoreCase("admin").isPresent()) {
+//            log.info("[Seeder] Usuario 'admin' ya existe, omitiendo.");
+//            return;
+//        }
+//
+//        Rol rolAdmin = rolRepository.findByNombreIgnoreCase("ADMIN")
+//                .orElseThrow(() -> new IllegalStateException("Rol ADMIN no encontrado"));
+//
+//        Usuario admin = new Usuario();
+//        admin.setUsername("admin");
+//        admin.setEmail("admin@decoraciones.com");
+//        admin.setNombreCompleto("Administrador");
+//        admin.setPassword(passwordEncoder.encode("admin123"));
+//        admin.setActivo(true);
+//        admin.setRoles(Set.of(rolAdmin));
+//
+//        usuarioRepository.save(admin);
+//        log.info("[Seeder] Usuario admin creado → username: admin | password: admin123");
     }
 
     private void seedFactoresEstacionales() {

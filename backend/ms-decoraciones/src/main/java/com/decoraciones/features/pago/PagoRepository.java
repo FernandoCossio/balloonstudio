@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface PagoRepository extends JpaRepository<Pago, Long> {
     List<Pago> findAllByReservaId(Long reservaId);
+    boolean existsByReferenciaExterna(String referenciaExterna);
 }

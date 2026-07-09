@@ -9,6 +9,9 @@ export interface ProyectoDisenoRequest {
   fechaEvento?: string;   // ISO date string 'YYYY-MM-DD'
   lugarEvento?: string;
   numeroMetadato?: string;
+  distanciaKm?: number;
+  latitud?: number;
+  longitud?: number;
 }
 
 export interface ProyectoDisenoResponse {
@@ -20,6 +23,8 @@ export interface ProyectoDisenoResponse {
   lugarEvento: string | null;
   numeroMetadato: string | null;
   distanciaKm: number | null;
+  latitud: number | null;
+  longitud: number | null;
   costoRealTotal: number | null;
   escenarioBaseId: number | null;   // escenario activo por defecto
   fechaCreacion: string;
@@ -39,6 +44,7 @@ export interface EscenarioBaseResponse {
   nombre: string;
   descripcion: string | null;
   imagenUrl: string | null;
+  imagenDisenoUrl: string | null;
   dimensionesAltoPx: number | null;
   dimensionesAnchoPx: number | null;
   activo: boolean;

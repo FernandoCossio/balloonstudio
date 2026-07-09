@@ -231,10 +231,9 @@ export class MetodoTarjeta implements OnInit, OnDestroy {
       detail: 'Generando comprobante y propuesta PDF...'
     });
 
-    const base64Canvas = this.canvasState.base64Canvas() || '';
     const elementos = this.canvasState.toElementoLienzoRequests();
 
-    this.reservaService.exportarPropuestaPdf(proyectoId, base64Canvas, elementos).subscribe({
+    this.reservaService.exportarPropuestaPdf(proyectoId, '', elementos).subscribe({
       next: (blob: Blob) => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');

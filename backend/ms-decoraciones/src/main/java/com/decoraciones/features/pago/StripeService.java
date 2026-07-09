@@ -30,7 +30,7 @@ public class StripeService {
      * Crea un PaymentIntent en Stripe vía la API REST oficial.
      * Retorna el client_secret de la transacción.
      */
-    public String crearPaymentIntent(BigDecimal montoAnticipo, String moneda) {
+    public String crearPaymentIntent(BigDecimal montoAnticipo, String moneda, Map<String, String> metadata) {
         log.info("Iniciando PaymentIntent en Stripe por un monto de {} {}", montoAnticipo, moneda);
 
         // Stripe maneja montos en centavos (ej: 10.00 Bs -> 1000 centavos)
@@ -41,6 +41,11 @@ public class StripeService {
             body.add("amount", String.valueOf(centavos));
             body.add("currency", moneda.toLowerCase());
             body.add("payment_method_types[0]", "card");
+            if (metadata != null) {
+                for (Map.Entry<String, String> entry : metadata.entrySet()) {
+                    body.add("metadata[" + entry.getKey() + "]", entry.getValue());
+                }
+            }
 
             // Realizamos la llamada a Stripe usando RestClient
             Map response = restClient.post()
